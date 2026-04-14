@@ -2,17 +2,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Text, View } from 'react-native';
+import { BlurView } from 'expo-blur';
 
 export default function TabLayout() {
-  const primaryColor = '#5154F4'; // Brand blue
+  const primaryColor = '#5154F4';
   const inactiveColor = 'rgba(255, 255, 255, 0.6)';
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarShowLabel: false,
+
+        // ✅ Glass container
         tabBarStyle: {
-          backgroundColor: '#333333',
           position: 'absolute',
           bottom: 24,
           left: 20,
@@ -20,34 +23,49 @@ export default function TabLayout() {
           height: 74,
           borderRadius: 42,
           borderTopWidth: 0,
-          paddingBottom: 0,
-          // Add a uniform top margin to all tab icons
-          paddingTop: 20,
-          paddingLeft: 20,
-          paddingRight: 20,
+          overflow: 'hidden', // 🔥 required for blur clipping
+          paddingTop:20,
+          paddingLeft:20,
+          paddingRight:20,
           elevation: 10,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 10 },
           shadowOpacity: 0.3,
           shadowRadius: 15,
         },
+
+        // ✅ Glass effect (REAL blur)
+        tabBarBackground: () => (
+          <BlurView
+            intensity={60} // tweak: 40–80
+            tint="dark"
+            style={{
+              flex: 1,
+              borderRadius: 42,
+              backgroundColor: 'rgba(255,255,255,0.05)', // subtle glass tint
+            }}
+          />
+        ),
+
         tabBarItemStyle: {
           justifyContent: 'center',
           alignItems: 'center',
         },
-        tabBarShowLabel: false,
-      }}>
+      }}
+    >
+      {/* HOME */}
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
           tabBarIcon: ({ focused }) => (
             <View
-              className={`items-center justify-center ${focused ? 'bg-[#E5E5F5] px-5 py-2 rounded-full' : ''}`}
+              className={`items-center justify-center ${
+                focused ? 'px-5 py-2 rounded-full ' : ''
+              }`}
               style={{ minWidth: 90 }}
             >
               <Ionicons
-                name={focused ? "home" : "home-outline"}
+                name={focused ? 'home' : 'home-outline'}
                 size={22}
                 color={focused ? primaryColor : inactiveColor}
               />
@@ -57,7 +75,6 @@ export default function TabLayout() {
                   fontSize: 12,
                   fontWeight: '700',
                   marginTop: 2,
-                  padding: -1,
                 }}
               >
                 Home
@@ -66,17 +83,20 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      {/* SWAP */}
       <Tabs.Screen
         name="swap"
         options={{
-          title: 'Swap',
           tabBarIcon: ({ focused }) => (
             <View
-              className={`items-center justify-center ${focused ? 'bg-[#E5E5F5] px-5 py-2 rounded-full' : ''}`}
+              className={`items-center justify-center ${
+                focused ? 'px-5 py-2 rounded-full' : ''
+              }`}
               style={{ minWidth: 90 }}
             >
               <Ionicons
-                name={"repeat"}
+                name="repeat"
                 size={22}
                 color={focused ? primaryColor : inactiveColor}
               />
@@ -85,7 +105,7 @@ export default function TabLayout() {
                   color: focused ? primaryColor : inactiveColor,
                   fontSize: 12,
                   fontWeight: '700',
-                  marginTop: 2
+                  marginTop: 2,
                 }}
               >
                 Swap
@@ -94,17 +114,20 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      {/* CARD */}
       <Tabs.Screen
         name="card"
         options={{
-          title: 'Card',
           tabBarIcon: ({ focused }) => (
             <View
-              className={`items-center justify-center ${focused ? 'bg-[#E5E5F5] px-5 py-2 rounded-full' : ''}`}
+              className={`items-center justify-center ${
+                focused ? 'px-5 py-2 rounded-full' : ''
+              }`}
               style={{ minWidth: 90 }}
             >
               <Ionicons
-                name={focused ? "card" : "card-outline"}
+                name={focused ? 'card' : 'card-outline'}
                 size={22}
                 color={focused ? primaryColor : inactiveColor}
               />
@@ -113,7 +136,7 @@ export default function TabLayout() {
                   color: focused ? primaryColor : inactiveColor,
                   fontSize: 12,
                   fontWeight: '700',
-                  marginTop: 2
+                  marginTop: 2,
                 }}
               >
                 Card
@@ -122,17 +145,20 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      {/* ACCOUNT */}
       <Tabs.Screen
         name="account"
         options={{
-          title: 'Account',
           tabBarIcon: ({ focused }) => (
             <View
-              className={`items-center justify-center ${focused ? 'bg-[#E5E5F5] px-5 py-2 rounded-full' : ''}`}
+              className={`items-center justify-center ${
+                focused ? 'px-5 py-2 rounded-full' : ''
+              }`}
               style={{ minWidth: 90 }}
             >
               <Ionicons
-                name={focused ? "person" : "person-outline"}
+                name={focused ? 'person' : 'person-outline'}
                 size={22}
                 color={focused ? primaryColor : inactiveColor}
               />
@@ -141,7 +167,7 @@ export default function TabLayout() {
                   color: focused ? primaryColor : inactiveColor,
                   fontSize: 12,
                   fontWeight: '700',
-                  marginTop: 2
+                  marginTop: 2,
                 }}
               >
                 Account
