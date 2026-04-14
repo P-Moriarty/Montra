@@ -23,6 +23,8 @@ export default function TabLayout() {
           paddingBottom: 0,
           // Add a uniform top margin to all tab icons
           paddingTop: 20,
+          paddingLeft: 20,
+          paddingRight: 20,
           elevation: 10,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 10 },
@@ -54,7 +56,8 @@ export default function TabLayout() {
                   color: focused ? primaryColor : inactiveColor,
                   fontSize: 12,
                   fontWeight: '700',
-                  marginTop: 2
+                  marginTop: 2,
+                  padding: -1,
                 }}
               >
                 Home
