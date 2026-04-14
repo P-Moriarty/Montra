@@ -8,7 +8,7 @@ export default function CardScreen() {
   const [showDetails, setShowDetails] = useState(false);
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F8F9FB]" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
       <ScrollView 
         className="flex-1 px-5" 
         showsVerticalScrollIndicator={false}
