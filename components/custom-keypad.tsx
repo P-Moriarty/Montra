@@ -13,7 +13,7 @@ export function CustomKeypad({ onPress, onDelete }: CustomKeypadProps) {
   const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'delete'];
 
   return (
-    <View className="bg-[#E9EBEE] pt-8 pb-12 rounded-t-[40px] absolute bottom-0 w-full px-4">
+    <View className="bg-[#E9EBEE] pt-8 pb-12 rounded-t-[40px] w-full px-4">
       <View className="flex-row flex-wrap justify-center gap-y-4">
         {keys.map((key, index) => {
           if (key === '') {
