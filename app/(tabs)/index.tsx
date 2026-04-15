@@ -95,7 +95,10 @@ export default function HomeScreen() {
 
         {/* Action Buttons */}
         <View className="flex-row justify-between mt-12 bg-white p-6 rounded-[32px] shadow-sm">
-          <TouchableOpacity className="items-center">
+          <TouchableOpacity 
+            className="items-center"
+            onPress={() => router.push('/transfer')}
+          >
             <View className="w-14 h-14 bg-[#5154F4] rounded-2xl items-center justify-center mb-2">
               <Feather name="send" size={24} color="white" />
             </View>
