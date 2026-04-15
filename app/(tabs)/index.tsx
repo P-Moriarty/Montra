@@ -117,7 +117,7 @@ export default function HomeScreen() {
 
           <TouchableOpacity 
             className="items-center"
-            // onPress={() => router.push('/swap')}
+            onPress={() => router.push('/request')}
           >
             <View className="w-14 h-14 bg-blue-50 rounded-2xl items-center justify-center mb-2">
               <FontAwesome6 name="hand-holding-dollar" size={24} color="#5154F4" />
