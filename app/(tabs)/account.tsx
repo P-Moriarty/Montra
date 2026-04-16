@@ -1,29 +1,62 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, Href } from 'expo-router';
+import * as Clipboard from 'expo-clipboard';
 
 export default function AccountScreen() {
   const router = useRouter();
 
-  const menuItems = [
-    { label: 'My Profile', icon: 'person-outline', color: '#1F2C37', route: '/my-profile' as const },
-    { label: 'Transaction history', icon: 'time-outline', color: '#1F2C37', route: '/transaction-history' as const },
-    { label: 'Refer & Earn', icon: 'gift-outline', color: '#1F2C37' },
-    { label: 'Contact support', icon: 'headset-outline', color: '#1F2C37' },
-    { label: 'Help', icon: 'help-circle-outline', color: '#1F2C37' },
-    { label: 'Log out', icon: 'log-out-outline', color: '#EF4444', isLast: true },
+  const handleCopy = async () => {
+    await Clipboard.setStringAsync('3749266383');
+    alert('Account number copied to clipboard!');
+  };
+
+  interface MenuItem {
+    label: string;
+    icon: string;
+    route?: string;
+    color?: string;
+    badge?: string;
+  }
+
+  interface Section {
+    title: string;
+    items: MenuItem[];
+  }
+
+  const sections: Section[] = [
+    {
+      title: 'Account Settings',
+      items: [
+        { label: 'My Profile', icon: 'person-outline', route: '/my-profile' },
+        { label: 'Transaction History', icon: 'time-outline', route: '/transaction-history' },
+        { label: 'Verification Status', icon: 'shield-checkmark-outline', badge: 'Tier 1', route: '/verification-status' },
+      ]
+    },
+    {
+      title: 'Security',
+      items: [
+        { label: 'Security Hub', icon: 'lock-closed-outline', route: '/security' },
+        { label: 'Privacy Policy', icon: 'document-text-outline' },
+      ]
+    },
+    {
+      title: 'Others',
+      items: [
+        { label: 'Refer & Earn', icon: 'gift-outline', color: '#5154F4', route: '/rewards/refer' },
+        { label: 'Help & Support', icon: 'headset-outline' },
+        { label: 'Log out', icon: 'log-out-outline', color: '#EF4444' },
+      ]
+    }
   ];
 
   return (
     <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center justify-between px-6 py-4">
-        {/* <TouchableOpacity className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm">
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
-        </TouchableOpacity> */}
-        <Text className="text-[#1F2C37] text-xl font-bold">Account</Text>
+        <Text className="text-[#1F2C37] text-2xl font-black">Account</Text>
         <TouchableOpacity className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm">
           <Ionicons name="settings-outline" size={20} color="#1F2C37" />
         </TouchableOpacity>
@@ -34,52 +67,66 @@ export default function AccountScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 140 }}
       >
-        {/* Account Details Section */}
-        <View className="mt-6 mb-8">
-          <Text className="text-[#1F2C37] text-lg font-bold mb-4">Account details</Text>
-          <View className="bg-[#F6F6F6] p-6 rounded-[32px] border border-gray-100">
-            <View className="flex-row justify-between items-start mb-6">
+        {/* Account Details Card (Engineering Cockpit Style) */}
+        <View className="mt-6 mb-10">
+          <View className="bg-[#1F2C37] p-8 rounded-[40px] shadow-2xl relative overflow-hidden">
+            <View className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/5 rounded-full" />
+            
+            <View className="flex-row justify-between items-center mb-8">
+               <View>
+                 <Text className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">Bank Name</Text>
+                 <Text className="text-white font-bold text-base">Young Money Mfb Ltd</Text>
+               </View>
+               <View className="w-12 h-12 bg-white/10 rounded-2xl items-center justify-center">
+                 <MaterialCommunityIcons name="bank-outline" size={24} color="white" />
+               </View>
+            </View>
+
+            <View className="flex-row justify-between items-end">
               <View>
-                <Text className="text-[#1F2C37] text-xl font-bold mb-1">3749266383</Text>
-                <Text className="text-[#9DA3B6] text-sm">Account number</Text>
+                <Text className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">Account Number</Text>
+                <Text className="text-white text-3xl font-black tracking-tight">3749266383</Text>
               </View>
-              <TouchableOpacity>
-                <Ionicons name="copy-outline" size={22} color="#9DA3B6" />
+              <TouchableOpacity 
+                onPress={handleCopy}
+                className="bg-white/10 p-3 rounded-xl border border-white/10"
+              >
+                 <Ionicons name="copy-outline" size={20} color="white" />
               </TouchableOpacity>
-            </View>
-
-            <View className="mb-6">
-              <Text className="text-[#1F2C37] text-lg font-bold mb-1">Ifeanyi Chukwudi</Text>
-              <Text className="text-[#9DA3B6] text-sm">Account name</Text>
-            </View>
-
-            <View>
-              <Text className="text-[#1F2C37] text-lg font-bold mb-1">Young Money Mfb Ltd</Text>
-              <Text className="text-[#9DA3B6] text-sm">Bank name</Text>
             </View>
           </View>
         </View>
 
-        {/* Menu Items */}
-        <View className="space-y-3">
-          {menuItems.map((item, index) => (
-            <TouchableOpacity 
-              key={index} 
-              onPress={() => item.route && router.push(item.route)}
-              className="bg-white p-4 rounded-3xl flex-row items-center justify-between shadow-sm border border-gray-50 mb-3"
-            >
-              <View className="flex-row items-center">
-                <View className="w-12 h-12 bg-gray-50 rounded-full items-center justify-center mr-4">
-                  <Ionicons name={item.icon as any} size={22} color={item.color === '#EF4444' ? '#EF4444' : '#1F2C37'} />
-                </View>
-                <Text className={`text-base font-bold ${item.color === '#EF4444' ? 'text-[#EF4444]' : 'text-[#1F2C37]'}`}>
-                  {item.label}
-                </Text>
-              </View>
-              <Feather name="chevron-right" size={20} color="#9DA3B6" />
-            </TouchableOpacity>
-          ))}
-        </View>
+        {/* Grouped Menu */}
+        {sections.map((section, idx) => (
+          <View key={idx} className="mb-8">
+            <Text className="text-[#9DA3B6] text-xs font-bold uppercase tracking-widest ml-4 mb-4">{section.title}</Text>
+            <View className="bg-white/60 rounded-[40px] p-2 border border-white/40">
+              {section.items.map((item, iIdx) => (
+                <TouchableOpacity 
+                  key={iIdx} 
+                  onPress={() => item.route && router.push(item.route as any)}
+                  className={`flex-row items-center justify-between p-4 rounded-[32px] ${iIdx !== section.items.length - 1 ? 'mb-1' : ''}`}
+                >
+                  <View className="flex-row items-center">
+                    <View className="w-10 h-10 bg-white rounded-2xl items-center justify-center mr-4 shadow-sm">
+                      <Ionicons name={item.icon as any} size={20} color={item.color || '#1F2C37'} />
+                    </View>
+                    <Text className={`text-base font-bold ${item.color ? `text-[${item.color}]` : 'text-[#1F2C37]'}`}>{item.label}</Text>
+                  </View>
+                  <View className="flex-row items-center">
+                    {item.badge && (
+                      <View className="bg-[#5154F4]/10 px-3 py-1 rounded-full mr-2">
+                         <Text className="text-[#5154F4] text-[10px] font-bold">{item.badge}</Text>
+                      </View>
+                    )}
+                    <Feather name="chevron-right" size={18} color="#9DA3B6" />
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        ))}
       </ScrollView>
     </SafeAreaView>
   );

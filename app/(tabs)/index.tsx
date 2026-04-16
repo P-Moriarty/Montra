@@ -171,7 +171,15 @@ export default function HomeScreen() {
               { label: 'Rewards', icon: 'gift-outline', lib: 'Ionicons' },
               { label: 'More', icon: 'ellipsis-horizontal', lib: 'Ionicons' }
             ].map((service, index) => (
-              <TouchableOpacity key={index} className="items-center">
+              <TouchableOpacity 
+                key={index} 
+                className="items-center"
+                onPress={() => {
+                  if (service.label === 'Pay bills') router.push('/pay-bills');
+                  if (service.label === 'Savings') router.push('/savings');
+                  if (service.label === 'Rewards') router.push('/rewards');
+                }}
+              >
                 <View className="w-16 h-16 bg-[#F0F1FF] rounded-full items-center justify-center shadow-sm mb-2">
                   {service.lib === 'MaterialCommunityIcons' && <MaterialCommunityIcons name={service.icon as any} size={26} color="#5154F4" />}
                   {service.lib === 'Feather' && <Feather name={service.icon as any} size={24} color="#5154F4" />}
