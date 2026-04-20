@@ -8,5 +8,6 @@ export const ENDPOINTS = {
     LOGIN: '/auth/login',
     REGISTER: '/auth/register',
     RESET_PASSWORD: '/auth/reset-password',
+    VERIFY_ACCOUNT: '/auth/verify-account',
   },
 };
