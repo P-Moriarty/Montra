@@ -4,13 +4,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Href } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
+import { useAuth } from '@/context/AuthContext';
 
 export default function AccountScreen() {
   const router = useRouter();
+  const { signOut } = useAuth();
 
   const handleCopy = async () => {
     await Clipboard.setStringAsync('3749266383');
     alert('Account number copied to clipboard!');
+  };
+
+  const handleLogout = async () => {
+    await signOut();
   };
 
   interface MenuItem {
@@ -105,7 +111,13 @@ export default function AccountScreen() {
               {section.items.map((item, iIdx) => (
                 <TouchableOpacity 
                   key={iIdx} 
-                  onPress={() => item.route && router.push(item.route as any)}
+                  onPress={() => {
+                    if (item.label === 'Log out') {
+                      handleLogout();
+                    } else if (item.route) {
+                      router.push(item.route as any);
+                    }
+                  }}
                   className={`flex-row items-center justify-between p-4 rounded-[32px] ${iIdx !== section.items.length - 1 ? 'mb-1' : ''}`}
                 >
                   <View className="flex-row items-center">

@@ -1,14 +1,6 @@
-import { useQuery, useMutation, useQueryClient, UseQueryOptions, UseMutationOptions } from '@tanstack/react-query';
+import { useQuery, useMutation, UseQueryOptions, UseMutationOptions } from '@tanstack/react-query';
 
-/**
- * Industrial-Grade API Hook Wrappers
- * Provides a unified, type-safe interface for TanStack Query across all cockpit screens.
- */
 
-/**
- * Unified Query Hook
- * Used for fetching industrial-grade data (GET requests).
- */
 export function useApiQuery<T>(
   queryKey: string[],
   fetchFn: () => Promise<T>,
@@ -21,15 +13,11 @@ export function useApiQuery<T>(
   });
 }
 
-/**
- * Unified Mutation Hook
- * Used for executing high-fidelity data updates (POST, PUT, DELETE).
- */
 export function useApiMutation<TData, TVariables, TContext = unknown>(
   mutationFn: (variables: TVariables) => Promise<TData>,
   options?: UseMutationOptions<TData, Error, TVariables, TContext>
 ) {
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
 
   return useMutation<TData, Error, TVariables, TContext>({
     mutationFn,

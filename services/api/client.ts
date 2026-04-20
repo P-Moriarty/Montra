@@ -28,10 +28,24 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response Interceptor: Handle Global Error States
+// Response Interceptor: Handle Global Error States and Diagnostics
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Industrial-grade response logging
+    console.log(`[API Response] ${response.config.method?.toUpperCase()} ${response.config.url}:`, {
+      status: response.status,
+      data: response.data,
+    });
+    return response;
+  },
   async (error) => {
+    // Industrial-grade error logging
+    console.error(`[API Error] ${error.config?.method?.toUpperCase()} ${error.config?.url}:`, {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+    });
+
     const originalRequest = error.config;
 
     // Handle 401 Unauthorized (Session Expired)
