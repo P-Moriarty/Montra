@@ -42,7 +42,7 @@ function RootLayoutNav() {
       navReady: !!navigationState?.key
     });
 
-    const currentRoute = segments.join('/');
+    // const currentRoute = segments.join('/');
 
     if (!userToken && !inAuthGroup && !segments.includes('login' as never)) {
       console.log('[Auth Hub] Redirecting to Gateway (Not authenticated and not in auth group)');
@@ -51,6 +51,7 @@ function RootLayoutNav() {
       console.log('[Auth Hub] Session Anchored. Launching Dashboard via absolute path...');
       router.replace('/(tabs)' as any);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userToken, isLoading, segments, navigationState?.key]);
 
   return (
