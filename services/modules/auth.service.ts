@@ -27,28 +27,4 @@ export const AuthService = {
     const response = await apiClient.post(ENDPOINTS.AUTH.REGISTER, userData);
     return response.data;
   },
-
-  /**
-   * Verifies the user's transaction PIN.
-   */
-  verifyPin: async (pin: string) => {
-    const response = await apiClient.post(ENDPOINTS.AUTH.VERIFY_PIN, { pin });
-    return response.data;
-  },
-
-  /**
-   * Clears the current session and logs the user out.
-   */
-  logout: async () => {
-    await SecureStore.deleteItemAsync(Config.auth.tokenKey);
-    // Any complementary API logout calls can go here
-  },
-
-  /**
-   * Retrieves the current user's profile data.
-   */
-  getMe: async () => {
-    const response = await apiClient.get(ENDPOINTS.AUTH.ME);
-    return response.data;
-  }
 };
