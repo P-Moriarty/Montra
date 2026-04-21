@@ -44,6 +44,18 @@ export const VerifyAccountSchema = z.object({
     .length(6, 'Verification code must be 6 digits'),
 });
 
+export const UpdateProfileSchema = z.object({
+  full_name: z.string()
+    .min(1, 'Full name is required')
+    .min(3, 'Name must be at least 3 characters'),
+  date_of_birth: z.string()
+    .min(1, 'Date of birth is required'),
+  gender: z.enum(['MALE', 'FEMALE', 'OTHER'], {
+    message: 'Please select a valid gender',
+  }),
+});
+
 export type LoginInput = z.infer<typeof LoginSchema>;
 export type SignupInput = z.infer<typeof SignupSchema>;
 export type VerifyAccountInput = z.infer<typeof VerifyAccountSchema>;
+export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>;

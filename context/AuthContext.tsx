@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import * as SecureStore from 'expo-secure-store';
 import { Config } from '@/constants/Config';
+import * as SecureStore from 'expo-secure-store';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { authSwitchboard } from '@/services/api/auth-switchboard';
 
 interface AuthContextType {
   userToken: string | null;
@@ -38,6 +39,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
     loadSession();
+  }, []);
+
+  // Absolute Session Termination Handshake
+  useEffect(() => {
+    const unsubscribe = authSwitchboard.on('session:expired', () => {
+      console.log('[Auth Context] Absolute session expiration signal received. Synchronizing sign-out...');
+      signOut();
+    });
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const signIn = async (token: string) => {

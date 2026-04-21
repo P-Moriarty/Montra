@@ -1,18 +1,77 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, MaterialCommunityIcons, Feather, FontAwesome6 } from '@expo/vector-icons';
+import { Config } from '@/constants/Config';
+import { useAuth } from '@/context/AuthContext';
+import { useApiQuery } from '@/hooks/api/use-api';
+import { ProfileService } from '@/services/modules/profile.service';
+import { TransactionService } from '@/services/modules/transaction.service';
+import { Feather, FontAwesome6, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import React, { useMemo, useState } from 'react';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+// const EMPTY_ARRAY: any[] = [];
 
 export default function HomeScreen() {
   const [showBalance, setShowBalance] = useState(true);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState(CURRENCIES[0]);
+  
+  const { userToken } = useAuth();
+
+  // Industrial-grade profile feed integration
+  const { data: user, isLoading: isProfileLoading } = useApiQuery(['profile'], ProfileService.getProfile, {
+    enabled: !!userToken,
+  });
+
+  // High-fidelity transaction overview integration
+  const { data: transactionsData, isLoading: isTransactionsLoading } = useApiQuery(
+    ['transactions', 'recent'],
+    () => TransactionService.getRecentTransactions(3),
+    { enabled: !!userToken }
+  );
+
+  const transactions = transactionsData?.data || transactionsData?.transactions || [];
+
+  // Derived high-fidelity current wallet state (Mock Integrated Balancing)
+  const currentWallet = useMemo(() => {
+    const mockBalances: Record<string, number> = {
+      'USD': 1540.50,
+      'NGN': 1250000.00,
+      'GBP': 1200.00,
+      'EUR': 1400.00,
+    };
+    return { balance: mockBalances[selectedCurrency.code] || 0, currency: selectedCurrency.code, id: 'mock' };
+  }, [selectedCurrency]);
+
+  const imageUrl = useMemo(() => {
+    const avatar = user?.profilePicture;
+
+    if (!avatar) return 'https://i.pravatar.cc/150';
+
+    if (avatar.startsWith('http')) return avatar;
+
+    // 🔥 REMOVE /api/v1 completely
+    const baseUrl = Config.api.baseUrl
+      .replace('/api/v1', '')
+      .replace(/\/$/, '');
+
+    const cleanAvatar = avatar.startsWith('/') ? avatar : `/${avatar}`;
+
+    return `${baseUrl}${cleanAvatar}?t=${Date.now()}`;
+  }, [user?.profilePicture]);
+
+  // Unified high-fidelity loading gate
+  const isInitialDashboardLoading = isProfileLoading && !user;
+
+  if (isInitialDashboardLoading) {
+    return <HomeSkeleton />;
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
-      <ScrollView 
-        className="flex-1 px-5" 
+      <ScrollView
+        className="flex-1 px-5"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 140 }}
       >
@@ -20,12 +79,15 @@ export default function HomeScreen() {
         <View className="flex-row items-center justify-between mt-4">
           <View className="flex-row items-center">
             <View className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden mr-3">
-              <Image 
-                source={{ uri: 'https://i.pravatar.cc/150?u=ifeanyi' }} 
-                className="w-full h-full"
+              <Image
+                source={{ uri: imageUrl }}
+                style={{ width: '100%', height: '100%' }}
+                contentFit="cover"
               />
             </View>
-            <Text className="text-[#1F2C37] text-lg font-bold">Hello, Ifeanyi</Text>
+            <Text className="text-[#1F2C37] text-lg font-bold">
+              {isProfileLoading ? 'Loading...' : `Hello, ${user?.full_name?.split(' ')[0] || 'User'}`}
+            </Text>
           </View>
           <View className="flex-row">
             <TouchableOpacity className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm mr-2">
@@ -40,28 +102,30 @@ export default function HomeScreen() {
         {/* Multi-Currency Balance Switcher */}
         <View className="mt-10 items-center">
           <Text className="text-[#6C7278] text-sm mb-4 font-semibold uppercase tracking-widest">Available balance</Text>
-          
+
           <View className="flex-row items-center mb-6">
             <Text className="text-[#1F2C37] text-5xl font-extrabold mr-3">
-              {showBalance ? `${selectedCurrency.symbol}${ (5.00 * selectedCurrency.rate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }` : '••••••'}
+              {showBalance
+                ? `${selectedCurrency.symbol}${currentWallet.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                : '••••••'}
             </Text>
             <TouchableOpacity onPress={() => setShowBalance(!showBalance)}>
-              <Ionicons 
-                name={showBalance ? "eye-outline" : "eye-off-outline"} 
-                size={24} 
-                color="#6C7278" 
+              <Ionicons
+                name={showBalance ? "eye-outline" : "eye-off-outline"}
+                size={24}
+                color="#6C7278"
               />
             </TouchableOpacity>
           </View>
 
           {/* Currency Dropdown Selector */}
           <View className="relative">
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => setShowCurrencyPicker(!showCurrencyPicker)}
               className="flex-row items-center bg-white px-5 py-3 rounded-full shadow-sm border border-gray-100"
             >
-              <Image 
-                source={{ uri: `https://flagcdn.com/w80/${selectedCurrency.flag}.png` }} 
+              <Image
+                source={{ uri: `https://flagcdn.com/w80/${selectedCurrency.flag}.png` }}
                 className="w-6 h-4 rounded-sm mr-2"
               />
               <Text className="text-[#1F2C37] font-bold mr-2">{selectedCurrency.code}</Text>
@@ -71,7 +135,7 @@ export default function HomeScreen() {
             {showCurrencyPicker && (
               <View className="absolute top-14 left-0 right-0 bg-white rounded-3xl p-2 shadow-xl z-50 border border-gray-100 min-w-[120px]">
                 {CURRENCIES.map((currency) => (
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     key={currency.code}
                     onPress={() => {
                       setSelectedCurrency(currency);
@@ -79,8 +143,8 @@ export default function HomeScreen() {
                     }}
                     className={`flex-row items-center p-3 rounded-2xl ${selectedCurrency.code === currency.code ? 'bg-[#F0F1FF]' : ''}`}
                   >
-                    <Image 
-                      source={{ uri: `https://flagcdn.com/w80/${currency.flag}.png` }} 
+                    <Image
+                      source={{ uri: `https://flagcdn.com/w80/${currency.flag}.png` }}
                       className="w-5 h-3.5 rounded-sm mr-2"
                     />
                     <Text className={`font-bold ${selectedCurrency.code === currency.code ? 'text-[#5154F4]' : 'text-[#1F2C37]'}`}>
@@ -95,7 +159,7 @@ export default function HomeScreen() {
 
         {/* Action Buttons */}
         <View className="flex-row justify-between mt-12 bg-white p-6 rounded-[32px] shadow-sm">
-          <TouchableOpacity 
+          <TouchableOpacity
             className="items-center"
             onPress={() => router.push('/transfer')}
           >
@@ -104,18 +168,18 @@ export default function HomeScreen() {
             </View>
             <Text className="text-[#6C7278] font-bold">Transfer</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
-          className="items-center"
-                      onPress={() => router.push('/deposit-ngn')}
->
+
+          <TouchableOpacity
+            className="items-center"
+            onPress={() => router.push('/deposit-ngn')}
+          >
             <View className="w-14 h-14 bg-[#5154F4]/10 rounded-2xl items-center justify-center mb-2">
               <Ionicons name="download-outline" size={24} color="#5154F4" />
             </View>
             <Text className="text-[#6C7278] font-bold">Deposit</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             className="items-center"
             onPress={() => router.push('/request')}
           >
@@ -133,30 +197,30 @@ export default function HomeScreen() {
             <View className="flex-1">
               <View className="flex-row items-center mb-2">
                 <Text className="text-[#1F2C37] text-base font-bold">
-                  USD 1 
-                  <Image 
-                    source={{ uri: 'https://flagcdn.com/w80/us.png' }} 
+                  USD 1
+                  <Image
+                    source={{ uri: 'https://flagcdn.com/w80/us.png' }}
                     className="w-4 h-3 rounded-sm mx-1"
                   />
-                  <Text className="font-normal text-gray-400 mx-1">⇌</Text> 
+                  <Text className="font-normal text-gray-400 mx-1">⇌</Text>
                   NGN 1,400.00
-                  <Image 
-                    source={{ uri: 'https://flagcdn.com/w80/ng.png' }} 
+                  <Image
+                    source={{ uri: 'https://flagcdn.com/w80/ng.png' }}
                     className="w-4 h-3 rounded-sm mx-1"
                   />
                 </Text>
               </View>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => router.push('/exchange-rates')}
                 className="bg-[#5154F4] px-4 py-2 rounded-xl self-start"
               >
                 <Text className="text-white font-bold">View more</Text>
               </TouchableOpacity>
             </View>
-            <Image 
-              source={require('@/assets/images/Foreign Exchange on the International Market.png')} 
+            <Image
+              source={require('@/assets/images/Foreign Exchange on the International Market.png')}
               style={{ width: 100, height: 100 }}
-              // contentFit="contain"
+            // contentFit="contain"
             />
           </View>
         </View>
@@ -171,8 +235,8 @@ export default function HomeScreen() {
               { label: 'Rewards', icon: 'gift-outline', lib: 'Ionicons' },
               { label: 'More', icon: 'ellipsis-horizontal', lib: 'Ionicons' }
             ].map((service, index) => (
-              <TouchableOpacity 
-                key={index} 
+              <TouchableOpacity
+                key={index}
                 className="items-center"
                 onPress={() => {
                   if (service.label === 'Pay bills') router.push('/pay-bills');
@@ -201,42 +265,104 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          {TRANSACTIONS.map((item) => (
-            <View key={item.id} className="bg-white p-4 rounded-3xl flex-row items-center mb-3 shadow-sm border border-gray-50">
-              <View className={`w-12 h-12 ${item.status === 'Failed' ? 'bg-red-50' : 'bg-blue-50'} rounded-full items-center justify-center mr-4`}>
-                <Feather 
-                  name={item.type === 'send' ? "send" : "download"} 
-                  size={20} 
-                  color={item.status === 'Failed' ? '#EF4444' : '#5154F4'} 
-                />
-              </View>
-              <View className="flex-1">
-                <Text className="text-[#1F2C37] font-bold text-base mb-1" numberOfLines={1}>
-                  {item.title}
-                </Text>
-                <View className="flex-row items-center">
-                  <Image 
-                    source={{ uri: `https://flagcdn.com/w80/${item.flag}.png` }} 
-                    className="w-4 h-3 rounded-sm mr-2"
+          {isTransactionsLoading ? (
+            <ActivityIndicator color="#5154F4" className="my-8" />
+          ) : transactions.length === 0 ? (
+            <View className="bg-white p-8 rounded-3xl items-center justify-center border border-gray-100">
+              <Feather name="list" size={32} color="#9DA3B6" />
+              <Text className="text-[#9DA3B6] mt-2 font-bold">No transactions yet</Text>
+            </View>
+          ) : (
+            transactions.map((item: any) => (
+              <View key={item.id} className="bg-white p-4 rounded-3xl flex-row items-center mb-3 shadow-sm border border-gray-50">
+                <View className={`w-12 h-12 ${item.status === 'Failed' ? 'bg-red-50' : 'bg-blue-50'} rounded-full items-center justify-center mr-4`}>
+                  <Feather
+                    name={item.type === 'send' ? "send" : "download"}
+                    size={20}
+                    color={item.status === 'Failed' ? '#EF4444' : '#5154F4'}
                   />
-                  <Text className="text-[#9DA3B6] text-xs">{item.date}</Text>
                 </View>
-              </View>
-              <View className="items-end">
-                <Text className={`text-[#1F2C37] font-bold text-base ${item.type === 'send' ? '' : 'text-green-600'}`}>
-                  {item.type === 'send' ? '-' : '+'}{item.amount}
-                </Text>
-                {/* ... existing badge ... */}
-                <View className={`${item.status === 'Failed' ? 'bg-red-50' : 'bg-green-50'} px-2 py-0.5 rounded-md mt-1`}>
-                  <Text className={`${item.status === 'Failed' ? 'text-red-500' : 'text-green-500'} text-[10px] font-bold`}>
-                    {item.status}
+                <View className="flex-1">
+                  <Text className="text-[#1F2C37] font-bold text-base mb-1" numberOfLines={1}>
+                    {item.title || item.description || 'Transaction'}
                   </Text>
+                  <View className="flex-row items-center">
+                    <Image
+                      source={{ uri: `https://flagcdn.com/w80/${item.flag || 'us'}.png` }}
+                      className="w-4 h-3 rounded-sm mr-2"
+                    />
+                    <Text className="text-[#9DA3B6] text-xs">{item.date || item.createdAt}</Text>
+                  </View>
+                </View>
+                <View className="items-end">
+                  <Text className={`text-[#1F2C37] font-bold text-base ${item.type === 'send' ? '' : 'text-green-600'}`}>
+                    {item.type === 'send' ? '-' : '+'}{item.amount}
+                  </Text>
+                  <View className={`${item.status === 'Failed' ? 'bg-red-50' : 'bg-green-50'} px-2 py-0.5 rounded-md mt-1`}>
+                    <Text className={`${item.status === 'Failed' ? 'text-red-500' : 'text-green-500'} text-[10px] font-bold`}>
+                      {item.status}
+                    </Text>
+                  </View>
                 </View>
               </View>
+            ))
+          )}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+/**
+ * Industrial-Grade Home Hub Skeleton
+ * Provides a premium, synchronized transition during the initial financial payload fetch.
+ */
+function HomeSkeleton() {
+  return (
+    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+      <View className="px-5">
+        {/* Header Skeleton */}
+        <View className="flex-row items-center justify-between mt-4">
+          <View className="flex-row items-center">
+            <View className="w-12 h-12 rounded-full bg-white/60 mr-3 animate-pulse" />
+            <View className="w-32 h-6 bg-white/60 rounded-xl animate-pulse" />
+          </View>
+          <View className="flex-row">
+            <View className="w-10 h-10 rounded-full bg-white/60 mr-2 animate-pulse" />
+            <View className="w-10 h-10 rounded-full bg-white/60 animate-pulse" />
+          </View>
+        </View>
+
+        {/* Balance Area Skeleton */}
+        <View className="mt-10 items-center">
+          <View className="w-40 h-4 bg-white/60 rounded-md mb-4 animate-pulse" />
+          <View className="w-64 h-12 bg-white/60 rounded-2xl mb-6 animate-pulse" />
+          <View className="w-24 h-10 bg-white/60 rounded-full animate-pulse" />
+        </View>
+
+        {/* Action Hub Skeleton */}
+        <View className="flex-row justify-between bg-white/40 p-6 rounded-[32px] mt-10 border border-white/40">
+          {[1, 2, 3].map((_, i) => (
+            <View key={i} className="items-center">
+              <View className="w-14 h-14 bg-white/60 rounded-2xl mb-2 animate-pulse" />
+              <View className="w-12 h-3 bg-white/60 rounded animate-pulse" />
             </View>
           ))}
         </View>
-      </ScrollView>
+
+        {/* Quick Services Skeleton */}
+        <View className="mt-10">
+          <View className="w-32 h-6 bg-white/60 rounded-lg mb-4 animate-pulse" />
+          <View className="flex-row justify-between">
+            {[1, 2, 3, 4].map((_, i) => (
+              <View key={i} className="items-center">
+                <View className="w-16 h-16 bg-white/60 rounded-full mb-2 animate-pulse" />
+                <View className="w-12 h-3 bg-white/60 rounded animate-pulse" />
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -247,35 +373,4 @@ const CURRENCIES = [
   { code: 'NGN', symbol: '₦', rate: 1400.00, flag: 'ng' },
   { code: 'GBP', symbol: '£', rate: 0.79, flag: 'gb' },
   { code: 'EUR', symbol: '€', rate: 0.93, flag: 'eu' },
-];
-
-// Mock Transaction Data
-const TRANSACTIONS = [
-  {
-    id: '1',
-    title: 'C2C Transfer to Tegadesigns',
-    date: 'Apr 03, 2025 10:05 PM',
-    amount: '$100.00',
-    type: 'send',
-    status: 'Failed',
-    flag: 'us'
-  },
-  {
-    id: '2',
-    title: 'Deposit from Bank Account',
-    date: 'Apr 02, 2025 08:30 AM',
-    amount: '₦250,000.00',
-    type: 'receive',
-    status: 'Success',
-    flag: 'ng'
-  },
-  {
-    id: '3',
-    title: 'Swap USD to GBP',
-    date: 'Mar 31, 2025 02:15 PM',
-    amount: '£850.00',
-    type: 'receive',
-    status: 'Success',
-    flag: 'gb'
-  },
 ];

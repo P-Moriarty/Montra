@@ -10,4 +10,8 @@ export const ENDPOINTS = {
     RESET_PASSWORD: '/auth/reset-password',
     VERIFY_ACCOUNT: '/auth/verify-account',
   },
+  PROFILE: '/profile/',
+  PROFILE_UPDATE: '/profile/update',
+  TRANSACTIONS: '/transactions',
+  UPLOAD_AVATAR: '/uploads/user',
 };

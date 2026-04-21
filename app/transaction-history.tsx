@@ -1,50 +1,61 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
+import { useApiQuery } from '@/hooks/api/use-api';
+import { TransactionService } from '@/services/modules/transaction.service';
 import { useRouter } from 'expo-router';
-
-// Sample transactions with diverse types
-const ALL_TRANSACTIONS = [
-  { id: '1', title: 'Transfer to Emezue chinonso', date: 'Apr 16, 2025', time: '10:05 PM', amount: '₦5,000.00', type: 'transfer', status: 'Failed', category: 'send' },
-  { id: '2', title: 'Swap NGN to USD', date: 'Apr 16, 2025', time: '03:00 PM', amount: '$200.00', type: 'swap', status: 'Completed', category: 'receive' },
-  { id: '3', title: 'Payment from Trefix company', date: 'Apr 15, 2025', time: '11:00 AM', amount: '$400.00', type: 'deposit', status: 'Completed', category: 'receive' },
-  { id: '4', title: 'Request from Chinonso', date: 'Apr 15, 2025', time: '09:00 AM', amount: '₦10,000.00', type: 'request', status: 'Pending', category: 'receive' },
-  { id: '5', title: 'Transfer to Tegadesigns', date: 'Apr 12, 2025', time: '10:05 PM', amount: '$100.00', type: 'transfer', status: 'Failed', category: 'send' },
-  { id: '6', title: 'Swap USD to NGN', date: 'Mar 30, 2025', time: '03:00 PM', amount: '₦14,000.00', type: 'swap', status: 'Completed', category: 'receive' },
-];
 
 export default function TransactionHistoryScreen() {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [showFilter, setShowFilter] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [activeType, setActiveType] = useState('All');
+  const [activeStatus, setActiveStatus] = useState('All');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [activeCurrency, setActiveCurrency] = useState('All');
 
-  const filters = ['All', 'Transfer', 'Swap', 'Deposit', 'Request'];
+  // Industrial-grade historical data feed integration
+  const { data: historyData, isLoading } = useApiQuery(
+    ['transactions', activeType, activeStatus, activeCurrency, search],
+    () => TransactionService.getTransactions({
+      type: activeType === 'All' ? undefined : activeType.toLowerCase(),
+      status: activeStatus === 'All' ? undefined : activeStatus.toLowerCase(),
+      currency: activeCurrency === 'All' ? undefined : activeCurrency,
+      limit: 50
+    })
+  );
 
-  // Grouping logic
+  const transactions = useMemo(() => 
+    historyData?.items || historyData?.data || historyData?.transactions || [],
+    [historyData]
+  );
+
+  const types = ['All', 'Transfer', 'Swap', 'Deposit', 'Request'];
+  const statuses = ['All', 'Completed', 'Pending', 'Failed'];
+
+  // High-fidelity grouping logic for real-time data
   const groupedTransactions = useMemo(() => {
-    const filtered = ALL_TRANSACTIONS.filter(t => {
-      const matchesSearch = t.title.toLowerCase().includes(search.toLowerCase());
-      const matchesFilter = activeFilter === 'All' || t.type.toLowerCase() === activeFilter.toLowerCase();
-      return matchesSearch && matchesFilter;
-    });
+    const filtered = transactions.filter((t: any) => 
+      (t.title || t.description || '').toLowerCase().includes(search.toLowerCase())
+    );
 
-    const groups: { [key: string]: typeof ALL_TRANSACTIONS } = {};
-    const today = 'Apr 16, 2025'; // Mocked "today"
-    const yesterday = 'Apr 15, 2025';
+    const groups: { [key: string]: any[] } = {};
+    const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-    filtered.forEach(t => {
-      let label = t.date;
-      if (t.date === today) label = 'Today';
-      else if (t.date === yesterday) label = 'Yesterday';
+    filtered.forEach((t: any) => {
+      let label = t.date || t.createdAt;
+      // Normalizing date label if possible
+      if (label === today) label = 'Today';
+      else if (label === yesterday) label = 'Yesterday';
       
       if (!groups[label]) groups[label] = [];
       groups[label].push(t);
     });
 
     return groups;
-  }, [search, activeFilter]);
+  }, [transactions, search]);
 
   return (
     <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
@@ -75,8 +86,8 @@ export default function TransactionHistoryScreen() {
           onPress={() => setShowFilter(true)}
           className="w-14 h-14 bg-white rounded-2xl items-center justify-center ml-3 border border-gray-100 shadow-sm"
         >
-          <Feather name="sliders" size={20} color={activeFilter !== 'All' ? '#5154F4' : '#1F2C37'} />
-          {activeFilter !== 'All' && <View className="absolute top-3 right-3 w-2 h-2 bg-[#5154F4] rounded-full" />}
+          <Feather name="sliders" size={20} color={(activeType !== 'All' || activeStatus !== 'All') ? '#5154F4' : '#1F2C37'} />
+          {(activeType !== 'All' || activeStatus !== 'All') && <View className="absolute top-3 right-3 w-2 h-2 bg-[#5154F4] rounded-full" />}
         </TouchableOpacity>
       </View>
 
@@ -85,42 +96,51 @@ export default function TransactionHistoryScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        {Object.keys(groupedTransactions).map((date) => (
-          <View key={date} className="mb-6">
-            <Text className="text-[#6C7278] text-sm font-bold mb-4 uppercase tracking-wider">{date}</Text>
-            {groupedTransactions[date].map((item) => (
-              <TouchableOpacity 
-                key={item.id} 
-                onPress={() => router.push(`/transaction/${item.id}`)}
-                className="bg-white p-4 rounded-[32px] flex-row items-center mb-3 border border-gray-50 shadow-sm"
-              >
-                <View className={`w-12 h-12 ${item.category === 'send' ? 'bg-indigo-50' : 'bg-blue-50'} rounded-full items-center justify-center mr-4`}>
-                  <Feather 
-                    name={item.category === 'send' ? "send" : "download"} 
-                    size={20} 
-                    color="#5154F4" 
-                  />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-[#1F2C37] font-bold text-sm mb-1" numberOfLines={1}>
-                    {item.title}
-                  </Text>
-                  <Text className="text-[#9DA3B6] text-[10px]">{item.time}</Text>
-                </View>
-                <View className="items-end">
-                  <Text className={`text-[#1F2C37] font-bold text-sm ${item.category === 'send' ? '' : 'text-green-600'}`}>
-                    {item.category === 'send' ? '-' : '+'}{item.amount}
-                  </Text>
-                  <View className={`${item.status === 'Failed' ? 'bg-red-50' : item.status === 'Pending' ? 'bg-amber-50' : 'bg-green-50'} px-2 py-0.5 rounded-md mt-1 border ${item.status === 'Failed' ? 'border-red-100' : item.status === 'Pending' ? 'border-amber-100' : 'border-green-100'}`}>
-                    <Text className={`${item.status === 'Failed' ? 'text-red-500' : item.status === 'Pending' ? 'text-amber-500' : 'text-green-500'} text-[10px] font-bold`}>
-                      {item.status}
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
+        {isLoading ? (
+          <ActivityIndicator color="#5154F4" className="mt-10" />
+        ) : Object.keys(groupedTransactions).length === 0 ? (
+          <View className="bg-white p-10 rounded-[32px] items-center justify-center mt-6 border border-gray-100 italic">
+            <Feather name="list" size={40} color="#9DA3B6" />
+            <Text className="text-[#9DA3B6] mt-4 font-bold text-center">No transactions found matching your criteria</Text>
           </View>
-        ))}
+        ) : (
+          Object.keys(groupedTransactions).map((date) => (
+            <View key={date} className="mb-6">
+              <Text className="text-[#6C7278] text-sm font-bold mb-4 uppercase tracking-wider">{date}</Text>
+              {groupedTransactions[date].map((item) => (
+                <TouchableOpacity 
+                  key={item.id} 
+                  onPress={() => router.push(`/transaction/${item.id}` as any)}
+                  className="bg-white p-4 rounded-[32px] flex-row items-center mb-3 border border-gray-50 shadow-sm"
+                >
+                  <View className={`w-12 h-12 ${item.type === 'send' ? 'bg-indigo-50' : 'bg-blue-50'} rounded-full items-center justify-center mr-4`}>
+                    <Feather 
+                      name={item.type === 'send' ? "send" : "download"} 
+                      size={20} 
+                      color="#5154F4" 
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-[#1F2C37] font-bold text-sm mb-1" numberOfLines={1}>
+                      {item.title || item.description || 'Transaction'}
+                    </Text>
+                    <Text className="text-[#9DA3B6] text-[10px]">{item.time || '...'}</Text>
+                  </View>
+                  <View className="items-end">
+                    <Text className={`text-[#1F2C37] font-bold text-sm ${item.type === 'send' ? '' : 'text-green-600'}`}>
+                      {item.type === 'send' ? '-' : '+'}{item.amount}
+                    </Text>
+                    <View className={`${item.status === 'Failed' ? 'bg-red-50' : item.status === 'Pending' ? 'bg-amber-50' : 'bg-green-50'} px-2 py-0.5 rounded-md mt-1 border ${item.status === 'Failed' ? 'border-red-100' : item.status === 'Pending' ? 'border-amber-100' : 'border-green-100'}`}>
+                      <Text className={`${item.status === 'Failed' ? 'text-red-500' : item.status === 'Pending' ? 'text-amber-500' : 'text-green-500'} text-[10px] font-bold`}>
+                        {item.status}
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ))
+        )}
       </ScrollView>
 
       {/* Filter Modal */}
@@ -135,14 +155,27 @@ export default function TransactionHistoryScreen() {
             </View>
 
             <Text className="text-[#1F2C37] font-bold text-lg mb-4">Transaction Type</Text>
-            <View className="flex-row flex-wrap gap-2">
-              {filters.map((f) => (
+            <View className="flex-row flex-wrap gap-2 mb-8">
+              {types.map((f) => (
                 <TouchableOpacity 
                   key={f}
-                  onPress={() => setActiveFilter(f)}
-                  className={`px-6 py-3 rounded-2xl border ${activeFilter === f ? 'bg-[#5154F4] border-[#5154F4]' : 'bg-white border-gray-100'}`}
+                  onPress={() => setActiveType(f)}
+                  className={`px-6 py-3 rounded-2xl border ${activeType === f ? 'bg-[#5154F4] border-[#5154F4]' : 'bg-white border-gray-100'}`}
                 >
-                  <Text className={`font-bold ${activeFilter === f ? 'text-white' : 'text-[#6C7278]'}`}>{f}</Text>
+                  <Text className={`font-bold ${activeType === f ? 'text-white' : 'text-[#6C7278]'}`}>{f}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text className="text-[#1F2C37] font-bold text-lg mb-4">Transaction Status</Text>
+            <View className="flex-row flex-wrap gap-2">
+              {statuses.map((s) => (
+                <TouchableOpacity 
+                  key={s}
+                  onPress={() => setActiveStatus(s)}
+                  className={`px-6 py-3 rounded-2xl border ${activeStatus === s ? 'bg-[#5154F4] border-[#5154F4]' : 'bg-white border-gray-100'}`}
+                >
+                  <Text className={`font-bold ${activeStatus === s ? 'text-white' : 'text-[#6C7278]'}`}>{s}</Text>
                 </TouchableOpacity>
               ))}
             </View>
