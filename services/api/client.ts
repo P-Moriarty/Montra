@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { Config } from '@/constants/Config';
-import { router } from 'expo-router';
+import { authSwitchboard } from './auth-switchboard';
 
 /**
  * Industrial-Grade API Client
@@ -52,9 +52,8 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       
-      // Industrial-grade cleanup: clear tokens and redirect to login
-      await SecureStore.deleteItemAsync(Config.auth.tokenKey);
-      router.replace('/login');
+      console.log('[API Client] Unauthorized status detected. Signaling session expiration...');
+      authSwitchboard.emit('session:expired');
       
       return Promise.reject(new Error('Session expired. Please login again.'));
     }

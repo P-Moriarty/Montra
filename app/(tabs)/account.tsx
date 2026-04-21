@@ -1,14 +1,19 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Share } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter, Href } from 'expo-router';
+import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
+import { useApiQuery } from '@/hooks/api/use-api';
+import { ProfileService } from '@/services/modules/profile.service';
 import { useAuth } from '@/context/AuthContext';
 
 export default function AccountScreen() {
   const router = useRouter();
   const { signOut } = useAuth();
+
+  // Industrial-grade profile feed integration
+  const { data: user, isLoading: isProfileLoading } = useApiQuery(['profile'], ProfileService.getProfile);
 
   const handleCopy = async () => {
     await Clipboard.setStringAsync('3749266383');
@@ -38,7 +43,12 @@ export default function AccountScreen() {
       items: [
         { label: 'My Profile', icon: 'person-outline', route: '/my-profile' },
         { label: 'Transaction History', icon: 'time-outline', route: '/transaction-history' },
-        { label: 'Verification Status', icon: 'shield-checkmark-outline', badge: 'Tier 1', route: '/verification-status' },
+        { 
+          label: 'Verification Status', 
+          icon: 'shield-checkmark-outline', 
+          badge: isProfileLoading ? '...' : (user?.is_verified ? 'Verified' : 'Unverified'), 
+          route: '/verification-status' 
+        },
       ]
     },
     {
