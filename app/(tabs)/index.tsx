@@ -3,6 +3,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useApiQuery } from '@/hooks/api/use-api';
 import { ProfileService } from '@/services/modules/profile.service';
 import { TransactionService } from '@/services/modules/transaction.service';
+import { WalletService } from '@/services/modules/wallet.service';
 import { Feather, FontAwesome6, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
@@ -10,48 +11,58 @@ import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// const EMPTY_ARRAY: any[] = [];
-
 export default function HomeScreen() {
   const [showBalance, setShowBalance] = useState(true);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState(CURRENCIES[0]);
-  
-  const { userToken } = useAuth();
 
-  // Industrial-grade profile feed integration
+  const { userToken, isLoading: isAuthLoading } = useAuth();
+
+  const canFetchProtectedData = !isAuthLoading && !!userToken;
+
   const { data: user, isLoading: isProfileLoading } = useApiQuery(['profile'], ProfileService.getProfile, {
-    enabled: !!userToken,
+    enabled: canFetchProtectedData,
   });
 
-  // High-fidelity transaction overview integration
   const { data: transactionsData, isLoading: isTransactionsLoading } = useApiQuery(
     ['transactions', 'recent'],
     () => TransactionService.getRecentTransactions(3),
-    { enabled: !!userToken }
+    { enabled: canFetchProtectedData }
   );
 
   const transactions = transactionsData?.data || transactionsData?.transactions || [];
 
-  // Derived high-fidelity current wallet state (Mock Integrated Balancing)
+  const {
+    data: walletData,
+    isLoading: isWalletLoading,
+    error: walletError,
+  } = useApiQuery(['wallet'], WalletService.getWalletBalance, {
+    enabled: canFetchProtectedData,
+  });
+
+  const wallets = walletData?.wallets ?? [];
+
   const currentWallet = useMemo(() => {
-    const mockBalances: Record<string, number> = {
-      'USD': 1540.50,
-      'NGN': 1250000.00,
-      'GBP': 1200.00,
-      'EUR': 1400.00,
+    const liveWallet = wallets.find((wallet: any) => wallet?.currency === selectedCurrency.code);
+
+    if (liveWallet) {
+      return liveWallet;
+    }
+
+    return {
+      id: 'fallback',
+      currency: selectedCurrency.code,
+      balance: 0,
     };
-    return { balance: mockBalances[selectedCurrency.code] || 0, currency: selectedCurrency.code, id: 'mock' };
-  }, [selectedCurrency]);
+  }, [wallets, selectedCurrency]);
+console.log('walletData:', JSON.stringify(walletData, null, 2));
 
   const imageUrl = useMemo(() => {
     const avatar = user?.profilePicture;
 
     if (!avatar) return 'https://i.pravatar.cc/150';
-
     if (avatar.startsWith('http')) return avatar;
 
-    // 🔥 REMOVE /api/v1 completely
     const baseUrl = Config.api.baseUrl
       .replace('/api/v1', '')
       .replace(/\/$/, '');
@@ -61,8 +72,8 @@ export default function HomeScreen() {
     return `${baseUrl}${cleanAvatar}?t=${Date.now()}`;
   }, [user?.profilePicture]);
 
-  // Unified high-fidelity loading gate
-  const isInitialDashboardLoading = isProfileLoading && !user;
+  const isInitialDashboardLoading =
+    isAuthLoading || ((isProfileLoading || isWalletLoading) && (!user || !walletData));
 
   if (isInitialDashboardLoading) {
     return <HomeSkeleton />;
@@ -101,22 +112,33 @@ export default function HomeScreen() {
 
         {/* Multi-Currency Balance Switcher */}
         <View className="mt-10 items-center">
-          <Text className="text-[#6C7278] text-sm mb-4 font-semibold uppercase tracking-widest">Available balance</Text>
+          <Text className="text-[#6C7278] text-sm mb-4 font-semibold uppercase tracking-widest">
+            Available balance
+          </Text>
 
-          <View className="flex-row items-center mb-6">
-            <Text className="text-[#1F2C37] text-5xl font-extrabold mr-3">
-              {showBalance
-                ? `${selectedCurrency.symbol}${currentWallet.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                : '••••••'}
-            </Text>
-            <TouchableOpacity onPress={() => setShowBalance(!showBalance)}>
-              <Ionicons
-                name={showBalance ? "eye-outline" : "eye-off-outline"}
-                size={24}
-                color="#6C7278"
-              />
-            </TouchableOpacity>
-          </View>
+          {isWalletLoading ? (
+            <ActivityIndicator color="#5154F4" className="mb-6" />
+          ) : walletError ? (
+            <Text className="text-red-500 text-sm mb-6">Unable to load wallet balance</Text>
+          ) : (
+            <View className="flex-row items-center mb-6">
+              <Text className="text-[#1F2C37] text-5xl font-extrabold mr-3">
+                {showBalance
+                  ? `${selectedCurrency.symbol}${Number(currentWallet.balance ?? 0).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}`
+                  : '••••••'}
+              </Text>
+              <TouchableOpacity onPress={() => setShowBalance(!showBalance)}>
+                <Ionicons
+                  name={showBalance ? 'eye-outline' : 'eye-off-outline'}
+                  size={24}
+                  color="#6C7278"
+                />
+              </TouchableOpacity>
+            </View>
+          )}
 
           {/* Currency Dropdown Selector */}
           <View className="relative">
@@ -129,7 +151,11 @@ export default function HomeScreen() {
                 className="w-6 h-4 rounded-sm mr-2"
               />
               <Text className="text-[#1F2C37] font-bold mr-2">{selectedCurrency.code}</Text>
-              <Feather name={showCurrencyPicker ? "chevron-up" : "chevron-down"} size={16} color="#1F2C37" />
+              <Feather
+                name={showCurrencyPicker ? 'chevron-up' : 'chevron-down'}
+                size={16}
+                color="#1F2C37"
+              />
             </TouchableOpacity>
 
             {showCurrencyPicker && (
@@ -220,7 +246,6 @@ export default function HomeScreen() {
             <Image
               source={require('@/assets/images/Foreign Exchange on the International Market.png')}
               style={{ width: 100, height: 100 }}
-            // contentFit="contain"
             />
           </View>
         </View>
@@ -277,7 +302,7 @@ export default function HomeScreen() {
               <View key={item.id} className="bg-white p-4 rounded-3xl flex-row items-center mb-3 shadow-sm border border-gray-50">
                 <View className={`w-12 h-12 ${item.status === 'Failed' ? 'bg-red-50' : 'bg-blue-50'} rounded-full items-center justify-center mr-4`}>
                   <Feather
-                    name={item.type === 'send' ? "send" : "download"}
+                    name={item.type === 'send' ? 'send' : 'download'}
                     size={20}
                     color={item.status === 'Failed' ? '#EF4444' : '#5154F4'}
                   />
@@ -313,15 +338,10 @@ export default function HomeScreen() {
   );
 }
 
-/**
- * Industrial-Grade Home Hub Skeleton
- * Provides a premium, synchronized transition during the initial financial payload fetch.
- */
 function HomeSkeleton() {
   return (
     <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
       <View className="px-5">
-        {/* Header Skeleton */}
         <View className="flex-row items-center justify-between mt-4">
           <View className="flex-row items-center">
             <View className="w-12 h-12 rounded-full bg-white/60 mr-3 animate-pulse" />
@@ -333,14 +353,12 @@ function HomeSkeleton() {
           </View>
         </View>
 
-        {/* Balance Area Skeleton */}
         <View className="mt-10 items-center">
           <View className="w-40 h-4 bg-white/60 rounded-md mb-4 animate-pulse" />
           <View className="w-64 h-12 bg-white/60 rounded-2xl mb-6 animate-pulse" />
           <View className="w-24 h-10 bg-white/60 rounded-full animate-pulse" />
         </View>
 
-        {/* Action Hub Skeleton */}
         <View className="flex-row justify-between bg-white/40 p-6 rounded-[32px] mt-10 border border-white/40">
           {[1, 2, 3].map((_, i) => (
             <View key={i} className="items-center">
@@ -350,7 +368,6 @@ function HomeSkeleton() {
           ))}
         </View>
 
-        {/* Quick Services Skeleton */}
         <View className="mt-10">
           <View className="w-32 h-6 bg-white/60 rounded-lg mb-4 animate-pulse" />
           <View className="flex-row justify-between">
@@ -367,7 +384,6 @@ function HomeSkeleton() {
   );
 }
 
-// Mock Portfolio Data (Rates relative to USD 1.00)
 const CURRENCIES = [
   { code: 'USD', symbol: '$', rate: 1.00, flag: 'us' },
   { code: 'NGN', symbol: '₦', rate: 1400.00, flag: 'ng' },

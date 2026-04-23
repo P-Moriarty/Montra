@@ -14,4 +14,5 @@ export const ENDPOINTS = {
   PROFILE_UPDATE: '/profile/update',
   TRANSACTIONS: '/transactions',
   UPLOAD_AVATAR: '/uploads/user',
+  WALLET_BALANCE: '/wallet/',
 };
