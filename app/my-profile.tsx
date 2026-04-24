@@ -1,12 +1,12 @@
-import React, { useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { Image } from 'expo-image';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, Feather } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Config } from '@/constants/Config';
 import { useApiQuery } from '@/hooks/api/use-api';
 import { ProfileService } from '@/services/modules/profile.service';
-import { Config } from '@/constants/Config';
+import { Feather, Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+import React, { useMemo } from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function MyProfileScreen() {
   const router = useRouter();

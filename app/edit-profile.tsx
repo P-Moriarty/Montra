@@ -105,8 +105,14 @@ export default function EditProfileScreen() {
   };
 
   const updateMutation = useApiMutation(ProfileService.updateProfile, {
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    onSuccess: (data, variables) => {
+      // Optimistically update the cache so the previous screen sees the changes immediately
+      queryClient.setQueryData(['profile'], (oldData: any) => {
+        return { ...oldData, ...variables };
+      });
+      // Force a background refetch to ensure it's synced with the server
+      queryClient.refetchQueries({ queryKey: ['profile'] });
+      
       setToast({ visible: true, message: 'Profile updated successfully!', type: 'success' });
       setTimeout(() => {
         router.back();

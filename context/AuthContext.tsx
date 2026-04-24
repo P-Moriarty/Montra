@@ -55,9 +55,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (token: string) => {
     console.log('[Auth Context] signIn initiated with token length:', token?.length);
     try {
-      // Set state first for immediate UI responsiveness
-      setUserToken(token);
+      // Anchor the token in secure storage FIRST to prevent race conditions
       await SecureStore.setItemAsync(Config.auth.tokenKey, token);
+      // Then update UI state to trigger the dashboard reveal
+      setUserToken(token);
       console.log('[Auth Context] signIn anchoring completed successfully.');
     } catch (e) {
       console.error('[Auth Context] signIn anchoring failed:', e);
