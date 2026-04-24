@@ -1,6 +1,7 @@
 import { Config } from '@/constants/Config';
 import { useAuth } from '@/context/AuthContext';
 import { useApiQuery } from '@/hooks/api/use-api';
+import { NotificationService } from '@/services/modules/notification.service';
 import { ProfileService } from '@/services/modules/profile.service';
 import { TransactionService } from '@/services/modules/transaction.service';
 import { WalletService } from '@/services/modules/wallet.service';
@@ -40,9 +41,18 @@ export default function HomeScreen() {
     enabled: canFetchProtectedData,
   });
 
-  const wallets = walletData?.wallets ?? [];
+
+  const { data: notificationsData } = useApiQuery(
+    ['notifications'],
+    () => NotificationService.getNotifications({ page: 1, limit: 10 }),
+    { enabled: canFetchProtectedData }
+  );
+
+  const notifications = notificationsData?.data || notificationsData?.notifications || [];
+  const hasUnreadNotifications = notifications.length > 0;
 
   const currentWallet = useMemo(() => {
+    const wallets = walletData?.wallets ?? [];
     const liveWallet = wallets.find((wallet: any) => wallet?.currency === selectedCurrency.code);
 
     if (liveWallet) {
@@ -54,8 +64,8 @@ export default function HomeScreen() {
       currency: selectedCurrency.code,
       balance: 0,
     };
-  }, [wallets, selectedCurrency]);
-console.log('walletData:', JSON.stringify(walletData, null, 2));
+  }, [walletData?.wallets, selectedCurrency]);
+  console.log('walletData:', JSON.stringify(walletData, null, 2));
 
   const imageUrl = useMemo(() => {
     const avatar = user?.profilePicture;
@@ -104,8 +114,14 @@ console.log('walletData:', JSON.stringify(walletData, null, 2));
             <TouchableOpacity className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm mr-2">
               <Feather name="headphones" size={20} color="#1F2C37" />
             </TouchableOpacity>
-            <TouchableOpacity className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm">
+            <TouchableOpacity
+              onPress={() => router.push('/notifications' as any)}
+              className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm relative"
+            >
               <Ionicons name="notifications-outline" size={20} color="#1F2C37" />
+              {hasUnreadNotifications && (
+                <View className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white" />
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -125,9 +141,9 @@ console.log('walletData:', JSON.stringify(walletData, null, 2));
               <Text className="text-[#1F2C37] text-5xl font-extrabold mr-3">
                 {showBalance
                   ? `${selectedCurrency.symbol}${Number(currentWallet.balance ?? 0).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}`
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}`
                   : '••••••'}
               </Text>
               <TouchableOpacity onPress={() => setShowBalance(!showBalance)}>
