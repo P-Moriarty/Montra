@@ -21,4 +21,9 @@ export const ENDPOINTS = {
   TRANSACTIONS: '/transactions',
   UPLOAD_AVATAR: '/uploads/user',
   WALLET_BALANCE: '/wallet/',
+  SWAPS: {
+    SWAPS: '/swaps',
+    SWAP_RATES: '/swaps/rates',
+  },
+  FIAT_ACCOUNTS: '/fiat-accounts',
 };

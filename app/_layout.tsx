@@ -10,6 +10,8 @@ import '@/global.css';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { WalletProvider } from '@/context/WalletContext';
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,7 +53,7 @@ function RootLayoutNav() {
       console.log('[Auth Hub] Session Anchored. Launching Dashboard via absolute path...');
       router.replace('/(tabs)' as any);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userToken, isLoading, segments, navigationState?.key]);
 
   return (
@@ -67,13 +69,16 @@ function RootLayoutNav() {
   );
 }
 
+
 export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <GluestackUIProvider mode="dark">
-          <RootLayoutNav />
-        </GluestackUIProvider>
+        <WalletProvider>
+          <GluestackUIProvider mode="dark">
+            <RootLayoutNav />
+          </GluestackUIProvider>
+        </WalletProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
