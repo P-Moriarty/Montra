@@ -10,10 +10,20 @@ export const ENDPOINTS = {
     RESET_PASSWORD: '/auth/reset-password',
     VERIFY_ACCOUNT: '/auth/verify-account',
   },
-  NOTIFICATIONS: '/notification/',
+  NOTIFICATIONS: {
+    GET_ALL: '/notification/',
+    READ_ALL: '/notification/read-all',
+    UNREAD: '/notification/unread',
+    MARK_READ: (id: string) => `/notification/${id}/read`,
+  },
   PROFILE: '/profile/',
   PROFILE_UPDATE: '/profile/update',
   TRANSACTIONS: '/transactions',
   UPLOAD_AVATAR: '/uploads/user',
   WALLET_BALANCE: '/wallet/',
+  SWAPS: {
+    SWAPS: '/swaps',
+    SWAP_RATES: '/swaps/rates',
+  },
+  FIAT_ACCOUNTS: '/fiat-accounts',
 };

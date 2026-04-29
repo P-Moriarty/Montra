@@ -11,11 +11,13 @@ import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useWallet } from '@/context/WalletContext';
 
 export default function HomeScreen() {
   const [showBalance, setShowBalance] = useState(true);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState(CURRENCIES[0]);
+  const { selectedCurrencyCode, setSelectedCurrencyCode } = useWallet();
+  const [selectedCurrency, setSelectedCurrency] = useState<any>(null);
 
   const { userToken, isLoading: isAuthLoading } = useAuth();
 
@@ -51,21 +53,39 @@ export default function HomeScreen() {
   const notifications = notificationsData?.data || notificationsData?.notifications || [];
   const hasUnreadNotifications = notifications.length > 0;
 
-  const currentWallet = useMemo(() => {
+  const availableCurrencies = useMemo(() => {
     const wallets = walletData?.wallets ?? [];
-    const liveWallet = wallets.find((wallet: any) => wallet?.currency === selectedCurrency.code);
+    return wallets.map((wallet: any) => {
+      const meta = CURRENCY_METADATA[wallet.currency] || {
+        symbol: wallet.currency,
+        flag: 'us',
+        name: wallet.currency,
+      };
+      return {
+        ...wallet,
+        code: wallet.currency,
+        ...meta,
+      };
+    });
+  }, [walletData?.wallets]);
 
-    if (liveWallet) {
-      return liveWallet;
+  // Sync selection with available wallets
+  React.useEffect(() => {
+    if (availableCurrencies.length > 0) {
+      // Priority: 1. Current selectedCurrencyCode from context, 2. First available wallet
+      const targetCode = selectedCurrencyCode || availableCurrencies[0].code;
+      const found = availableCurrencies.find(c => c.code === targetCode) || availableCurrencies[0];
+      
+      if (!selectedCurrency || selectedCurrency.code !== found.code || selectedCurrency.balance !== found.balance) {
+        setSelectedCurrency(found);
+        if (selectedCurrencyCode !== found.code) {
+          setSelectedCurrencyCode(found.code);
+        }
+      }
     }
+  }, [availableCurrencies, selectedCurrencyCode, selectedCurrency, setSelectedCurrencyCode]);
 
-    return {
-      id: 'fallback',
-      currency: selectedCurrency.code,
-      balance: 0,
-    };
-  }, [walletData?.wallets, selectedCurrency]);
-  console.log('walletData:', JSON.stringify(walletData, null, 2));
+  const currentWallet = selectedCurrency || { balance: 0, symbol: '', code: '', flag: 'us' };
 
   const imageUrl = useMemo(() => {
     const avatar = user?.profilePicture;
@@ -140,7 +160,7 @@ export default function HomeScreen() {
             <View className="flex-row items-center mb-6">
               <Text className="text-[#1F2C37] text-5xl font-extrabold mr-3">
                 {showBalance
-                  ? `${selectedCurrency.symbol}${Number(currentWallet.balance ?? 0).toLocaleString(undefined, {
+                  ? `${currentWallet.symbol}${Number(currentWallet.balance ?? 0).toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}`
@@ -163,10 +183,10 @@ export default function HomeScreen() {
               className="flex-row items-center bg-white px-5 py-3 rounded-full shadow-sm border border-gray-100"
             >
               <Image
-                source={{ uri: `https://flagcdn.com/w80/${selectedCurrency.flag}.png` }}
+                source={{ uri: `https://flagcdn.com/w80/${currentWallet.flag}.png` }}
                 className="w-6 h-4 rounded-sm mr-2"
               />
-              <Text className="text-[#1F2C37] font-bold mr-2">{selectedCurrency.code}</Text>
+              <Text className="text-[#1F2C37] font-bold mr-2">{currentWallet.code}</Text>
               <Feather
                 name={showCurrencyPicker ? 'chevron-up' : 'chevron-down'}
                 size={16}
@@ -174,13 +194,13 @@ export default function HomeScreen() {
               />
             </TouchableOpacity>
 
-            {showCurrencyPicker && (
+            {showCurrencyPicker && availableCurrencies.length > 0 && (
               <View className="absolute top-14 left-0 right-0 bg-white rounded-3xl p-2 shadow-xl z-50 border border-gray-100 min-w-[120px]">
-                {CURRENCIES.map((currency) => (
+                {availableCurrencies.map((currency) => (
                   <TouchableOpacity
                     key={currency.code}
                     onPress={() => {
-                      setSelectedCurrency(currency);
+                      setSelectedCurrencyCode(currency.code);
                       setShowCurrencyPicker(false);
                     }}
                     className={`flex-row items-center p-3 rounded-2xl ${selectedCurrency.code === currency.code ? 'bg-[#F0F1FF]' : ''}`}
@@ -400,9 +420,10 @@ function HomeSkeleton() {
   );
 }
 
-const CURRENCIES = [
-  { code: 'USD', symbol: '$', rate: 1.00, flag: 'us' },
-  { code: 'NGN', symbol: '₦', rate: 1400.00, flag: 'ng' },
-  { code: 'GBP', symbol: '£', rate: 0.79, flag: 'gb' },
-  { code: 'EUR', symbol: '€', rate: 0.93, flag: 'eu' },
-];
+const CURRENCY_METADATA: Record<string, { symbol: string; flag: string; name: string }> = {
+  USD: { symbol: '$', flag: 'us', name: 'US Dollar' },
+  NGN: { symbol: '₦', flag: 'ng', name: 'Nigerian Naira' },
+  GBP: { symbol: '£', flag: 'gb', name: 'British Pound' },
+  EUR: { symbol: '€', flag: 'eu', name: 'Euro' },
+  CAD: { symbol: '$', flag: 'ca', name: 'Canadian Dollar' },
+};

@@ -7,13 +7,17 @@ interface ToastProps {
   type?: 'success' | 'error' | 'info';
   onClose: () => void;
   visible: boolean;
+  action?: {
+    label: string;
+    onPress: () => void;
+  };
 }
 
 /**
  * High-Fidelity Cockpit Toast
  * Industrial-grade notification module featuring smooth animations and clear status feedback.
  */
-export function Toast({ message, type = 'success', onClose, visible }: ToastProps) {
+export function Toast({ message, type = 'success', onClose, visible, action }: ToastProps) {
   const translateY = new Animated.Value(-100);
 
   useEffect(() => {
@@ -61,6 +65,17 @@ export function Toast({ message, type = 'success', onClose, visible }: ToastProp
         <Text className="text-white text-sm font-bold flex-1 ml-3" numberOfLines={2}>
           {String(message)}
         </Text>
+        {action && (
+          <TouchableOpacity 
+            onPress={() => {
+              action.onPress();
+              handleClose();
+            }} 
+            className="bg-white/20 px-3 py-1.5 rounded-lg mr-2"
+          >
+            <Text className="text-white text-xs font-bold">{action.label}</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity onPress={handleClose} className="ml-2">
           <Feather name="x" size={16} color="white" />
         </TouchableOpacity>
