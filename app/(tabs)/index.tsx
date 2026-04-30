@@ -39,6 +39,8 @@ export default function HomeScreen() {
     data: walletData,
     isLoading: isWalletLoading,
     error: walletError,
+    refetch: refetchWallets,
+    isRefetching: isWalletRefetching,
   } = useApiQuery(['wallet'], WalletService.getWalletBalance, {
     enabled: canFetchProtectedData,
   });
@@ -56,14 +58,15 @@ export default function HomeScreen() {
   const availableCurrencies = useMemo(() => {
     const wallets = walletData?.wallets ?? [];
     return wallets.map((wallet: any) => {
-      const meta = CURRENCY_METADATA[wallet.currency] || {
-        symbol: wallet.currency,
+      const code = String(wallet.currency || '').toUpperCase();
+      const meta = CURRENCY_METADATA[code] || {
+        symbol: code,
         flag: 'us',
-        name: wallet.currency,
+        name: code,
       };
       return {
         ...wallet,
-        code: wallet.currency,
+        code,
         ...meta,
       };
     });
@@ -131,8 +134,16 @@ export default function HomeScreen() {
             </Text>
           </View>
           <View className="flex-row">
-            <TouchableOpacity className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm mr-2">
-              <Feather name="headphones" size={20} color="#1F2C37" />
+            <TouchableOpacity 
+              onPress={() => refetchWallets()}
+              disabled={isWalletRefetching}
+              className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm mr-2"
+            >
+              {isWalletRefetching ? (
+                <ActivityIndicator size="small" color="#5154F4" />
+              ) : (
+                <Ionicons name="refresh" size={20} color="#5154F4" />
+              )}
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push('/notifications' as any)}
@@ -158,9 +169,9 @@ export default function HomeScreen() {
             <Text className="text-red-500 text-sm mb-6">Unable to load wallet balance</Text>
           ) : (
             <View className="flex-row items-center mb-6">
-              <Text className="text-[#1F2C37] text-5xl font-extrabold mr-3">
+              <Text className="text-[#1F2C37] text-4xl font-extrabold mr-3">
                 {showBalance
-                  ? `${currentWallet.symbol}${Number(currentWallet.balance ?? 0).toLocaleString(undefined, {
+                  ? `${currentWallet.symbol}${Number((currentWallet.balance ?? 0) / 100).toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}`
@@ -426,4 +437,6 @@ const CURRENCY_METADATA: Record<string, { symbol: string; flag: string; name: st
   GBP: { symbol: '£', flag: 'gb', name: 'British Pound' },
   EUR: { symbol: '€', flag: 'eu', name: 'Euro' },
   CAD: { symbol: '$', flag: 'ca', name: 'Canadian Dollar' },
+  AUD: { symbol: '$', flag: 'au', name: 'Australian Dollar' },
+  BRL: { symbol: 'R$', flag: 'br', name: 'Brazilian Real' },
 };
