@@ -34,22 +34,30 @@ export default function TransactionHistoryScreen() {
   const types = ['All', 'Transfer', 'Swap', 'Deposit', 'Request'];
   const statuses = ['All', 'Completed', 'Pending', 'Failed'];
 
-  // High-fidelity grouping logic for real-time data
   const groupedTransactions = useMemo(() => {
     const filtered = transactions.filter((t: any) => 
       (t.title || t.description || '').toLowerCase().includes(search.toLowerCase())
     );
 
     const groups: { [key: string]: any[] } = {};
-    const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    
+    const formatLabel = (dateStr: string) => {
+      if (!dateStr) return 'Unknown Date';
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+
+      const today = new Date();
+      const yesterday = new Date();
+      yesterday.setDate(today.getDate() - 1);
+
+      if (d.toDateString() === today.toDateString()) return 'Today';
+      if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
 
     filtered.forEach((t: any) => {
-      let label = t.date || t.createdAt;
-      // Normalizing date label if possible
-      if (label === today) label = 'Today';
-      else if (label === yesterday) label = 'Yesterday';
-      
+      const label = formatLabel(t.date || t.created_at || t.createdAt);
       if (!groups[label]) groups[label] = [];
       groups[label].push(t);
     });
