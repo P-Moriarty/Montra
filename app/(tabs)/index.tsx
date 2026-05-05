@@ -1,5 +1,6 @@
 import { Config } from '@/constants/Config';
 import { useAuth } from '@/context/AuthContext';
+import { useWallet } from '@/context/WalletContext';
 import { useApiQuery } from '@/hooks/api/use-api';
 import { NotificationService } from '@/services/modules/notification.service';
 import { ProfileService } from '@/services/modules/profile.service';
@@ -11,7 +12,6 @@ import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useWallet } from '@/context/WalletContext';
 
 export default function HomeScreen() {
   const [showBalance, setShowBalance] = useState(true);
@@ -78,7 +78,7 @@ export default function HomeScreen() {
       // Priority: 1. Current selectedCurrencyCode from context, 2. First available wallet
       const targetCode = selectedCurrencyCode || availableCurrencies[0].code;
       const found = availableCurrencies.find(c => c.code === targetCode) || availableCurrencies[0];
-      
+
       if (!selectedCurrency || selectedCurrency.code !== found.code || selectedCurrency.balance !== found.balance) {
         setSelectedCurrency(found);
         if (selectedCurrencyCode !== found.code) {
@@ -134,7 +134,7 @@ export default function HomeScreen() {
             </Text>
           </View>
           <View className="flex-row">
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => refetchWallets()}
               disabled={isWalletRefetching}
               className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm mr-2"
@@ -346,12 +346,16 @@ export default function HomeScreen() {
             </View>
           ) : (
             transactions.map((item: any) => (
-              <View key={item.id} className="bg-white p-4 rounded-3xl flex-row items-center mb-3 shadow-sm border border-gray-50">
-                <View className={`w-12 h-12 ${item.status === 'Failed' ? 'bg-red-50' : 'bg-blue-50'} rounded-full items-center justify-center mr-4`}>
+              <TouchableOpacity
+                key={item.id}
+                onPress={() => router.push(`/transaction/${item.id}` as any)}
+                className="bg-white p-4 rounded-3xl flex-row items-center mb-3 shadow-sm border border-gray-50"
+              >
+                <View className={`w-12 h-12 ${item.status?.toLowerCase() === 'failed' ? 'bg-red-50' : 'bg-blue-50'} rounded-full items-center justify-center mr-4`}>
                   <Feather
                     name={item.type === 'send' ? 'send' : 'download'}
                     size={20}
-                    color={item.status === 'Failed' ? '#EF4444' : '#5154F4'}
+                    color={item.status?.toLowerCase() === 'failed' ? '#EF4444' : '#5154F4'}
                   />
                 </View>
                 <View className="flex-1">
@@ -367,16 +371,16 @@ export default function HomeScreen() {
                   </View>
                 </View>
                 <View className="items-end">
-                  <Text className={`text-[#1F2C37] font-bold text-base ${item.type === 'send' ? '' : 'text-green-600'}`}>
-                    {item.type === 'send' ? '-' : '+'}{item.amount}
+                  <Text className={`font-bold text-base ${item.status?.toLowerCase() === 'failed' ? 'text-red-500' : (item.type === 'send' ? 'text-[#1F2C37]' : 'text-green-600')}`}>
+                    {item.type === 'send' ? '-' : '+'}₦{Number(item.amount / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </Text>
-                  <View className={`${item.status === 'Failed' ? 'bg-red-50' : 'bg-green-50'} px-2 py-0.5 rounded-md mt-1`}>
-                    <Text className={`${item.status === 'Failed' ? 'text-red-500' : 'text-green-500'} text-[10px] font-bold`}>
+                  <View className={`${item.status?.toLowerCase() === 'failed' ? 'bg-red-50' : 'bg-green-50'} px-2 py-0.5 rounded-md mt-1`}>
+                    <Text className={`${item.status?.toLowerCase() === 'failed' ? 'text-red-500' : 'text-green-500'} text-[10px] font-bold`}>
                       {item.status}
                     </Text>
                   </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))
           )}
         </View>

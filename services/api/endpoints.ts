@@ -35,4 +35,14 @@ export const ENDPOINTS = {
     DISABLE_BIOMETRIC: "/account/disable-biometric",
     CHANGE_PIN: "/account/change-pin",
   },
+  VAS: {
+    AIRTIME_PURCHASE: "/vas/airtime-purchase",
+    CABLE_PURCHASE: "/vas/cable-subscription-purchase",
+    DATA_PURCHASE: "/vas/data-purchase",
+    ELECTRICITY_PURCHASE: "/vas/electricity-purchase",
+    VERIFY_CABLE: "/vas/verify-cable-number",
+    VERIFY_DISCO: "/vas/verify-disco-number",
+    CABLE_VARIATIONS: "/vas/cable-variations",
+    DATA_VARIATIONS: "/vas/data-variations",
+  },
 };
