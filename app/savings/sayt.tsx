@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -7,7 +7,6 @@ import { useApiMutation, useApiQuery } from '@/hooks/api/use-api';
 import { SavingsService } from '@/services/modules/savings.service';
 import { Toast } from '@/components/ui/toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
 
 export default function SaytScreen() {
   const router = useRouter();
