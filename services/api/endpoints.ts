@@ -45,4 +45,13 @@ export const ENDPOINTS = {
     CABLE_VARIATIONS: "/vas/cable-variations",
     DATA_VARIATIONS: "/vas/data-variations",
   },
+  SAVINGS: {
+    GOALS: "/savings/goals",
+    CREATE_GOAL: "/savings/goal",
+    SAYT: "/savings/sayt",
+    BREAK: (id: string) => `/savings/${id}/break`,
+    FUND: (id: string) => `/savings/${id}/fund`,
+    WITHDRAW: (id: string) => `/savings/${id}/withdraw`,
+    HISTORY: (id: string) => `/savings/${id}/history`,
+  },
 };

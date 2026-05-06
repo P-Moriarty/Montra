@@ -23,7 +23,11 @@ export default function HomeScreen() {
 
   const canFetchProtectedData = !isAuthLoading && !!userToken;
 
-  const { data: user, isLoading: isProfileLoading } = useApiQuery(['profile'], ProfileService.getProfile, {
+  const { data: user, isLoading: isProfileLoading } = useApiQuery(['profile'], async () => {
+    const response = await ProfileService.getProfile();
+    console.log('[Savings Debug] Profile Response:', JSON.stringify(response, null, 2));
+    return response;
+  }, {
     enabled: canFetchProtectedData,
   });
 

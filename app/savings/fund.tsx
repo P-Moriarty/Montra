@@ -1,13 +1,56 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, Feather } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
+import { Ionicons, } from '@expo/vector-icons';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { CustomKeypad } from '@/components/custom-keypad';
 
+import { useApiMutation } from '@/hooks/api/use-api';
+import { SavingsService } from '@/services/modules/savings.service';
+import { Toast } from '@/components/ui/toast';
+import { useQueryClient } from '@tanstack/react-query';
+
 export default function FundGoalScreen() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const { id, name, saved, target, color } = useLocalSearchParams();
   const [amount, setAmount] = useState('0.00');
+  const [toast, setToast] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'info' }>({
+    visible: false,
+    message: '',
+    type: 'success'
+  });
+
+  const fundMutation = useApiMutation(
+    (payload: any) => SavingsService.fundGoal(id as string, payload),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['savingsGoals'] });
+        queryClient.invalidateQueries({ queryKey: ['savingsHistory', id] });
+        setToast({ visible: true, message: `Successfully funded ${name}!`, type: 'success' });
+        setTimeout(() => router.replace('/savings'), 2000);
+      },
+      onError: (error: any) => {
+        setToast({ 
+          visible: true, 
+          message: error.response?.data?.message || 'Failed to fund vault', 
+          type: 'error' 
+        });
+      }
+    }
+  );
+
+  const handleFund = () => {
+    const rawAmount = parseFloat(amount.replace(/,/g, ''));
+    if (rawAmount <= 0) {
+      setToast({ visible: true, message: 'Please enter a valid amount', type: 'error' });
+      return;
+    }
+    
+    fundMutation.mutate({
+      amount: rawAmount
+    });
+  };
 
   const handleKeyPress = (key: string) => {
     const digits = amount.replace(/[.,]/g, '');
@@ -22,15 +65,6 @@ export default function FundGoalScreen() {
     const newDigits = digits.slice(0, -1);
     const floatValue = parseInt(newDigits || '0') / 100;
     setAmount(floatValue.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-  };
-
-  const handleFund = () => {
-    if (parseFloat(amount.replace(/,/g, '')) <= 0) {
-      alert("Please enter a valid amount");
-      return;
-    }
-    alert(`Successfully added ₦${amount} to ${name}!`);
-    router.replace('/savings');
   };
 
   return (
@@ -81,10 +115,20 @@ export default function FundGoalScreen() {
         {/* Fund Button */}
         <TouchableOpacity 
           onPress={handleFund}
+          disabled={fundMutation.isPending}
           className="bg-[#5154F4] mt-16 py-5 rounded-[28px] shadow-lg shadow-indigo-100"
         >
-          <Text className="text-white text-center text-lg font-bold">Fund Vault</Text>
+          <Text className="text-white text-center text-lg font-bold">
+            {fundMutation.isPending ? 'Processing...' : 'Fund Vault'}
+          </Text>
         </TouchableOpacity>
+
+        <Toast 
+          visible={toast.visible} 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(prev => ({ ...prev, visible: false }))} 
+        />
 
         {/* Padding for Keypad */}
         <View className="h-[400px]" />
