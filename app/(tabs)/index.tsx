@@ -25,7 +25,7 @@ export default function HomeScreen() {
 
   const { data: user, isLoading: isProfileLoading } = useApiQuery(['profile'], async () => {
     const response = await ProfileService.getProfile();
-    console.log('[Savings Debug] Profile Response:', JSON.stringify(response, null, 2));
+    // console.log('[Savings Debug] Profile Response:', JSON.stringify(response, null, 2));
     return response;
   }, {
     enabled: canFetchProtectedData,
@@ -52,12 +52,25 @@ export default function HomeScreen() {
 
   const { data: notificationsData } = useApiQuery(
     ['notifications'],
-    () => NotificationService.getNotifications({ page: 1, limit: 10 }),
+    async () => {
+      const response = await NotificationService.getNotifications({ page: 1, limit: 10 });
+      // console.log('[Dashboard Debug] Notifications:', JSON.stringify(response, null, 2));
+      return response;
+    },
     { enabled: canFetchProtectedData }
   );
 
-  const notifications = notificationsData?.data || notificationsData?.notifications || [];
-  const hasUnreadNotifications = notifications.length > 0;
+  const notifications = useMemo(() => {
+    if (!notificationsData) return [];
+    if (Array.isArray(notificationsData)) return notificationsData;
+    if (Array.isArray(notificationsData.data)) return notificationsData.data;
+    if (Array.isArray(notificationsData.notifications)) return notificationsData.notifications;
+    if (notificationsData.data && Array.isArray(notificationsData.data.notifications)) return notificationsData.data.notifications;
+    if (notificationsData.data && Array.isArray(notificationsData.data.data)) return notificationsData.data.data;
+    return [];
+  }, [notificationsData]);
+
+  const hasUnreadNotifications = notifications.some((n: any) => n.isRead === false || n.is_read === false || n.status === 'unread');
 
   const availableCurrencies = useMemo(() => {
     const wallets = walletData?.wallets ?? [];

@@ -20,7 +20,7 @@ export default function SaytScreen() {
   useEffect(() => {
     const saytConfig = goalsData?.sayt || goalsData?.data?.sayt;
     if (saytConfig) {
-      console.log('[SAYT Debug] Found config in goals:', saytConfig);
+      // console.log('[SAYT Debug] Found config in goals:', saytConfig);
       setIsEnabled(!!saytConfig.enabled);
       setPercentage(Number(saytConfig.percentage) || 5);
     }

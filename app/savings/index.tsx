@@ -9,7 +9,7 @@ import { router } from 'expo-router';
 export default function SavingsIndexScreen() {
   const { data: goalsData, isLoading } = useApiQuery(['savingsGoals'], async () => {
     const response = await SavingsService.getGoals();
-    console.log('[Savings Debug] Goals Response:', JSON.stringify(response, null, 2));
+    // console.log('[Savings Debug] Goals Response:', JSON.stringify(response, null, 2));
     return response;
   });
 

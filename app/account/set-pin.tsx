@@ -52,7 +52,7 @@ export default function SetPinScreen() {
               account_pin: tempPin,
               confirm_account_pin: newPin
             };
-            console.log('[Swap] Sending set-pin payload:', payload);
+            // console.log('[Swap] Sending set-pin payload:', payload);
             setPinMutation.mutate(payload);
           } else {
             setToast({ visible: true, message: 'PINs do not match. Try again.', type: 'error' });

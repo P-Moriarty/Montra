@@ -93,4 +93,12 @@ export const WalletService = {
     const response = await apiClient.post(ENDPOINTS.FIAT_ACCOUNTS, payload);
     return response.data;
   },
+
+  /**
+   * Get all fiat accounts/wallets for the user.
+   */
+  getFiatAccounts: async () => {
+    const response = await apiClient.get(ENDPOINTS.FIAT_ACCOUNTS);
+    return response.data;
+  },
 };
