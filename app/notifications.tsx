@@ -38,7 +38,9 @@ export default function NotificationsScreen() {
     return [];
   }, [notificationsData]);
 
-  const hasUnread = notifications.some((n: any) => !n.isRead);
+  const hasUnread = useMemo(() => {
+    return notifications.some((n: any) => n.isRead === false || n.is_read === false || n.status === 'unread');
+  }, [notifications]);
 
   return (
     <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
@@ -81,31 +83,34 @@ export default function NotificationsScreen() {
             <Text className="text-[#9DA3B6] mt-4 font-bold text-center">No notifications yet</Text>
           </View>
         ) : (
-          notifications.map((item: any) => (
-            <TouchableOpacity 
-              key={item.id || Math.random().toString()} 
-              onPress={() => {
-                if (!item.isRead) {
-                  markAsReadMutation.mutate(item.id);
-                }
-              }}
-              disabled={item.isRead || markAsReadMutation.isPending}
-              className={`bg-white p-4 rounded-[32px] flex-row items-center mb-3 border ${item.isRead ? 'border-gray-50 opacity-70' : 'border-blue-200'} shadow-sm`}
-            >
-              <View className="w-12 h-12 bg-indigo-50 rounded-full items-center justify-center mr-4">
-                <Feather name="bell" size={20} color="#5154F4" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-[#1F2C37] font-bold text-sm mb-1" numberOfLines={2}>
-                  {item.title || item.message || 'Notification'}
-                </Text>
-                <Text className="text-[#9DA3B6] text-[10px]">{item.date || item.createdAt || 'Just now'}</Text>
-              </View>
-              {!item.isRead && (
-                 <View className="w-3 h-3 bg-red-500 rounded-full ml-2" />
-              )}
-            </TouchableOpacity>
-          ))
+            notifications.map((item: any) => {
+            const isUnread = item.isRead === false || item.is_read === false || item.status === 'unread';
+            return (
+              <TouchableOpacity 
+                key={item.id || Math.random().toString()} 
+                onPress={() => {
+                  if (isUnread) {
+                    markAsReadMutation.mutate(item.id);
+                  }
+                }}
+                disabled={!isUnread || markAsReadMutation.isPending}
+                className={`bg-white p-4 rounded-[32px] flex-row items-center mb-3 border ${!isUnread ? 'border-gray-50 opacity-70' : 'border-blue-200'} shadow-sm`}
+              >
+                <View className="w-12 h-12 bg-indigo-50 rounded-full items-center justify-center mr-4">
+                  <Feather name="bell" size={20} color="#5154F4" />
+                </View>
+                <View className="flex-1">
+                  <Text className={`text-[#1F2C37] font-bold text-sm mb-1 ${isUnread ? '' : 'font-medium'}`} numberOfLines={2}>
+                    {item.title || item.message || 'Notification'}
+                  </Text>
+                  <Text className="text-[#9DA3B6] text-[10px]">{item.date || item.createdAt || 'Just now'}</Text>
+                </View>
+                {isUnread && (
+                   <View className="w-3 h-3 bg-red-500 rounded-full ml-2" />
+                )}
+              </TouchableOpacity>
+            );
+          })
         )}
       </ScrollView>
     </SafeAreaView>

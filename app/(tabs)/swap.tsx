@@ -46,11 +46,11 @@ export default function SwapScreen() {
     { enabled: canFetch }
   );
 
-  React.useEffect(() => {
-    if (walletData) {
-      console.log('[Swap] Current Wallets State:', JSON.stringify(walletData.wallets, null, 2));
-    }
-  }, [walletData]);
+  // React.useEffect(() => {
+  //   if (walletData) {
+  //     console.log('[Swap] Current Wallets State:', JSON.stringify(walletData.wallets, null, 2));
+  //   }
+  // }, [walletData]);
 
   const rateData = useMemo(() => {
     if (!rawCurrencies && !walletData?.wallets) return { currencies: [], pairMap: new Map() };
@@ -136,7 +136,7 @@ export default function SwapScreen() {
   // Sync 'From' currency with global selection or params (Only on initial load)
   React.useEffect(() => {
     if (currencies.length > 0 && walletData?.wallets && !hasInitialized.current) {
-      console.log('[Swap] Initial Sync. Total:', currencies.length, 'Available:', availableWallets.length);
+      // console.log('[Swap] Initial Sync. Total:', currencies.length, 'Available:', availableWallets.length);
       const targetCode = params.from || selectedCurrencyCode || 'NGN';
 
       const foundFrom = availableWallets.find(c => c.code === targetCode) ||
@@ -156,7 +156,7 @@ export default function SwapScreen() {
 
   const swapMutation = useApiMutation(WalletService.swapCurrencies, {
     onSuccess: (response: any) => {
-      console.log('[Swap] Mutation Response:', JSON.stringify(response, null, 2));
+      // console.log('[Swap] Mutation Response:', JSON.stringify(response, null, 2));
       setToast({ visible: true, message: 'Swap successful!', type: 'success' });
 
       // Aggressive refetch immediately
@@ -181,7 +181,7 @@ export default function SwapScreen() {
 
   const createWalletMutation = useApiMutation(WalletService.createFiatAccount, {
     onSuccess: (response: any) => {
-      console.log('[Swap] Create Fiat Account Success:', response);
+      // console.log('[Swap] Create Fiat Account Success:', response);
       refetchWallets();
       setToast({ visible: true, message: 'Wallet created successfully!', type: 'success' });
       setIsCreateWalletVisible(false);
@@ -196,7 +196,7 @@ export default function SwapScreen() {
     if (!walletData?.wallets || !fromCurrency) return 0;
     const wallet = walletData.wallets.find((w: any) => String(w.currency || '').toUpperCase() === fromCurrency.code);
     const raw = wallet ? Number(wallet.balance) : 0;
-    console.log(`[Swap] Raw Balance for ${fromCurrency.code}:`, raw);
+    // console.log(`[Swap] Raw Balance for ${fromCurrency.code}:`, raw);
     return raw;
   }, [walletData, fromCurrency]);
 

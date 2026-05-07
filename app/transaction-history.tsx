@@ -135,11 +135,11 @@ export default function TransactionHistoryScreen() {
                     <Text className="text-[#9DA3B6] text-[10px]">{item.time || '...'}</Text>
                   </View>
                   <View className="items-end">
-                    <Text className={`text-[#1F2C37] font-bold text-sm ${item.type === 'send' ? '' : 'text-green-600'}`}>
-                      {item.type === 'send' ? '-' : '+'}{item.amount}
+                    <Text className={`font-bold text-sm ${item.status?.toLowerCase() === 'failed' ? 'text-red-500' : (item.type === 'send' ? 'text-[#1F2C37]' : 'text-green-600')}`}>
+                      {item.type === 'send' ? '-' : '+'}₦{Number(item.amount / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </Text>
-                    <View className={`${item.status === 'Failed' ? 'bg-red-50' : item.status === 'Pending' ? 'bg-amber-50' : 'bg-green-50'} px-2 py-0.5 rounded-md mt-1 border ${item.status === 'Failed' ? 'border-red-100' : item.status === 'Pending' ? 'border-amber-100' : 'border-green-100'}`}>
-                      <Text className={`${item.status === 'Failed' ? 'text-red-500' : item.status === 'Pending' ? 'text-amber-500' : 'text-green-500'} text-[10px] font-bold`}>
+                    <View className={`${item.status?.toLowerCase() === 'failed' ? 'bg-red-50' : item.status?.toLowerCase() === 'pending' ? 'bg-amber-50' : 'bg-green-50'} px-2 py-0.5 rounded-md mt-1 border ${item.status?.toLowerCase() === 'failed' ? 'border-red-100' : item.status?.toLowerCase() === 'pending' ? 'border-amber-100' : 'border-green-100'}`}>
+                      <Text className={`${item.status?.toLowerCase() === 'failed' ? 'text-red-500' : item.status?.toLowerCase() === 'pending' ? 'text-amber-500' : 'text-green-500'} text-[10px] font-bold`}>
                         {item.status}
                       </Text>
                     </View>

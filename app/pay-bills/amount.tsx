@@ -6,10 +6,15 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { CustomKeypad } from '@/components/custom-keypad';
 
 export default function BillAmountScreen() {
-  const { type, name, provider, identifier } = useLocalSearchParams();
-  const [amount, setAmount] = useState('0.00');
+  const { type, name, provider, identifier, fixedAmount, planCode, planName, providerId } = useLocalSearchParams();
+  const [amount, setAmount] = useState(
+    fixedAmount ? Number(fixedAmount).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'
+  );
+
+  const isFixed = !!fixedAmount;
 
   const handleKeyPress = (key: string) => {
+    if (isFixed) return;
     const digits = amount.replace(/[.,]/g, '');
     const newDigits = digits + key;
     const floatValue = parseInt(newDigits) / 100;
@@ -17,7 +22,7 @@ export default function BillAmountScreen() {
   };
 
   const handleDelete = () => {
-    if (amount === '0.00') return;
+    if (isFixed || amount === '0.00') return;
     const digits = amount.replace(/[.,]/g, '');
     const newDigits = digits.slice(0, -1);
     const floatValue = parseInt(newDigits || '0') / 100;
@@ -31,7 +36,16 @@ export default function BillAmountScreen() {
     }
     router.push({
       pathname: '/pay-bills/confirm',
-      params: { type, name, provider, identifier, amount }
+      params: { 
+        type, 
+        name, 
+        provider, 
+        providerId,
+        identifier, 
+        amount,
+        planCode,
+        planName
+      }
     });
   };
 
@@ -68,7 +82,7 @@ export default function BillAmountScreen() {
 
         {/* Amount Display */}
         <View className="mt-12 items-center">
-          <Text className="text-[#6C7278] text-sm font-semibold uppercase tracking-widest mb-4">You're paying</Text>
+          <Text className="text-[#6C7278] text-sm font-semibold uppercase tracking-widest mb-4">You&apos;re paying</Text>
           <View className="flex-row items-baseline mb-4">
             <Text className="text-[#1F2C37] text-4xl font-extrabold mr-2">₦</Text>
             <Text className="text-[#1F2C37] text-6xl font-extrabold">{amount}</Text>
@@ -92,12 +106,14 @@ export default function BillAmountScreen() {
       </ScrollView>
 
       {/* Custom Keypad */}
-      <View className="absolute bottom-0 left-0 right-0 bg-[#D1D5DB]/30 pt-4 rounded-t-[40px]">
-        <CustomKeypad 
-          onPress={handleKeyPress} 
-          onDelete={handleDelete} 
-        />
-      </View>
+      {!isFixed && (
+        <View className="absolute bottom-0 left-0 right-0 bg-[#D1D5DB]/30 pt-4 rounded-t-[40px]">
+          <CustomKeypad 
+            onPress={handleKeyPress} 
+            onDelete={handleDelete} 
+          />
+        </View>
+      )}
     </SafeAreaView>
   );
 }
