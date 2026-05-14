@@ -26,6 +26,16 @@ export const ENDPOINTS = {
     SWAP_RATES: "/swaps/rates",
   },
   FIAT_ACCOUNTS: "/fiat-accounts",
+  TRANSFERS: {
+    INTERNAL: "/transfers",
+    RESOLVE_ACCOUNT: "/transfers/resolve-account",
+    SEARCH_PAYID: "/transfers/resolve-payid",
+  },
+  WITHDRAWAL: {
+    INITIATE: "/withdrawal/initiate",
+    LIST_BANKS: "/withdrawal/list-banks",
+    RESOLVE_ACCOUNT: "/withdrawal/resolve-account",
+  },
   ACCOUNT: {
     SET_PIN: "/account/set-pin",
     VERIFY_PIN_RESET: "/account/verify-pin-reset",

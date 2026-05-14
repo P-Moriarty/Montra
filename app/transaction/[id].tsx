@@ -16,7 +16,9 @@ export default function TransactionDetailScreen() {
 
   const transaction = useMemo(() => {
     const transactions = rawData?.data?.transactions || rawData?.transactions || (Array.isArray(rawData?.data) ? rawData.data : []);
-    return transactions.find((t: any) => String(t.id) === String(id));
+    const found = transactions.find((t: any) => String(t.id) === String(id));
+    console.log('[TransactionDetail] Found transaction:', JSON.stringify(found, null, 2));
+    return found;
   }, [rawData, id]);
 
   if (isLoading) {
@@ -86,8 +88,12 @@ export default function TransactionDetailScreen() {
           <View className="flex-row justify-between mb-6">
             <Text className="text-[#6C7278] font-medium">Recipient</Text>
             <View className="items-end max-w-[60%]">
-              <Text className="text-[#1F2C37] font-bold text-right" numberOfLines={1}>{transaction.recipient_name || transaction.recipient?.name || 'N/A'}</Text>
-              <Text className="text-[#9DA3B6] text-xs mt-1">{transaction.recipient_account || 'N/A'}</Text>
+              <Text className="text-[#1F2C37] font-bold text-right" numberOfLines={1}>
+                {transaction.recipient_name || transaction.account_name || transaction.recipient?.name || transaction.pay_id}
+              </Text>
+              <Text className="text-[#9DA3B6] text-xs mt-1">
+                {transaction.recipient_account || transaction.account_number || transaction.pay_id}
+              </Text>
             </View>
           </View>
 
@@ -101,9 +107,18 @@ export default function TransactionDetailScreen() {
             <Text className="text-[#1F2C37] font-bold text-right">{formattedDate}, {formattedTime}</Text>
           </View>
 
-          <View className="flex-row justify-between gap-4 mb-6 w-[65%]">
+          <View className="flex-row justify-between mb-6">
             <Text className="text-[#6C7278] font-medium">Reference Code</Text>
-            <Text className="text-[#1F2C37] font-bold">{transaction.reference || transaction.id?.substring(0, 12).toUpperCase()}</Text>
+            <Text className="text-[#1F2C37] font-bold text-right flex-1 ml-4">
+              {transaction.reference || transaction.id?.substring(0, 12).toUpperCase()}
+            </Text>
+          </View>
+
+          <View className="flex-row justify-between mb-6">
+            <Text className="text-[#6C7278] font-medium">Session ID</Text>
+            <Text className="text-[#1F2C37] font-bold text-right flex-1 ml-4">
+              {transaction.session_id || transaction.id || 'N/A'}
+            </Text>
           </View>
 
           <View className="h-[1px] bg-gray-100 mb-6" />
