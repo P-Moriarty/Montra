@@ -1,13 +1,47 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { CustomKeypad } from '@/components/custom-keypad';
+import { WalletService } from '@/services/modules/wallet.service';
+import { useApiQuery } from '@/hooks/api/use-api';
+import { useAuth } from '@/context/AuthContext';
 
 export default function AmountEntryScreen() {
   const params = useLocalSearchParams();
   const [amount, setAmount] = useState('0.00');
+  const [narration, setNarration] = useState('');
+  const [balance, setBalance] = useState('');
+  const { userToken, isLoading: isAuthLoading } = useAuth();
+
+  const { data: walletData } = useApiQuery(
+    ['wallet'],
+    WalletService.getWalletBalance,
+    { enabled: !isAuthLoading && !!userToken }
+  );
+
+  const formatMoney = (balanceValue: number | string) => {
+    const scale = 2; // API returns values in smallest units (e.g. Kobo)
+    const formatted = (Number(balanceValue || 0) / Math.pow(10, scale)).toFixed(scale);
+    return Number(formatted).toLocaleString(undefined, { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    });
+  };
+
+  useEffect(() => {
+    if (walletData?.wallets) {
+      console.log('[AmountEntry] Wallets found:', walletData.wallets.length);
+      const ngnWallet = walletData.wallets.find(w => 
+        String(w.currency || '').toUpperCase() === 'NGN' || 
+        String(w.currency || '').toUpperCase() === 'NAIRA'
+      );
+      if (ngnWallet) {
+        setBalance(formatMoney(ngnWallet.balance));
+      }
+    }
+  }, [walletData]);
 
   const quickAmounts = ['500.00', '1,000.00', '5,000.00'];
 
@@ -46,15 +80,16 @@ export default function AmountEntryScreen() {
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         {/* Beneficiary Card ... */}
         <View className="bg-white p-5 rounded-[32px] flex-row items-center mt-6 shadow-sm border border-gray-50">
-          <View className="w-14 h-14 bg-[#E34800] rounded-full items-center justify-center mr-4 overflow-hidden">
+          <View className="w-14 h-14 bg-[#5154F4] rounded-full items-center justify-center mr-4 overflow-hidden">
              <View className="items-center justify-center p-2">
-               <View className="w-3 h-3 bg-white mb-1 self-end" />
-               <Text className="text-white text-[10px] font-bold tracking-tighter">GTCO</Text>
+               <Text className="text-white text-xs font-bold uppercase">
+                 {params.bank ? (params.bank as string).slice(0, 2) : 'MT'}
+               </Text>
              </View>
           </View>
           <View className="flex-1">
-            <Text className="text-[#1F2C37] font-bold text-base mb-1">{params.name || 'Emezue Chinonso'}</Text>
-            <Text className="text-[#9DA3B6] text-xs">{params.account || '8323847728'} - {params.bank || 'GT Bank'}</Text>
+            <Text className="text-[#1F2C37] font-bold text-base mb-1">{params.name}</Text>
+            <Text className="text-[#9DA3B6] text-xs">{params.account} - {params.bank}</Text>
           </View>
         </View>
 
@@ -62,7 +97,18 @@ export default function AmountEntryScreen() {
         <View className="bg-white p-8 rounded-[40px] mt-4 items-center shadow-sm border border-gray-50">
           <Text className="text-[#9DA3B6] text-sm font-medium mb-4">Enter Amount</Text>
           <Text className="text-[#1F2C37] text-5xl font-extrabold mb-4">{amount}</Text>
-          <Text className="text-[#9DA3B6] text-sm">Available balance : ₦20,000.00</Text>
+          <Text className="text-[#9DA3B6] text-sm">Available balance : ₦{balance}</Text>
+        </View>
+
+        {/* Narration */}
+        <View className="mt-6">
+          <TextInput
+            className="w-full h-14 bg-white border border-gray-100 rounded-2xl px-5 text-[#1F2C37] font-medium"
+            placeholder="Add narration (Optional)"
+            placeholderTextColor="#9DA3B6"
+            value={narration}
+            onChangeText={setNarration}
+          />
         </View>
 
         {/* Quick Amount Chips */}
@@ -80,7 +126,7 @@ export default function AmountEntryScreen() {
 
         {/* Continue Button */}
         <TouchableOpacity 
-          onPress={() => router.push(`/transfer/confirm?amount=${amount}&name=${params.name}&account=${params.account}&bank=${params.bank}`)}
+          onPress={() => router.push(`/transfer/confirm?amount=${amount}&name=${params.name || ''}&account=${params.account || ''}&identifier=${params.identifier || params.account || ''}&bank=${params.bank || ''}&bank_code=${params.bank_code || ''}&type=${params.type || ''}&narration=${narration || ''}`)}
           className="bg-[#5154F4] mt-8 py-5 rounded-[28px] shadow-lg shadow-indigo-100 mb-6"
         >
           <Text className="text-white text-center text-lg font-bold">Continue</Text>
