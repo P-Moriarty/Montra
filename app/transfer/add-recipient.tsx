@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { WithdrawalService, Bank } from '@/services/modules/withdrawal.service';
+import { BeneficiaryService } from '@/services/modules/beneficiary.service';
 import { Toast } from '@/components/ui/toast';
 
 export default function AddRecipientScreen() {
@@ -24,6 +25,7 @@ export default function AddRecipientScreen() {
   const [saveAsBeneficiary, setSaveAsBeneficiary] = useState(false);
   const [isLoadingBanks, setIsLoadingBanks] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [showBankModal, setShowBankModal] = useState(false);
   const [bankSearch, setBankSearch] = useState('');
   const [toast, setToast] = useState({
@@ -104,7 +106,7 @@ export default function AddRecipientScreen() {
     }
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!accountnumber || !selectedBank || !accountName) {
       setToast({
         visible: true,
@@ -112,6 +114,25 @@ export default function AddRecipientScreen() {
         type: 'error',
       });
       return;
+    }
+
+    if (saveAsBeneficiary) {
+      try {
+        setIsSaving(true);
+        await BeneficiaryService.createBeneficiary({
+          account_name: accountName,
+          bank_code: selectedBank.code,
+          bank_name: selectedBank.name,
+          currency: 'NGN',
+          number: accountnumber,
+          pay_id: '',
+          type: 'bank',
+        });
+      } catch (error) {
+        console.error('Failed to save beneficiary:', error);
+      } finally {
+        setIsSaving(false);
+      }
     }
 
     router.push(
@@ -251,11 +272,16 @@ export default function AddRecipientScreen() {
 
           <TouchableOpacity
             onPress={handleContinue}
-            className="bg-[#5154F4] py-5 rounded-[28px] shadow-lg shadow-indigo-100"
+            disabled={isSaving}
+            className="bg-[#5154F4] py-5 rounded-[28px] shadow-lg shadow-indigo-100 items-center justify-center"
           >
-            <Text className="text-white text-center text-lg font-bold">
-              Continue
-            </Text>
+            {isSaving ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text className="text-white text-center text-lg font-bold">
+                Continue
+              </Text>
+            )}
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>

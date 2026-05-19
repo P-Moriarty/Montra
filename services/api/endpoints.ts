@@ -30,6 +30,9 @@ export const ENDPOINTS = {
     INTERNAL: "/transfers",
     RESOLVE_ACCOUNT: "/transfers/resolve-account",
     SEARCH_PAYID: "/transfers/resolve-payid",
+    ACTION_REQUEST: "/transfers/action-request",
+    CREATE_REQUEST: "/transfers/create-request",
+    REQUESTS: "/transfers/requests",
   },
   WITHDRAWAL: {
     INITIATE: "/withdrawal/initiate",
@@ -63,5 +66,10 @@ export const ENDPOINTS = {
     FUND: (id: string) => `/savings/${id}/fund`,
     WITHDRAW: (id: string) => `/savings/${id}/withdraw`,
     HISTORY: (id: string) => `/savings/${id}/history`,
+  },
+  BENEFICIARIES: {
+    GET_ALL: "/beneficiaries",
+    CREATE: "/beneficiaries",
+    DELETE: (id: string) => `/beneficiaries/${id}`,
   },
 };
