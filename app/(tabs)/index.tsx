@@ -308,7 +308,7 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
             <Image
-              source={require('@/assets/images/Foreign Exchange on the International Market.png')}
+              source={require('@/assets/images/foreign_exchange.png')}
               style={{ width: 100, height: 100 }}
             />
           </View>
