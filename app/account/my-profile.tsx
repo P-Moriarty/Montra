@@ -53,7 +53,7 @@ export default function MyProfileScreen() {
         </TouchableOpacity>
         <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold">My Profile</Text>
         <TouchableOpacity
-          onPress={() => router.push('/edit-profile')}
+          onPress={() => router.push('/account/edit-profile')}
           className="w-10 h-10 rounded-full bg-[#F0F1FF] items-center justify-center shadow-sm"
         >
           <Feather name="edit-3" size={18} color="#5E5CE6" />

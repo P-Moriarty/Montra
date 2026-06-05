@@ -2,6 +2,7 @@ import { Config } from '@/constants/Config';
 import * as SecureStore from 'expo-secure-store';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { authSwitchboard } from '@/services/api/auth-switchboard';
+import { AuthService } from '@/services/modules/auth.service';
 
 interface AuthContextType {
   userToken: string | null;
@@ -68,6 +69,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     console.log('[Auth Context] signOut initiated.');
     try {
+      try {
+        await AuthService.logout();
+      } catch (e) {
+        console.error('[Auth Context] API logout failed, proceeding with local clear:', e);
+      }
       await SecureStore.deleteItemAsync(Config.auth.tokenKey);
       setUserToken(null);
     } catch (e) {

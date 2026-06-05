@@ -28,7 +28,7 @@ export const BeneficiaryService = {
    * Create a new beneficiary for future transfers.
    */
   createBeneficiary: async (payload: CreateBeneficiaryPayload) => {
-    const response = await apiClient.post(ENDPOINTS.BENEFICIARIES.CREATE, { request: payload });
+    const response = await apiClient.post(ENDPOINTS.BENEFICIARIES.CREATE, payload);
     return response.data;
   },
 

@@ -9,6 +9,12 @@ export const ENDPOINTS = {
     REGISTER: "/auth/register",
     RESET_PASSWORD: "/auth/reset-password",
     VERIFY_ACCOUNT: "/auth/verify-account",
+    CHANGE_PASSWORD: "/auth/change-password",
+    FORGOT_PASSWORD: "/auth/forgot-password",
+    LOGOUT: "/auth/logout",
+    REFRESH_TOKEN: "/auth/refresh-token",
+    RESEND_OTP: "/auth/resend-otp",
+    VERIFY_RESET_PASSWORD_OTP: "/auth/verify-reset-password-otp",
   },
   NOTIFICATIONS: {
     GET_ALL: "/notification/",
@@ -71,5 +77,11 @@ export const ENDPOINTS = {
     GET_ALL: "/beneficiaries",
     CREATE: "/beneficiaries",
     DELETE: (id: string) => `/beneficiaries/${id}`,
+  },
+  DEVICES: {
+    GET_ALL: "/devices/",
+    RESEND_OTP: "/devices/resend-otp",
+    REMOVE: (id: string) => `/devices/${id}`,
+    UPDATE_TOKEN: (id: string) => `/devices/${id}/token`,
   },
 };

@@ -16,6 +16,7 @@ export default function TransactionDetailScreen() {
 
   const transaction = useMemo(() => {
     const transactions = rawData?.data?.transactions || rawData?.transactions || (Array.isArray(rawData?.data) ? rawData.data : []);
+    console.log('[TransactionDetail] All transactions (full structure):', JSON.stringify(transactions, null, 2));
     const found = transactions.find((t: any) => String(t.id) === String(id));
     console.log('[TransactionDetail] Found transaction:', JSON.stringify(found, null, 2));
     return found;
@@ -89,10 +90,22 @@ export default function TransactionDetailScreen() {
             <Text className="text-[#6C7278] font-medium">Recipient</Text>
             <View className="items-end max-w-[60%]">
               <Text className="text-[#1F2C37] font-bold text-right" numberOfLines={1}>
-                {transaction.recipient_name || transaction.account_name || transaction.recipient?.name || transaction.pay_id}
+                {transaction.recipient_name || transaction.account_name || transaction.requester_name}
               </Text>
               <Text className="text-[#9DA3B6] text-xs mt-1">
-                {transaction.recipient_account || transaction.account_number || transaction.pay_id}
+                {transaction.account_number || transaction.recipient_pay_id || transaction.requester_pay_id}
+              </Text>
+            </View>
+          </View>
+
+          <View className="flex-row justify-between mb-6">
+            <Text className="text-[#6C7278] font-medium">Sender</Text>
+            <View className="items-end max-w-[60%]">
+              <Text className="text-[#1F2C37] font-bold text-right" numberOfLines={1}>
+                {transaction.sender_name || transaction.payer_name}
+              </Text>
+              <Text className="text-[#9DA3B6] text-xs mt-1">
+                {transaction.sender_account || transaction.sender_pay_id || transaction.payer_pay_id}
               </Text>
             </View>
           </View>

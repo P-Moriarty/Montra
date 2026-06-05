@@ -53,7 +53,7 @@ export default function AddPaymentIDScreen() {
           bank_code: '',
           bank_name: '',
           currency: 'NGN', // Default
-          number: '',
+          number: payID,
           pay_id: payID,
           type: 'payid',
         });

@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
+import * as SecureStore from 'expo-secure-store';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 
 // Enable LayoutAnimation for Android
@@ -92,16 +93,18 @@ export default function OnboardingScreen() {
     setTimeout(startAutoPlay, 5000);
   }, [startAutoPlay]);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     stopAutoPlay();
     if (activeIndex < SLIDES.length - 1) {
       flatListRef.current?.scrollToIndex({ index: activeIndex + 1, animated: true });
     } else {
+      await SecureStore.setItemAsync('montra_onboarding_complete', 'true');
       router.replace('/signup');
     }
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    await SecureStore.setItemAsync('montra_onboarding_complete', 'true');
     router.replace('/signup');
   };
 

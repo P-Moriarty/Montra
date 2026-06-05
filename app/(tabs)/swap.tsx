@@ -528,7 +528,7 @@ export default function SwapScreen() {
             </View>
             <View className="flex-row justify-between mt-6">
               <Text className="text-[#9DA3B6] font-medium">
-                Balance : {toCurrency?.symbol || ''}{toWalletBalance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                Balance : {toCurrency?.symbol || ''}{Math.round(Number(toWalletBalance?.toString().slice(0, -2)) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
               </Text>
             </View>
           </View>
