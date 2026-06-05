@@ -1,17 +1,69 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { BeneficiaryService } from '@/services/modules/beneficiary.service';
 
 export default function BankTransferScreen() {
   const [search, setSearch] = useState('');
+  const [beneficiaries, setBeneficiaries] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const beneficiaries = [
-    { id: '1', name: 'Emezue Chinonso', account: '8323847728', bank: 'GT Bank' },
-    { id: '2', name: 'Emezue Chinonso', account: '8323847728', bank: 'GT Bank' },
-    { id: '3', name: 'Emezue Chinonso', account: '8323847728', bank: 'GT Bank' },
-  ];
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchBeneficiaries();
+    }, [])
+  );
+
+  const fetchBeneficiaries = async () => {
+    try {
+      setIsLoading(true);
+      const response = await BeneficiaryService.getBeneficiaries();
+      let data = [];
+      if (Array.isArray(response)) {
+        data = response;
+      } else if (response && Array.isArray(response.data)) {
+        data = response.data;
+      } else if (response && Array.isArray(response.beneficiaries)) {
+        data = response.beneficiaries;
+      }
+      // Filter for bank type
+      setBeneficiaries(data.filter((b: any) => b.type === 'bank' || b.bank_code));
+    } catch (error) {
+      console.error('Failed to fetch beneficiaries:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    Alert.alert(
+      'Delete Beneficiary',
+      'Are you sure you want to remove this beneficiary?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await BeneficiaryService.deleteBeneficiary(id);
+              fetchBeneficiaries();
+            } catch (error) {
+              console.error('Failed to delete beneficiary:', error);
+              Alert.alert('Error', 'Failed to delete beneficiary');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const filteredBeneficiaries = beneficiaries.filter(b => 
+    b.account_name?.toLowerCase().includes(search.toLowerCase()) || 
+    b.number?.includes(search)
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
@@ -59,24 +111,25 @@ export default function BankTransferScreen() {
         <Text className="text-[#1F2C37] text-lg font-bold mb-6">Saved beneficiary</Text>
 
         {/* Beneficiary List */}
-        {beneficiaries.map((item) => (
+        {isLoading ? (
+          <ActivityIndicator color="#5154F4" />
+        ) : filteredBeneficiaries.length === 0 ? (
+          <Text className="text-[#9DA3B6] text-center mt-4">No beneficiaries found</Text>
+        ) : filteredBeneficiaries.map((item) => (
           <TouchableOpacity 
             key={item.id}
-            onPress={() => router.push(`/transfer/amount?name=${item.name}&account=${item.account}&bank=${item.bank}`)}
+            onPress={() => router.push(`/transfer/amount?name=${item.account_name}&account=${item.number}&bank=${item.bank_name}&bank_code=${item.bank_code}&type=bank`)}
             className="flex-row items-center mb-6 pb-6 border-b border-gray-50"
           >
-            <View className="w-14 h-14 bg-[#E34800] rounded-full items-center justify-center mr-4 overflow-hidden">
-               <View className="items-center justify-center p-2">
-                 <View className="w-3 h-3 bg-white mb-1 self-end" />
-                 <Text className="text-white text-[10px] font-bold tracking-tighter">GTCO</Text>
-               </View>
+            <View className="w-14 h-14 bg-[#5154F4] rounded-full items-center justify-center mr-4 overflow-hidden">
+               <Text className="text-white font-bold text-xs">{item.bank_name?.substring(0, 3).toUpperCase()}</Text>
             </View>
             <View className="flex-1">
-              <Text className="text-[#1F2C37] font-bold text-base mb-1">{item.name}</Text>
-              <Text className="text-[#9DA3B6] text-xs">{item.account} - {item.bank}</Text>
+              <Text className="text-[#1F2C37] font-bold text-base mb-1">{item.account_name}</Text>
+              <Text className="text-[#9DA3B6] text-xs">{item.number} - {item.bank_name}</Text>
             </View>
-            <TouchableOpacity>
-              <Feather name="more-horizontal" size={24} color="#9DA3B6" />
+            <TouchableOpacity onPress={() => handleDelete(item.id)}>
+              <Feather name="trash-2" size={20} color="#EF4444" />
             </TouchableOpacity>
           </TouchableOpacity>
         ))}

@@ -1,17 +1,73 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Image, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { BeneficiaryService } from '@/services/modules/beneficiary.service';
 
 export default function PaymentIDListScreen() {
   const [search, setSearch] = useState('');
+  const [beneficiaries, setBeneficiaries] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const beneficiaries = [
-    { id: '1', name: 'Emezue Chinonso', identifier: '707293 - Payment ID', type: 'payid' },
-    { id: '2', name: 'Emezue Chinonso', identifier: '707293 - Payment ID', type: 'payid' },
-    { id: '3', name: 'Emezue Chinonso', identifier: '707293 - Payment ID', type: 'payid' },
-  ];
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchBeneficiaries();
+    }, [])
+  );
+
+  const fetchBeneficiaries = async () => {
+    try {
+      setIsLoading(true);
+      const response = await BeneficiaryService.getBeneficiaries();
+      let data: any[] = [];
+      if (Array.isArray(response)) {
+        data = response;
+      } else if (response && Array.isArray(response.data)) {
+        data = response.data;
+      } else if (response && response.data && Array.isArray(response.data.beneficiaries)) {
+        data = response.data.beneficiaries;
+      } else if (response && Array.isArray(response.beneficiaries)) {
+        data = response.beneficiaries;
+      }
+      
+      console.log('Parsed Beneficiaries:', JSON.stringify(data, null, 2));
+      // Filter for payid type
+      setBeneficiaries(data.filter((b: any) => b.type === 'payid'));
+    } catch (error) {
+      console.error('Failed to fetch beneficiaries:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    Alert.alert(
+      'Delete Beneficiary',
+      'Are you sure you want to remove this beneficiary?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await BeneficiaryService.deleteBeneficiary(id);
+              fetchBeneficiaries();
+            } catch (error) {
+              console.error('Failed to delete beneficiary:', error);
+              Alert.alert('Error', 'Failed to delete beneficiary');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const filteredBeneficiaries = beneficiaries.filter(b => 
+    b.account_name?.toLowerCase().includes(search.toLowerCase()) || 
+    b.pay_id?.includes(search)
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
@@ -59,24 +115,28 @@ export default function PaymentIDListScreen() {
         <Text className="text-[#1F2C37] text-lg font-bold mb-6">Saved beneficiary</Text>
 
         {/* Beneficiary List */}
-        {beneficiaries.map((item) => (
+        {isLoading ? (
+          <ActivityIndicator color="#5154F4" />
+        ) : filteredBeneficiaries.length === 0 ? (
+          <Text className="text-[#9DA3B6] text-center mt-4">No beneficiaries found</Text>
+        ) : filteredBeneficiaries.map((item) => (
           <TouchableOpacity 
             key={item.id}
-            onPress={() => router.push(`/transfer/amount?name=${item.name}&identifier=${item.identifier}&type=payid`)}
+            onPress={() => router.push(`/transfer/amount?name=${item.account_name}&identifier=${item.pay_id}&type=payid`)}
             className="flex-row items-center mb-6 pb-6 border-b border-gray-50"
           >
             <View className="w-14 h-14 bg-gray-200 rounded-full items-center justify-center mr-4 overflow-hidden">
                <Image 
-                 source={{ uri: 'https://i.pravatar.cc/150?u=chinonso' }} 
+                 source={{ uri: `https://i.pravatar.cc/150?u=${item.pay_id}` }} 
                  className="w-full h-full"
                />
             </View>
             <View className="flex-1">
-              <Text className="text-[#1F2C37] font-bold text-base mb-1">{item.name}</Text>
-              <Text className="text-[#9DA3B6] text-xs">{item.identifier}</Text>
+              <Text className="text-[#1F2C37] font-bold text-base mb-1">{item.account_name}</Text>
+              <Text className="text-[#9DA3B6] text-xs">{item.pay_id} - Payment ID</Text>
             </View>
-            <TouchableOpacity>
-              <Feather name="more-horizontal" size={24} color="#9DA3B6" />
+            <TouchableOpacity onPress={() => handleDelete(item.id)}>
+              <Feather name="trash-2" size={20} color="#EF4444" />
             </TouchableOpacity>
           </TouchableOpacity>
         ))}

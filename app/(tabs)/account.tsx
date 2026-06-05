@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Toast } from '@/components/ui/toast';
 import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
@@ -11,6 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 export default function AccountScreen() {
   const router = useRouter();
   const { signOut } = useAuth();
+  const [toast, setToast] = useState({ visible: false, message: '', type: 'success' as 'success' | 'error' });
 
   // Industrial-grade profile feed integration
   const { data: user, isLoading: isProfileLoading } = useApiQuery(['profile'], ProfileService.getProfile);
@@ -21,7 +23,10 @@ export default function AccountScreen() {
   };
 
   const handleLogout = async () => {
-    await signOut();
+    setToast({ visible: true, message: 'Log out successful!', type: 'success' });
+    setTimeout(async () => {
+      await signOut();
+    }, 1500);
   };
 
   interface MenuItem {
@@ -41,20 +46,20 @@ export default function AccountScreen() {
     {
       title: 'Account Settings',
       items: [
-        { label: 'My Profile', icon: 'person-outline', route: '/my-profile' },
-        { label: 'Transaction History', icon: 'time-outline', route: '/transaction-history' },
+        { label: 'My Profile', icon: 'person-outline', route: '/account/my-profile' },
+        { label: 'Transaction History', icon: 'time-outline', route: '/transaction/transaction-history' },
         { 
           label: 'Verification Status', 
           icon: 'shield-checkmark-outline', 
           badge: isProfileLoading ? '...' : (user?.is_verified ? 'Verified' : 'Unverified'), 
-          route: '/verification-status' 
+          route: '/account/verification-status' 
         },
       ]
     },
     {
       title: 'Security',
       items: [
-        { label: 'Security Hub', icon: 'lock-closed-outline', route: '/security' },
+        { label: 'Security Hub', icon: 'lock-closed-outline', route: '/account/security' },
         { label: 'Privacy Policy', icon: 'document-text-outline' },
       ]
     },
@@ -70,6 +75,12 @@ export default function AccountScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+      <Toast 
+        visible={toast.visible} 
+        message={toast.message} 
+        type={toast.type} 
+        onClose={() => setToast(prev => ({ ...prev, visible: false }))} 
+      />
       {/* Header */}
       <View className="flex-row items-center justify-between px-6 py-4">
         <Text className="text-[#1F2C37] text-2xl font-black">Account</Text>

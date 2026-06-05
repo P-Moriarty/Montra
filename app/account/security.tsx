@@ -1,25 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 
-import { AccountService } from '../services/modules/account.service';
+import { AccountService } from '@/services/modules/account.service';
 import { useApiMutation } from '@/hooks/api/use-api';
-import { Toast } from '../components/ui/toast';
+import { Toast } from '@/components/ui/toast';
+
+const BIOMETRIC_KEY = 'montra_biometric_enabled';
 
 export default function SecurityScreen() {
   const [biometrics, setBiometrics] = useState(false);
   const [twoFactor, setTwoFactor] = useState(false);
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' as 'success' | 'error' });
 
+  // Rehydrate biometric state from local storage on mount
+  useEffect(() => {
+    SecureStore.getItemAsync(BIOMETRIC_KEY).then(val => {
+      if (val === 'true') setBiometrics(true);
+    });
+  }, []);
+
   const enableBioMutation = useApiMutation(AccountService.enableBiometric, {
     onSuccess: () => {
       setBiometrics(true);
+      SecureStore.setItemAsync(BIOMETRIC_KEY, 'true');
       setToast({ visible: true, message: 'Biometrics enabled!', type: 'success' });
     },
     onError: (error: any) => {
       setBiometrics(false);
+      SecureStore.setItemAsync(BIOMETRIC_KEY, 'false');
       const message = error.response?.data?.message;
       let errorText = 'Verification failed.';
       if (typeof message === 'object') errorText = Object.values(message).join(', ');
@@ -30,6 +42,7 @@ export default function SecurityScreen() {
   const disableBioMutation = useApiMutation(AccountService.disableBiometric, {
     onSuccess: () => {
       setBiometrics(false);
+      SecureStore.setItemAsync(BIOMETRIC_KEY, 'false');
       setToast({ visible: true, message: 'Biometrics disabled.', type: 'success' });
     }
   });
@@ -47,7 +60,8 @@ export default function SecurityScreen() {
     { label: 'Set Transaction PIN', icon: 'shield-outline', description: 'Configure your first security code', route: '/account/set-pin', color: '#5154F4' },
     { label: 'Change Transaction PIN', icon: 'key-outline', description: 'Update your current security code', route: '/account/change-pin', color: '#F59E0B' },
     { label: 'Reset / Forgot PIN', icon: 'refresh-outline', description: 'Reset your PIN via email OTP', route: '/account/forgot-pin', color: '#10B981' },
-    { label: 'Change Password', icon: 'lock-open-outline', description: 'Update your account access code', route: '/(auth)/forgot-password', color: '#6366F1' },
+    { label: 'Change Password', icon: 'lock-open-outline', description: 'Update your account access code', route: '/account/change-password', color: '#6366F1' },
+    { label: 'Manage Devices', icon: 'hardware-chip-outline', description: 'View and manage logged in devices', route: '/account/devices', color: '#8B5CF6' },
   ];
 
   return (

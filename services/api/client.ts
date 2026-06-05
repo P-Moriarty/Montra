@@ -28,11 +28,12 @@ apiClient.interceptors.request.use(
       if (token) {
         const authValue = `Bearer ${token.trim()}`;
 
-        if (typeof config.headers?.set === 'function') {
+        if (config.headers && typeof config.headers.set === 'function') {
           config.headers.set('Authorization', authValue);
-        } else {
-          config.headers = config.headers ?? {};
+        } else if (config.headers) {
           config.headers.Authorization = authValue;
+        } else {
+          config.headers = { Authorization: authValue };
         }
 
         console.log('[API Client] Authorization attached:', `${authValue.slice(0, 25)}...`);

@@ -9,6 +9,12 @@ export const ENDPOINTS = {
     REGISTER: "/auth/register",
     RESET_PASSWORD: "/auth/reset-password",
     VERIFY_ACCOUNT: "/auth/verify-account",
+    CHANGE_PASSWORD: "/auth/change-password",
+    FORGOT_PASSWORD: "/auth/forgot-password",
+    LOGOUT: "/auth/logout",
+    REFRESH_TOKEN: "/auth/refresh-token",
+    RESEND_OTP: "/auth/resend-otp",
+    VERIFY_RESET_PASSWORD_OTP: "/auth/verify-reset-password-otp",
   },
   NOTIFICATIONS: {
     GET_ALL: "/notification/",
@@ -30,6 +36,9 @@ export const ENDPOINTS = {
     INTERNAL: "/transfers",
     RESOLVE_ACCOUNT: "/transfers/resolve-account",
     SEARCH_PAYID: "/transfers/resolve-payid",
+    ACTION_REQUEST: "/transfers/action-request",
+    CREATE_REQUEST: "/transfers/create-request",
+    REQUESTS: "/transfers/requests",
   },
   WITHDRAWAL: {
     INITIATE: "/withdrawal/initiate",
@@ -63,5 +72,16 @@ export const ENDPOINTS = {
     FUND: (id: string) => `/savings/${id}/fund`,
     WITHDRAW: (id: string) => `/savings/${id}/withdraw`,
     HISTORY: (id: string) => `/savings/${id}/history`,
+  },
+  BENEFICIARIES: {
+    GET_ALL: "/beneficiaries",
+    CREATE: "/beneficiaries",
+    DELETE: (id: string) => `/beneficiaries/${id}`,
+  },
+  DEVICES: {
+    GET_ALL: "/devices/",
+    RESEND_OTP: "/devices/resend-otp",
+    REMOVE: (id: string) => `/devices/${id}`,
+    UPDATE_TOKEN: (id: string) => `/devices/${id}/token`,
   },
 };

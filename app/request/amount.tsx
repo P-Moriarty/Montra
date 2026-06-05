@@ -83,7 +83,7 @@ export default function RequestAmountScreen() {
 
         {/* Request Button */}
         <TouchableOpacity 
-          onPress={() => router.push(`/request/authorize?amount=${amount}&name=${params.name}&narration=${params.narration}`)}
+          onPress={() => router.push(`/request/authorize?amount=${amount}&name=${params.name}&narration=${params.narration}&identifier=${params.identifier}`)}
           className="bg-[#5154F4] mt-8 py-5 rounded-[28px] shadow-lg shadow-indigo-100 mb-6"
         >
           <Text className="text-white text-center text-lg font-bold">Request</Text>

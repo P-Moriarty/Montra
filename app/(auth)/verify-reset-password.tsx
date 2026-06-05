@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuthInput } from '@/components/auth-input';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,30 +8,48 @@ import { useApiMutation } from '@/hooks/api/use-api';
 import { AuthService } from '@/services/modules/auth.service';
 import { Toast } from '@/components/ui/toast';
 
-export default function ForgotPasswordScreen() {
+export default function VerifyResetPasswordScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const { email } = useLocalSearchParams<{ email: string }>();
+  const [verificationCode, setVerificationCode] = useState('');
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' as 'success' | 'error' });
 
-  const forgotPasswordMutation = useApiMutation(AuthService.forgotPassword, {
+  const verifyOtpMutation = useApiMutation(AuthService.verifyResetPasswordOtp, {
     onSuccess: () => {
-      setToast({ visible: true, message: 'Password reset OTP sent to your email!', type: 'success' });
+      setToast({ visible: true, message: 'Password reset verified!', type: 'success' });
+      // In a real app, this might navigate back to login, or to a "create new password" screen if the API returns a token.
+      // Based on instructions, we just call the endpoint. We'll navigate to login.
       setTimeout(() => {
-        router.push(`/(auth)/verify-reset-password?email=${encodeURIComponent(email)}` as any);
-      }, 1000);
+        router.replace('/(auth)/login');
+      }, 1500);
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to request reset.';
-      setToast({ visible: true, message: typeof message === 'string' ? message : 'An error occurred', type: 'error' });
+      const message = error.response?.data?.message || 'Verification failed.';
+      setToast({ visible: true, message: typeof message === 'string' ? message : 'Invalid OTP', type: 'error' });
     }
   });
 
-  const handleResetPassword = () => {
-    if (!email) {
-      setToast({ visible: true, message: 'Please enter your email.', type: 'error' });
+  const resendOtpMutation = useApiMutation(AuthService.resendOtp, {
+    onSuccess: () => {
+      setToast({ visible: true, message: 'OTP resent to your email.', type: 'success' });
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || 'Failed to resend OTP.';
+      setToast({ visible: true, message: typeof message === 'string' ? message : 'Failed to resend', type: 'error' });
+    }
+  });
+
+  const handleVerify = () => {
+    if (!verificationCode) {
+      setToast({ visible: true, message: 'Please enter the verification code.', type: 'error' });
       return;
     }
-    forgotPasswordMutation.mutate({ email });
+    verifyOtpMutation.mutate({ email: email || '', verification_code: verificationCode });
+  };
+
+  const handleResend = () => {
+    if (!email) return;
+    resendOtpMutation.mutate({ email });
   };
 
   return (
@@ -63,20 +81,20 @@ export default function ForgotPasswordScreen() {
           {/* Header */}
           <View className="mt-8 mb-12 items-center">
             <Text className="text-[#1F2C37] text-3xl font-bold mb-3">
-              Forgot Password?
+              Verify OTP
             </Text>
             <Text className="text-[#9DA3B6] text-base text-center leading-6">
-              Don’t worry! It happens. Please enter the {"\n"}email address associated with your account.
+              Enter the verification code sent to {"\n"}{email}
             </Text>
           </View>
 
           {/* Form Fields */}
           <AuthInput 
-            icon="mail" 
-            placeholder="Enter your email" 
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
+            icon="key" 
+            placeholder="Verification Code" 
+            value={verificationCode}
+            onChangeText={setVerificationCode}
+            keyboardType="number-pad"
           />
 
           {/* Spacer */}
@@ -85,22 +103,24 @@ export default function ForgotPasswordScreen() {
           {/* Send Button */}
           <TouchableOpacity 
             className="bg-[#5E5CE6] h-16 rounded-[20px] items-center justify-center shadow-lg shadow-[#5E5CE6]/40"
-            onPress={handleResetPassword}
+            onPress={handleVerify}
             activeOpacity={0.8}
-            disabled={forgotPasswordMutation.isPending}
+            disabled={verifyOtpMutation.isPending}
           >
-            {forgotPasswordMutation.isPending ? (
+            {verifyOtpMutation.isPending ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text className="text-white text-lg font-bold">Send Reset Link</Text>
+              <Text className="text-white text-lg font-bold">Verify Code</Text>
             )}
           </TouchableOpacity>
 
-          {/* Back to Login */}
+          {/* Resend Option */}
           <View className="flex-row justify-center mt-12">
-            <Text className="text-[#1F2C37] text-base">Wait, I remember my password? </Text>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Text className="text-[#5E5CE6] text-base font-bold">Login</Text>
+            <Text className="text-[#1F2C37] text-base">Didn&apos;t receive the code? </Text>
+            <TouchableOpacity onPress={handleResend} disabled={resendOtpMutation.isPending}>
+              <Text className="text-[#5E5CE6] text-base font-bold">
+                {resendOtpMutation.isPending ? 'Resending...' : 'Resend'}
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

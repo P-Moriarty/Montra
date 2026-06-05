@@ -1,7 +1,8 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, useRootNavigationState, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import * as SecureStore from 'expo-secure-store';
 import 'react-native-reanimated';
 
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
@@ -28,10 +29,17 @@ function RootLayoutNav() {
   const router = useRouter();
   const navigationState = useRootNavigationState();
   const colorScheme = useColorScheme();
+  const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    SecureStore.getItemAsync('montra_onboarding_complete').then(val => {
+      setIsFirstLaunch(!val);
+    });
+  }, []);
 
   useEffect(() => {
     // Industrial-grade safeguards: Wait for session and navigation state readiness
-    if (isLoading || !navigationState?.key) return;
+    if (isLoading || !navigationState?.key || isFirstLaunch === null) return;
 
     const inAuthGroup = segments[0] === '(auth)';
 
@@ -44,17 +52,23 @@ function RootLayoutNav() {
       navReady: !!navigationState?.key
     });
 
-    // const currentRoute = segments.join('/');
-
-    if (!userToken && !inAuthGroup && !segments.includes('login' as never)) {
-      console.log('[Auth Hub] Redirecting to Gateway (Not authenticated and not in auth group)');
-      router.replace('/login' as any);
-    } else if (userToken && inAuthGroup) {
+    if (!userToken) {
+      // If no token and it's the first launch, allow them to see the root index (onboarding)
+      if (isFirstLaunch && !segments[0]) {
+        return;
+      }
+      
+      // Otherwise, if they aren't in the auth group and not on the login page, redirect to login
+      if (!inAuthGroup && !segments.includes('login' as never)) {
+        console.log('[Auth Hub] Redirecting to Gateway (Not authenticated and not in auth group)');
+        router.replace('/login' as any);
+      }
+    } else if (userToken && (inAuthGroup || !segments[0])) {
       console.log('[Auth Hub] Session Anchored. Launching Dashboard via absolute path...');
       router.replace('/(tabs)' as any);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userToken, isLoading, segments, navigationState?.key]);
+  }, [userToken, isLoading, segments, navigationState?.key, isFirstLaunch]);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

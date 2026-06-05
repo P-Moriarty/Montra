@@ -25,7 +25,7 @@ export default function EditProfileScreen() {
   const [dob, setDob] = useState(user?.date_of_birth || '');
   const [date, setDate] = useState(user?.date_of_birth ? new Date(user.date_of_birth) : new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [gender, setGender] = useState<any>(user?.gender || 'MALE');
+  const [gender, setGender] = useState<any>(user?.gender || 'male');
   const [showGenderModal, setShowGenderModal] = useState(false);
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' as 'success' | 'error' });
 
@@ -112,7 +112,7 @@ export default function EditProfileScreen() {
       });
       // Force a background refetch to ensure it's synced with the server
       queryClient.refetchQueries({ queryKey: ['profile'] });
-      
+
       setToast({ visible: true, message: 'Profile updated successfully!', type: 'success' });
       setTimeout(() => {
         router.back();
@@ -145,9 +145,9 @@ export default function EditProfileScreen() {
   };
 
   const genders = [
-    { label: 'Male', value: 'MALE' },
-    { label: 'Female', value: 'FEMALE' },
-    { label: 'Other', value: 'OTHER' }
+    { label: 'Male', value: 'male' },
+    { label: 'Female', value: 'female' },
+    { label: 'Other', value: 'others' }
   ];
 
   if (isInitialLoading) {

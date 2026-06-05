@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { TransferService } from '@/services/modules/transfer.service';
+import { BeneficiaryService } from '@/services/modules/beneficiary.service';
 
 export default function AddPaymentIDScreen() {
   const [payID, setPayID] = useState('');
@@ -34,7 +35,7 @@ export default function AddPaymentIDScreen() {
     }
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!payID) {
       Alert.alert('Error', 'Please enter a Payment ID');
       return;
@@ -43,6 +44,28 @@ export default function AddPaymentIDScreen() {
       Alert.alert('Error', 'Please enter or resolve a valid account name');
       return;
     }
+
+    if (saveAsBeneficiary) {
+      try {
+        setIsLoading(true);
+        await BeneficiaryService.createBeneficiary({
+          account_name: accountName,
+          bank_code: '',
+          bank_name: '',
+          currency: 'NGN', // Default
+          number: payID,
+          pay_id: payID,
+          type: 'payid',
+        });
+      } catch (error) {
+        console.error('Failed to save beneficiary:', error);
+        // We might not want to block navigation if saving fails, but let's notify
+        Alert.alert('Notice', 'Could not save beneficiary, but you can still proceed with the transfer.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
     // Navigate to amount entry with Payment ID context
     router.push(`/transfer/amount?name=${accountName}&identifier=${payID}&type=payid`);
   };
@@ -111,9 +134,14 @@ export default function AddPaymentIDScreen() {
         {/* Continue Button */}
         <TouchableOpacity 
           onPress={handleContinue}
-          className="bg-[#5154F4] py-5 rounded-[28px] shadow-lg shadow-indigo-100"
+          disabled={isLoading}
+          className="bg-[#5154F4] py-5 rounded-[28px] shadow-lg shadow-indigo-100 items-center justify-center"
         >
-          <Text className="text-white text-center text-lg font-bold">Continue</Text>
+          {isLoading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-white text-center text-lg font-bold">Continue</Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
