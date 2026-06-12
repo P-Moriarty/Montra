@@ -1,45 +1,29 @@
-import { Config } from '@/constants/Config';
 import { useApiQuery } from '@/hooks/api/use-api';
 import { ProfileService } from '@/services/modules/profile.service';
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function MyProfileScreen() {
   const router = useRouter();
 
-  // Industrial-grade profile feed integration
   const { data: user, isLoading: isProfileLoading } = useApiQuery(['profile'], ProfileService.getProfile);
+
+  const displayTier = user?.tier
+    ? `Tier ${user.tier.replace('tier', '')}`
+    : '...';
 
   const profileData = [
     { label: 'Payment ID', value: user?.pay_id || '...', hasChevron: true },
-    { label: 'KYC Levels', value: user?.is_verified ? 'Verified' : 'Unverified', hasChevron: true },
+    { label: 'Tier', value: displayTier, hasChevron: true },
     { label: 'Email', value: user?.email || '...', hasChevron: true },
     { label: 'Phone number', value: user?.phone_number || '...', hasChevron: true },
     { label: 'Gender', value: user?.gender || 'Not specified', hasChevron: true },
     { label: 'Date of birth', value: user?.date_of_birth || 'Not specified', hasChevron: true },
     { label: 'Country', value: user?.country || 'Nigeria', hasChevron: true },
-    { label: 'Address', value: user?.address || 'Not specified', hasChevron: true },
   ];
-
-  const imageUrl = useMemo(() => {
-    const avatar = user?.profilePicture;
-
-    if (!avatar) return 'https://i.pravatar.cc/150';
-
-    if (avatar.startsWith('http')) return avatar;
-
-    const baseUrl = Config.api.baseUrl
-      .replace('/api/v1', '')
-      .replace(/\/$/, '');
-
-    const cleanAvatar = avatar.startsWith('/') ? avatar : `/${avatar}`;
-
-    return `${baseUrl}${cleanAvatar}?t=${Date.now()}`;
-  }, [user?.profilePicture]);
 
   return (
     <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
@@ -67,12 +51,8 @@ export default function MyProfileScreen() {
       >
         {/* Profile Summary */}
         <View className="items-center mt-6 mb-10">
-          <View className="w-28 h-28 rounded-full border-4 border-white shadow-lg overflow-hidden">
-            <Image
-              source={{ uri: imageUrl }}
-              style={{ width: '100%', height: '100%' }}
-              contentFit="cover"
-            />
+          <View className="w-28 h-28 rounded-full border-4 border-white shadow-lg bg-gray-100 items-center justify-center">
+            <Ionicons name="person" size={48} color="#9DA3B6" />
           </View>
           <Text className="text-[#1F2C37] text-2xl font-bold mt-4">
             {isProfileLoading ? 'Loading...' : (user?.full_name || 'User')}

@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { Config } from '@/constants/Config';
 import { authSwitchboard } from './auth-switchboard';
+import { getDeviceInfoHeaders } from '../device-info';
 
 /**
  * Centralized API client with secure token injection and global error handling.
@@ -42,6 +43,24 @@ apiClient.interceptors.request.use(
       }
     } catch (error) {
       console.error('[API Client] Failed to retrieve token from SecureStore:', error);
+    }
+
+    return config;
+  },
+  async (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Device Info Interceptor: Injects device_id, device_name, lat/lng headers
+apiClient.interceptors.request.use(
+  async (config: any) => {
+    try {
+      const deviceHeaders = await getDeviceInfoHeaders();
+      config.headers = { ...config.headers, ...deviceHeaders };
+      console.log(`[Device Info] Request ${config.method?.toUpperCase()} ${config.url} headers:`, JSON.stringify(deviceHeaders));
+    } catch (e) {
+      console.warn('[API Client] Failed to attach device info headers:', e);
     }
 
     return config;

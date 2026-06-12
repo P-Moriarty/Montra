@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Toast } from '@/components/ui/toast';
-import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import * as Clipboard from 'expo-clipboard';
 import { useApiQuery } from '@/hooks/api/use-api';
 import { ProfileService } from '@/services/modules/profile.service';
 import { useAuth } from '@/context/AuthContext';
@@ -14,13 +13,7 @@ export default function AccountScreen() {
   const { signOut } = useAuth();
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' as 'success' | 'error' });
 
-  // Industrial-grade profile feed integration
   const { data: user, isLoading: isProfileLoading } = useApiQuery(['profile'], ProfileService.getProfile);
-
-  const handleCopy = async () => {
-    await Clipboard.setStringAsync('3749266383');
-    alert('Account number copied to clipboard!');
-  };
 
   const handleLogout = async () => {
     setToast({ visible: true, message: 'Log out successful!', type: 'success' });
@@ -94,35 +87,6 @@ export default function AccountScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 140 }}
       >
-        {/* Account Details Card (Engineering Cockpit Style) */}
-        <View className="mt-6 mb-10">
-          <View className="bg-[#1F2C37] p-8 rounded-[40px] shadow-2xl relative overflow-hidden">
-            <View className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/5 rounded-full" />
-            
-            <View className="flex-row justify-between items-center mb-8">
-               <View>
-                 <Text className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">Bank Name</Text>
-                 <Text className="text-white font-bold text-base">Young Money Mfb Ltd</Text>
-               </View>
-               <View className="w-12 h-12 bg-white/10 rounded-2xl items-center justify-center">
-                 <MaterialCommunityIcons name="bank-outline" size={24} color="white" />
-               </View>
-            </View>
-
-            <View className="flex-row justify-between items-end">
-              <View>
-                <Text className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">Account Number</Text>
-                <Text className="text-white text-3xl font-black tracking-tight">3749266383</Text>
-              </View>
-              <TouchableOpacity 
-                onPress={handleCopy}
-                className="bg-white/10 p-3 rounded-xl border border-white/10"
-              >
-                 <Ionicons name="copy-outline" size={20} color="white" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
 
         {/* Grouped Menu */}
         {sections.map((section, idx) => (

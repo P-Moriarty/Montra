@@ -1,3 +1,4 @@
+import { CURRENCY_MAP } from '@/constants/currencies';
 import { CustomKeypad } from '@/components/custom-keypad';
 import { Toast } from '@/components/ui/toast';
 import { useAuth } from '@/context/AuthContext';
@@ -10,16 +11,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, Image, Modal, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const CURRENCY_METADATA: Record<string, { symbol: string; flag: string; name: string }> = {
-  USD: { symbol: '$', flag: 'us', name: 'US Dollar' },
-  NGN: { symbol: '₦', flag: 'ng', name: 'Nigerian Naira' },
-  GBP: { symbol: '£', flag: 'gb', name: 'British Pound' },
-  EUR: { symbol: '€', flag: 'eu', name: 'Euro' },
-  CAD: { symbol: '$', flag: 'ca', name: 'Canadian Dollar' },
-  AUD: { symbol: '$', flag: 'au', name: 'Australian Dollar' },
-  BRL: { symbol: 'R$', flag: 'br', name: 'Brazilian Real' },
-};
 
 const formatMoney = (balance: number | string, symbol: string = '') => {
   const scale = 2; // for all your fiat currencies
@@ -93,7 +84,7 @@ export default function SwapScreen() {
     const allCodes = new Set([...ratesMap.keys(), ...walletCodes]);
 
     const result = Array.from(allCodes).map(code => {
-      const meta = CURRENCY_METADATA[code] || { symbol: code, flag: 'us', name: code };
+      const meta = CURRENCY_MAP[code] || { symbol: code, flag: 'us', name: code };
       return {
         ...meta,
         code,
@@ -272,8 +263,10 @@ export default function SwapScreen() {
 
   const handleReviewSwap = () => {
     const rawValue = (parseFloat(fromAmount.replace(/,/g, '')) || 0) * 100;
-    if (rawValue < 500000) {
-      setToast({ visible: true, message: 'Minimum swap amount is 5,000.00', type: 'error' });
+    const isNgn = fromCurrency?.code === 'NGN';
+    const minAmount = isNgn ? 500000 : 500;
+    if (rawValue < minAmount) {
+      setToast({ visible: true, message: `Minimum swap amount is ${isNgn ? '5,000.00' : '5.00'}`, type: 'error' });
       return;
     }
 

@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, Feather} from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 export default function PayBillsIndexScreen() {
@@ -10,8 +10,7 @@ export default function PayBillsIndexScreen() {
     { id: 'data', name: 'Data Bundle', icon: 'wifi-outline', lib: 'Ionicons', color: '#1F2C37' },
     { id: 'electricity', name: 'Electricity', icon: 'flash-outline', lib: 'Ionicons', color: '#1F2C37' },
     { id: 'cable', name: 'Cable TV', icon: 'tv-outline', lib: 'Ionicons', color: '#1F2C37' },
-    { id: 'internet', name: 'Internet', icon: 'rss', lib: 'Feather', color: '#1F2C37' },
-    { id: 'water', name: 'Water', icon: 'water-outline', lib: 'Ionicons', color: '#1F2C37' },
+    
   ];
 
   return (
@@ -51,31 +50,6 @@ export default function PayBillsIndexScreen() {
               <Text className="text-[#1F2C37] font-bold text-sm">{cat.name}</Text>
             </TouchableOpacity>
           ))}
-        </View>
-
-        {/* Recent Billers (Mock) */}
-        <View className="mt-8">
-          <Text className="text-[#1F2C37] text-lg font-bold mb-4">Recent Payments</Text>
-          <View className="bg-white p-5 rounded-[32px] border border-gray-50 shadow-sm">
-             {[
-               { name: 'MTN Airtime', id: '08123456789', amount: '₦2,000' },
-               { name: 'EKEDC Prepaid', id: '4502847721', amount: '₦5,000' },
-             ].map((item, idx) => (
-               <TouchableOpacity 
-                 key={idx} 
-                 className={`flex-row items-center py-3 ${idx === 0 ? 'border-b border-gray-50' : ''}`}
-               >
-                 <View className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center mr-3">
-                   <MaterialCommunityIcons name="history" size={20} color="#9DA3B6" />
-                 </View>
-                 <View className="flex-1">
-                   <Text className="text-[#1F2C37] font-bold text-sm">{item.name}</Text>
-                   <Text className="text-[#9DA3B6] text-[10px]">{item.id}</Text>
-                 </View>
-                 <Text className="text-[#1F2C37] font-bold text-sm">{item.amount}</Text>
-               </TouchableOpacity>
-             ))}
-          </View>
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -24,6 +24,8 @@ export const ENDPOINTS = {
   },
   PROFILE: "/profile/",
   PROFILE_UPDATE: "/profile/update",
+  TIER2_UPGRADE: "/tiers/upgrade/tier2",
+  TIER3_UPGRADE: "/tiers/upgrade/tier3",
   TRANSACTIONS: "/transactions",
   UPLOAD_AVATAR: "/uploads/user",
   WALLET_BALANCE: "/wallet/",
@@ -80,8 +82,14 @@ export const ENDPOINTS = {
   },
   DEVICES: {
     GET_ALL: "/devices/",
+    VERIFY_NEW_DEVICE: "/devices/verify",
     RESEND_OTP: "/devices/resend-otp",
     REMOVE: (id: string) => `/devices/${id}`,
     UPDATE_TOKEN: (id: string) => `/devices/${id}/token`,
+  },
+  REWARDS: {
+    GET_ALL: "/rewards/",
+    BALANCE: "/csb/",
+    REDEEM: "/csb/redeem",
   },
 };

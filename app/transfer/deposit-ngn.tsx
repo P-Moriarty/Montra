@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, Feather} from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApiQuery } from '@/hooks/api/use-api';
 import { WalletService } from '@/services/modules/wallet.service';
@@ -11,7 +11,7 @@ export default function DepositScreen() {
 
   const { data: accountsData, isLoading } = useApiQuery(['fiatAccounts'], async () => {
     const response = await WalletService.getFiatAccounts();
-    // console.log('[Deposit Debug] Fiat Accounts:', JSON.stringify(response, null, 2));
+    console.log('[Deposit Debug] Fiat Accounts:', JSON.stringify(response, null, 2));
     return response;
   });
 
@@ -39,10 +39,10 @@ export default function DepositScreen() {
       <View key={account.id} className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm mb-6">
         <View className="flex-row justify-between items-center mb-6">
           <View className="flex-row items-center">
-             <View className="w-10 h-10 rounded-full bg-indigo-50 items-center justify-center mr-3">
-               <Text className="text-[#5154F4] font-bold text-xs">{account.currency.toUpperCase()}</Text>
-             </View>
-             <Text className="text-[#1F2C37] text-lg font-black">{account.currency.toUpperCase()} Account</Text>
+            <View className="w-10 h-10 rounded-full bg-indigo-50 items-center justify-center mr-3">
+              <Text className="text-[#5154F4] font-bold text-xs">{account.currency.toUpperCase()}</Text>
+            </View>
+            <Text className="text-[#1F2C37] text-lg font-black">{account.currency.toUpperCase()} Account</Text>
           </View>
           <View className="bg-green-50 px-3 py-1 rounded-full">
             <Text className="text-green-600 text-[10px] font-bold">ACTIVE</Text>
@@ -75,7 +75,7 @@ export default function DepositScreen() {
     <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center px-6 py-4">
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => router.back()}
           className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
         >
@@ -89,6 +89,7 @@ export default function DepositScreen() {
           Receive funds securely using any of your available fiat accounts below.
         </Text>
 
+
         {isLoading ? (
           <View className="py-20 items-center justify-center">
             <ActivityIndicator color="#5154F4" size="large" />
@@ -96,8 +97,8 @@ export default function DepositScreen() {
           </View>
         ) : accounts.length === 0 ? (
           <View className="bg-white p-10 rounded-[40px] items-center justify-center mt-6 border border-gray-50 italic">
-             <Ionicons name="alert-circle-outline" size={48} color="#9DA3B6" />
-             <Text className="text-[#9DA3B6] mt-4 font-bold text-center">No fiat accounts found. Please contact support.</Text>
+            <Ionicons name="alert-circle-outline" size={48} color="#9DA3B6" />
+            <Text className="text-[#9DA3B6] mt-4 font-bold text-center">No fiat accounts found. Please contact support.</Text>
           </View>
         ) : (
           <View className="pb-10">

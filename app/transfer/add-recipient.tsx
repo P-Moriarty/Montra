@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,30 +8,30 @@ import {
   Switch,
   ActivityIndicator,
   Modal,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { WithdrawalService, Bank } from '@/services/modules/withdrawal.service';
-import { BeneficiaryService } from '@/services/modules/beneficiary.service';
-import { Toast } from '@/components/ui/toast';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { WithdrawalService, Bank } from "@/services/modules/withdrawal.service";
+import { BeneficiaryService } from "@/services/modules/beneficiary.service";
+import { Toast } from "@/components/ui/toast";
 
 export default function AddRecipientScreen() {
-  const [accountnumber, setAccountnumber] = useState('');
+  const [accountnumber, setAccountnumber] = useState("");
   const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
   const [banks, setBanks] = useState<Bank[]>([]);
-  const [accountName, setAccountName] = useState('');
-  const [narration, setNarration] = useState('');
+  const [accountName, setAccountName] = useState("");
+  const [narration, setNarration] = useState("");
   const [saveAsBeneficiary, setSaveAsBeneficiary] = useState(false);
   const [isLoadingBanks, setIsLoadingBanks] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showBankModal, setShowBankModal] = useState(false);
-  const [bankSearch, setBankSearch] = useState('');
+  const [bankSearch, setBankSearch] = useState("");
   const [toast, setToast] = useState({
     visible: false,
-    message: '',
-    type: 'success' as 'success' | 'error',
+    message: "",
+    type: "success" as "success" | "error",
   });
 
   useEffect(() => {
@@ -39,11 +39,11 @@ export default function AddRecipientScreen() {
   }, []);
 
   useEffect(() => {
-    const cleanNumber = accountnumber.replace(/\D/g, '');
+    const cleanNumber = accountnumber.replace(/\D/g, "");
     if (cleanNumber.length === 10 && selectedBank?.code) {
       resolveAccount(cleanNumber, selectedBank.code);
     } else {
-      setAccountName('');
+      setAccountName("");
     }
   }, [accountnumber, selectedBank]);
 
@@ -52,10 +52,10 @@ export default function AddRecipientScreen() {
     try {
       const data = await WithdrawalService.listBanks();
       const defaultBanks: Bank[] = [
-        { name: 'First Bank of Nigeria', code: '011' },
-        { name: 'Zenith Bank', code: '057' },
-        { name: 'Guaranty Trust Bank', code: '058' },
-        { name: 'Access Bank', code: '044' },
+        { name: "First Bank of Nigeria", code: "011" },
+        { name: "Zenith Bank", code: "057" },
+        { name: "Guaranty Trust Bank", code: "058" },
+        { name: "Access Bank", code: "044" },
       ];
 
       if (Array.isArray(data) && data.length > 0) {
@@ -64,11 +64,11 @@ export default function AddRecipientScreen() {
         setBanks(defaultBanks);
       }
     } catch (error) {
-      console.error('Failed to fetch banks:', error);
+      console.error("Failed to fetch banks:", error);
       setBanks([
-        { name: 'First Bank of Nigeria', code: '011' },
-        { name: 'Zenith Bank', code: '057' },
-        { name: 'Guaranty Trust Bank', code: '058' },
+        { name: "First Bank of Nigeria", code: "011" },
+        { name: "Zenith Bank", code: "057" },
+        { name: "Guaranty Trust Bank", code: "058" },
       ]);
     } finally {
       setIsLoadingBanks(false);
@@ -90,16 +90,16 @@ export default function AddRecipientScreen() {
         response?.data?.account_name ||
         response?.accountname ||
         response?.account_name ||
-        '';
+        "";
 
       setAccountName(resolvedName);
     } catch (error) {
-      console.error('Failed to resolve account:', error);
-      setAccountName('');
+      console.error("Failed to resolve account:", error);
+      setAccountName("");
       setToast({
         visible: true,
-        message: 'Unable to resolve account details',
-        type: 'error',
+        message: "Unable to resolve account details",
+        type: "error",
       });
     } finally {
       setIsResolving(false);
@@ -110,8 +110,8 @@ export default function AddRecipientScreen() {
     if (!accountnumber || !selectedBank || !accountName) {
       setToast({
         visible: true,
-        message: 'Please complete all fields',
-        type: 'error',
+        message: "Please complete all fields",
+        type: "error",
       });
       return;
     }
@@ -123,30 +123,30 @@ export default function AddRecipientScreen() {
           account_name: accountName,
           bank_code: selectedBank.code,
           bank_name: selectedBank.name,
-          currency: 'NGN',
+          currency: "NGN",
           number: accountnumber,
-          pay_id: '',
-          type: 'bank',
+          pay_id: "",
+          type: "bank",
         });
       } catch (error) {
-        console.error('Failed to save beneficiary:', error);
+        console.error("Failed to save beneficiary:", error);
       } finally {
         setIsSaving(false);
       }
     }
 
     router.push(
-      `/transfer/amount?name=${encodeURIComponent(accountName)}&account=${encodeURIComponent(accountnumber)}&bank=${encodeURIComponent(selectedBank.name)}&bank_code=${encodeURIComponent(selectedBank.code)}&type=bank&narration=${encodeURIComponent(narration)}`
+      `/transfer/amount?name=${encodeURIComponent(accountName)}&account=${encodeURIComponent(accountnumber)}&bank=${encodeURIComponent(selectedBank.name)}&bank_code=${encodeURIComponent(selectedBank.code)}&type=bank&narration=${encodeURIComponent(narration)}`,
     );
   };
 
   const filteredBanks = banks.filter((b) =>
-    b.name.toLowerCase().includes(bankSearch.toLowerCase())
+    b.name.toLowerCase().includes(bankSearch.toLowerCase()),
   );
 
   return (
     <>
-      <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+      <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={["top"]}>
         <Toast
           visible={toast.visible}
           message={toast.message}
@@ -182,7 +182,7 @@ export default function AddRecipientScreen() {
               keyboardType="numeric"
               value={accountnumber}
               onChangeText={(text) =>
-                setAccountnumber(text.replace(/\D/g, '').slice(0, 10))
+                setAccountnumber(text.replace(/\D/g, "").slice(0, 10))
               }
             />
           </View>
@@ -198,11 +198,11 @@ export default function AddRecipientScreen() {
               <Text
                 className={
                   selectedBank
-                    ? 'text-[#1F2C37] font-medium'
-                    : 'text-[#9DA3B6] font-medium'
+                    ? "text-[#1F2C37] font-medium"
+                    : "text-[#9DA3B6] font-medium"
                 }
               >
-                {selectedBank ? selectedBank.name : 'Select Bank name'}
+                {selectedBank ? selectedBank.name : "Select Bank name"}
               </Text>
               {isLoadingBanks ? (
                 <ActivityIndicator size="small" color="#5154F4" />
@@ -212,7 +212,7 @@ export default function AddRecipientScreen() {
             </TouchableOpacity>
           </View>
 
-          {selectedBank && (
+          {/* {selectedBank && (
             <View className="mb-6">
               <Text className="text-[#1F2C37] text-base font-semibold mb-3">
                 Bank Code
@@ -223,7 +223,7 @@ export default function AddRecipientScreen() {
                 </Text>
               </View>
             </View>
-          )}
+          )} */}
 
           <View className="mb-6">
             <View className="flex-row justify-between items-center mb-3">
@@ -235,12 +235,11 @@ export default function AddRecipientScreen() {
               )}
             </View>
             <TextInput
-              className="w-full h-16 bg-white border border-gray-200 rounded-2xl px-5 text-[#1F2C37] font-medium"
+              className="w-full h-16 bg-gray-50 border border-gray-200 rounded-2xl px-5 text-[#1F2C37] font-medium"
               placeholder="Resolved account name"
               placeholderTextColor="#9DA3B6"
               value={accountName}
-              onChangeText={setAccountName}
-              editable={!isResolving}
+              editable={false}
             />
           </View>
 
@@ -262,7 +261,7 @@ export default function AddRecipientScreen() {
               Save as beneficiary
             </Text>
             <Switch
-              trackColor={{ false: '#E2E8F0', true: '#5154F4' }}
+              trackColor={{ false: "#E2E8F0", true: "#5154F4" }}
               thumbColor="#fff"
               ios_backgroundColor="#E2E8F0"
               onValueChange={() => setSaveAsBeneficiary(!saveAsBeneficiary)}
@@ -296,7 +295,7 @@ export default function AddRecipientScreen() {
               <TouchableOpacity
                 onPress={() => {
                   setShowBankModal(false);
-                  setBankSearch('');
+                  setBankSearch("");
                 }}
               >
                 <Ionicons
@@ -326,7 +325,7 @@ export default function AddRecipientScreen() {
                     onPress={() => {
                       setSelectedBank(item);
                       setShowBankModal(false);
-                      setBankSearch('');
+                      setBankSearch("");
                     }}
                     className="py-5 border-b border-gray-50 flex-row items-center justify-between"
                   >
