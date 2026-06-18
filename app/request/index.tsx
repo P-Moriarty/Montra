@@ -1,17 +1,24 @@
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
-import React, { useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { router, useFocusEffect } from "expo-router";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { TransferService } from '@/services/modules/transfer.service';
-
+import { TransferService } from "@/services/modules/transfer.service";
 
 export default function RequestMoneyScreen() {
-  const [activeTab, setActiveTab] = useState<'request' | 'pending'>('request');
-  const [payID, setPayID] = useState('');
-  const [accountName, setAccountName] = useState('');
-  const [narration, setNarration] = useState('');
+  const [activeTab, setActiveTab] = useState<"request" | "pending">("request");
+  const [payID, setPayID] = useState("");
+  const [accountName, setAccountName] = useState("");
+  const [narration, setNarration] = useState("");
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
@@ -19,7 +26,7 @@ export default function RequestMoneyScreen() {
   useFocusEffect(
     React.useCallback(() => {
       fetchRequests();
-    }, [])
+    }, []),
   );
 
   const fetchRequests = async () => {
@@ -32,17 +39,24 @@ export default function RequestMoneyScreen() {
         requestsData = response;
       } else if (response && Array.isArray(response.data)) {
         requestsData = response.data;
-      } else if (response && response.data && Array.isArray(response.data.requests)) {
+      } else if (
+        response &&
+        response.data &&
+        Array.isArray(response.data.requests)
+      ) {
         requestsData = response.data.requests;
       } else if (response && Array.isArray(response.requests)) {
         requestsData = response.requests;
       }
 
-      console.log('Parsed Requests Data:', JSON.stringify(requestsData, null, 2));
-      console.log('Raw API Response:', JSON.stringify(response, null, 2));
+      console.log(
+        "Parsed Requests Data:",
+        JSON.stringify(requestsData, null, 2),
+      );
+      console.log("Raw API Response:", JSON.stringify(response, null, 2));
       setPendingRequests(requestsData);
     } catch (error) {
-      console.error('Failed to fetch requests:', error);
+      console.error("Failed to fetch requests:", error);
     } finally {
       setIsLoading(false);
     }
@@ -60,11 +74,11 @@ export default function RequestMoneyScreen() {
       if (name) {
         setAccountName(name);
       } else {
-        setAccountName('Unknown Recipient');
+        setAccountName("Unknown Recipient");
       }
     } catch (error: any) {
-      console.error('Failed to resolve PayID:', error);
-      setAccountName('');
+      console.error("Failed to resolve PayID:", error);
+      setAccountName("");
     } finally {
       setIsResolving(false);
     }
@@ -72,18 +86,20 @@ export default function RequestMoneyScreen() {
 
   const handleContinue = () => {
     if (!payID) {
-      Alert.alert('Error', 'Please enter a Payment ID');
+      Alert.alert("Error", "Please enter a Payment ID");
       return;
     }
-    if (!accountName || accountName === 'Unknown Recipient') {
-      Alert.alert('Error', 'Please enter or resolve a valid account name');
+    if (!accountName || accountName === "Unknown Recipient") {
+      Alert.alert("Error", "Please enter or resolve a valid account name");
       return;
     }
-    router.push(`/request/amount?name=${accountName}&identifier=${payID}&narration=${narration}`);
+    router.push(
+      `/request/amount?name=${accountName}&identifier=${payID}&narration=${narration}`,
+    );
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={["top"]}>
       {/* Header */}
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity
@@ -92,36 +108,52 @@ export default function RequestMoneyScreen() {
         >
           <Ionicons name="arrow-back" size={20} color="#1F2C37" />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">Request money</Text>
+        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">
+          Request money
+        </Text>
       </View>
 
       <View className="flex-1 px-6">
         {/* Tab Switcher */}
         <View className="flex-row bg-white/50 p-1.5 rounded-[32px] mt-6 mb-8 border border-white/40">
           <TouchableOpacity
-            onPress={() => setActiveTab('request')}
-            className={`flex-1 py-4 rounded-[28px] items-center justify-center ${activeTab === 'request' ? 'bg-[#333333]' : ''}`}
+            onPress={() => setActiveTab("request")}
+            className={`flex-1 py-4 rounded-[28px] items-center justify-center ${activeTab === "request" ? "bg-[#333333]" : ""}`}
           >
-            <Text className={`font-bold ${activeTab === 'request' ? 'text-white' : 'text-[#6C7278]'}`}>Request</Text>
+            <Text
+              className={`font-bold ${activeTab === "request" ? "text-white" : "text-[#6C7278]"}`}
+            >
+              Request
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => setActiveTab('pending')}
-            className={`flex-row flex-1 py-4 rounded-[28px] items-center justify-center ${activeTab === 'pending' ? 'bg-[#333333]' : ''}`}
+            onPress={() => setActiveTab("pending")}
+            className={`flex-row flex-1 py-4 rounded-[28px] items-center justify-center ${activeTab === "pending" ? "bg-[#333333]" : ""}`}
           >
-            <Text className={`font-bold ${activeTab === 'pending' ? 'text-white' : 'text-[#6C7278]'}`}>Pending</Text>
+            <Text
+              className={`font-bold ${activeTab === "pending" ? "text-white" : "text-[#6C7278]"}`}
+            >
+              Pending
+            </Text>
             <View className="ml-2 bg-[#6C7278] w-5 h-5 rounded-full items-center justify-center">
-              <Text className="text-white text-[10px] font-bold">{pendingRequests.length}</Text>
+              <Text className="text-white text-[10px] font-bold">
+                {pendingRequests.length}
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
 
-        {activeTab === 'request' ? (
+        {activeTab === "request" ? (
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Request Form */}
             <View className="mb-6">
               <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-[#1F2C37] text-base font-semibold">Payment ID</Text>
-                {isResolving && <ActivityIndicator size="small" color="#5154F4" />}
+                <Text className="text-[#1F2C37] text-base font-semibold">
+                  Payment ID
+                </Text>
+                {isResolving && (
+                  <ActivityIndicator size="small" color="#5154F4" />
+                )}
               </View>
               <TextInput
                 className="w-full h-16 bg-white border border-gray-100 rounded-2xl px-5 text-[#1F2C37] font-medium"
@@ -137,19 +169,22 @@ export default function RequestMoneyScreen() {
             </View>
 
             <View className="mb-6">
-              <Text className="text-[#1F2C37] text-base font-semibold mb-3">Account Name</Text>
+              <Text className="text-[#1F2C37] text-base font-semibold mb-3">
+                Account Name
+              </Text>
               <TextInput
-                className="w-full h-16 bg-white border border-gray-100 rounded-2xl px-5 text-[#1F2C37] font-medium"
-                placeholder="Enter recipient account name"
+                className="w-full h-16 bg-gray-50 border border-gray-100 rounded-2xl px-5 text-[#1F2C37] font-medium"
+                placeholder="Resolved account name"
                 placeholderTextColor="#9DA3B6"
                 value={accountName}
-                onChangeText={setAccountName}
-                editable={!isResolving}
+                editable={false}
               />
             </View>
 
             <View className="mb-10">
-              <Text className="text-[#1F2C37] text-base font-semibold mb-3">Narration</Text>
+              <Text className="text-[#1F2C37] text-base font-semibold mb-3">
+                Narration
+              </Text>
               <TextInput
                 className="w-full h-16 bg-white border border-gray-100 rounded-2xl px-5 text-[#1F2C37] font-medium"
                 placeholder="Optional"
@@ -163,7 +198,9 @@ export default function RequestMoneyScreen() {
               onPress={handleContinue}
               className="bg-[#5154F4] py-5 rounded-[28px] shadow-lg shadow-indigo-100"
             >
-              <Text className="text-white text-center text-lg font-bold">Continue</Text>
+              <Text className="text-white text-center text-lg font-bold">
+                Continue
+              </Text>
             </TouchableOpacity>
           </ScrollView>
         ) : (
@@ -177,51 +214,74 @@ export default function RequestMoneyScreen() {
               <View className="py-10 items-center">
                 <Text className="text-[#9DA3B6]">No pending requests</Text>
               </View>
-            ) : pendingRequests.map((item) => {
-              const isMyRequest = item.requester_name === 'Me';
-              const displayName = isMyRequest ? item.payer_name : item.requester_name;
-              const displayIdentifier = isMyRequest ? item.payer_id : item.requester_id;
-              const displayLabel = isMyRequest ? `Request to ${displayName}` : `Request from ${displayName}`;
+            ) : (
+              pendingRequests.map((item) => {
+                const isMyRequest = item.requester_name === "Me";
+                const displayName = isMyRequest
+                  ? item.payer_name
+                  : item.requester_name;
+                const displayIdentifier = isMyRequest
+                  ? item.payer_id
+                  : item.requester_id;
+                const displayLabel = isMyRequest
+                  ? `Request to ${displayName}`
+                  : `Request from ${displayName}`;
 
-              return (
-                <TouchableOpacity
-                  key={item.id}
-                  onPress={() => router.push({
-                    pathname: '/request/confirm',
-                    params: {
-                      id: item.id,
-                      amount: item.amount,
-                      name: displayName || 'Unknown',
-                      identifier: displayIdentifier || 'Unknown',
-                      narration: item.narration,
-                      status: item.status,
-                      type: 'pending' // to distinguish in confirm screen
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/request/confirm",
+                        params: {
+                          id: item.id,
+                          amount: item.amount,
+                          name: displayName || "Unknown",
+                          identifier: displayIdentifier || "Unknown",
+                          narration: item.narration,
+                          status: item.status,
+                          type: "pending", // to distinguish in confirm screen
+                        },
+                      })
                     }
-                  })}
-                  className="bg-white p-4 rounded-[32px] flex-row items-center mb-4 shadow-sm border border-gray-50"
-                >
-                  <View className="w-12 h-12 bg-gray-50 rounded-full items-center justify-center mr-4">
-                    <MaterialCommunityIcons name="hands-pray" size={24} color="#1F2C37" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-[#1F2C37] font-bold text-sm mb-1" numberOfLines={1}>
-                      {displayLabel}
-                    </Text>
-                    <Text className="text-[#9DA3B6] text-[10px]">
-                      {new Date(
-                        (item.created_at || '').replace(' +0000 UTC', 'Z').replace(' ', 'T') || Date.now()
-                      ).toLocaleDateString()}
-                    </Text>
-                  </View>
-                  <View className="items-end">
-                    <Text className="text-[#1F2C37] font-bold text-sm">₦{Number(item.amount).toLocaleString()}</Text>
-                    <View className="bg-amber-100 px-2 py-0.5 rounded-md mt-1">
-                      <Text className="text-amber-500 text-[10px] font-bold uppercase">{item.status}</Text>
+                    className="bg-white p-4 rounded-[32px] flex-row items-center mb-4 shadow-sm border border-gray-50"
+                  >
+                    <View className="w-12 h-12 bg-gray-50 rounded-full items-center justify-center mr-4">
+                      <MaterialCommunityIcons
+                        name="hands-pray"
+                        size={24}
+                        color="#1F2C37"
+                      />
                     </View>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
+                    <View className="flex-1">
+                      <Text
+                        className="text-[#1F2C37] font-bold text-sm mb-1"
+                        numberOfLines={1}
+                      >
+                        {displayLabel}
+                      </Text>
+                      <Text className="text-[#9DA3B6] text-[10px]">
+                        {new Date(
+                          (item.created_at || "")
+                            .replace(" +0000 UTC", "Z")
+                            .replace(" ", "T") || Date.now(),
+                        ).toLocaleDateString()}
+                      </Text>
+                    </View>
+                    <View className="items-end">
+                      <Text className="text-[#1F2C37] font-bold text-sm">
+                        ₦{Number(item.amount).toLocaleString()}
+                      </Text>
+                      <View className="bg-amber-100 px-2 py-0.5 rounded-md mt-1">
+                        <Text className="text-amber-500 text-[10px] font-bold uppercase">
+                          {item.status}
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })
+            )}
           </ScrollView>
         )}
       </View>

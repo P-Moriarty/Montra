@@ -1,22 +1,47 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Share, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Share, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
+import { useApiQuery, useApiMutation } from '@/hooks/api/use-api';
+import { ProfileService } from '@/services/modules/profile.service';
+import { ReferralService } from '@/services/modules/referral.service';
+import { useQueryClient } from '@tanstack/react-query';
+import { Toast } from '@/components/ui/toast';
 
 export default function ReferScreen() {
-  const referralCode = 'MONTRA-9485';
+  const queryClient = useQueryClient();
+  const [toast, setToast] = useState({ visible: false, message: '', type: 'success' as 'success' | 'error' });
+
+  const { data: user } = useApiQuery(['profile'], ProfileService.getProfile);
+  const { data: countData, isLoading: loadingCount } = useApiQuery(['referral-count'], () => ReferralService.getCount());
+  const { data: balanceData, isLoading: loadingBalance } = useApiQuery(['referral-balance'], () => ReferralService.getBalance());
+
+  const referralCode = user?.pay_id || 'MONTRA-9485';
+  const referralCount = countData?.count || countData?.data?.count || 0;
+  const pendingBalance = balanceData?.pending || balanceData?.data?.pending || 0;
+  const withdrawableBalance = balanceData?.withdrawable || balanceData?.data?.withdrawable || 0;
+
+  const redeemMutation = useApiMutation(ReferralService.redeem, {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['referral-balance'] });
+      setToast({ visible: true, message: 'Referral earnings redeemed successfully!', type: 'success' });
+    },
+    onError: () => {
+      setToast({ visible: true, message: 'Failed to redeem referral earnings.', type: 'error' });
+    },
+  });
 
   const handleCopy = async () => {
     await Clipboard.setStringAsync(referralCode);
-    alert('Referral code copied!');
+    setToast({ visible: true, message: 'Referral code copied!', type: 'success' });
   };
 
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Join me on Montra and get ₦1,000 when you sign up! Use my code: ${referralCode}`,
+        message: `Join me on Montra and earn rewards! Use my code: ${referralCode}`,
       });
     } catch (error) {
       console.log(error);
@@ -25,6 +50,12 @@ export default function ReferScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast(prev => ({ ...prev, visible: false }))}
+      />
       {/* Header */}
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity 
@@ -39,65 +70,82 @@ export default function ReferScreen() {
       <ScrollView 
         className="flex-1 px-5" 
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="always"
       >
         <View className="items-center mt-10 mb-8">
-           <View className="w-32 h-32 bg-white rounded-full items-center justify-center shadow-sm mb-6 border border-gray-50">
-             <Image 
-               source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' }} 
-               className="w-20 h-20"
-             />
-           </View>
-           <Text className="text-[#1F2C37] text-2xl font-black mb-2 text-center">Refer your friends</Text>
-           <Text className="text-[#9DA3B6] text-center text-sm leading-6 px-4">
-             Get ₦1,000 for every friend that signs up and completes their first transaction.
-           </Text>
+          <View className="w-20 h-20 bg-white rounded-full items-center justify-center shadow-sm mb-4 border border-gray-50">
+            <Ionicons name="people-outline" size={40} color="#5154F4" />
+          </View>
+          <Text className="text-[#1F2C37] text-2xl font-black mb-2 text-center">Refer your friends</Text>
+          <Text className="text-[#9DA3B6] text-center text-sm leading-6 px-4">
+            Earn rewards for every friend that signs up using your code.
+          </Text>
         </View>
 
-        {/* Code Card */}
-        <View className="bg-white p-8 rounded-[48px] shadow-sm border border-gray-50 mb-10 items-center">
-           <Text className="text-[#6C7278] text-[10px] font-bold uppercase tracking-widest mb-4">Your Referral Code</Text>
-           <View className="bg-gray-50 px-8 py-5 rounded-[32px] border border-dashed border-indigo-200 flex-row items-center">
-              <Text className="text-[#1F2C37] text-2xl font-black mr-4">{referralCode}</Text>
-              <TouchableOpacity onPress={handleCopy} className="bg-white p-2 rounded-xl shadow-sm">
-                 <Feather name="copy" size={20} color="#5154F4" />
-              </TouchableOpacity>
-           </View>
+        {/* Referral Code Card */}
+        <View className="bg-white p-8 rounded-[48px] shadow-sm border border-gray-50 mb-6 items-center">
+          <Text className="text-[#6C7278] text-[10px] font-bold uppercase tracking-widest mb-4">Your Referral Code</Text>
+          <View className="bg-gray-50 px-8 py-5 rounded-[32px] border border-dashed border-indigo-200 flex-row items-center">
+            <Text className="text-[#1F2C37] text-2xl font-black mr-4">{referralCode}</Text>
+            <TouchableOpacity onPress={handleCopy} className="bg-white p-2 rounded-xl shadow-sm">
+              <Feather name="copy" size={20} color="#5154F4" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Stats Cards */}
+        <View className="flex-row gap-3 mb-6">
+          <View className="flex-1 bg-white p-5 rounded-[32px] shadow-sm border border-gray-50 items-center">
+            <Text className="text-[#9DA3B6] text-[10px] font-bold uppercase tracking-widest mb-2">Referrals</Text>
+            {loadingCount ? (
+              <ActivityIndicator size="small" color="#5154F4" />
+            ) : (
+              <Text className="text-[#1F2C37] text-3xl font-black">{referralCount}</Text>
+            )}
+          </View>
+          <View className="flex-1 bg-white p-5 rounded-[32px] shadow-sm border border-gray-50 items-center">
+            <Text className="text-[#9DA3B6] text-[10px] font-bold uppercase tracking-widest mb-2">Pending</Text>
+            {loadingBalance ? (
+              <ActivityIndicator size="small" color="#5154F4" />
+            ) : (
+              <Text className="text-orange-500 text-3xl font-black">₦{(pendingBalance / 100).toLocaleString()}</Text>
+            )}
+          </View>
+        </View>
+
+        {/* Withdrawable + Redeem */}
+        <View className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-50 mb-6">
+          <View className="flex-row items-center justify-between mb-4">
+            <Text className="text-[#9DA3B6] text-[10px] font-bold uppercase tracking-widest">Withdrawable Balance</Text>
+            {loadingBalance ? (
+              <ActivityIndicator size="small" color="#5154F4" />
+            ) : (
+              <Text className="text-[#1F2C37] text-2xl font-black">₦{(withdrawableBalance / 100).toLocaleString()}</Text>
+            )}
+          </View>
+          <TouchableOpacity
+            onPress={() => redeemMutation.mutate(undefined as any)}
+            disabled={withdrawableBalance <= 0 || redeemMutation.isPending}
+            className={`py-4 rounded-2xl items-center ${withdrawableBalance > 0 ? 'bg-[#5154F4]' : 'bg-gray-200'}`}
+          >
+            {redeemMutation.isPending ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text className={`font-bold text-base ${withdrawableBalance > 0 ? 'text-white' : 'text-gray-400'}`}>
+                Redeem to Wallet
+              </Text>
+            )}
+          </TouchableOpacity>
         </View>
 
         {/* Share Button */}
         <TouchableOpacity 
           onPress={handleShare}
-          className="bg-[#5154F4] py-5 rounded-[28px] shadow-lg shadow-indigo-100 flex-row items-center justify-center"
+          className="bg-[#5154F4] py-5 rounded-[28px] shadow-lg shadow-indigo-100 flex-row items-center justify-center mb-10"
         >
-          <Feather name="share-2" size={20} color="white" className="mr-2" />
+          <Feather name="share-2" size={20} color="white" />
           <Text className="text-white text-center text-lg font-bold ml-2">Share Invite Link</Text>
         </TouchableOpacity>
-
-        {/* Referrals Status */}
-        <View className="mt-12 mb-10">
-           <Text className="text-[#1F2C37] text-lg font-bold mb-6">Your Referrals</Text>
-           
-           {[
-             { name: 'Emeka Obi', status: 'Completed', date: '2 hours ago', amount: '₦1,000' },
-             { name: 'Sara Yusuf', status: 'Pending', date: 'Yesterday' },
-           ].map((ref, idx) => (
-             <View key={idx} className="bg-white/60 p-5 rounded-[32px] mb-4 border border-white/40 flex-row items-center">
-                <View className="w-12 h-12 bg-white rounded-2xl items-center justify-center mr-4 shadow-sm">
-                   <Text className="text-[#1F2C37] font-bold">{ref.name[0]}</Text>
-                </View>
-                <View className="flex-1">
-                   <Text className="text-[#1F2C37] font-bold text-sm">{ref.name}</Text>
-                   <Text className="text-[#9DA3B6] text-[10px]">{ref.date}</Text>
-                </View>
-                <View className="items-end">
-                   <Text className={`font-bold text-xs ${ref.status === 'Completed' ? 'text-green-600' : 'text-orange-500'}`}>
-                     {ref.status}
-                   </Text>
-                   {ref.amount && <Text className="text-[#1F2C37] font-bold text-xs mt-1">{ref.amount}</Text>}
-                </View>
-             </View>
-           ))}
-        </View>
       </ScrollView>
     </SafeAreaView>
   );

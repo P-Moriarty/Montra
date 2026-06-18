@@ -1,5 +1,5 @@
-import apiClient from '../api/client';
-import { ENDPOINTS } from '../api/endpoints';
+import apiClient from "../api/client";
+import { ENDPOINTS } from "../api/endpoints";
 
 export interface Bank {
   name: string;
@@ -31,7 +31,7 @@ export const WithdrawalService = {
 
     if (Array.isArray(rawBanks)) {
       return rawBanks.map((b: any) => {
-        if (typeof b === 'string') {
+        if (typeof b === "string") {
           return { name: b, code: b };
         }
 
@@ -43,8 +43,8 @@ export const WithdrawalService = {
             b.bank_fullname ||
             b.fullName ||
             b.label ||
-            'Unknown Bank',
-          code: b.code || b.bank_code || b.bankCode || b.id || b.value || '',
+            "Unknown Bank",
+          code: b.code || b.bank_code || b.bankCode || b.id || b.value || "",
         };
       });
     }
@@ -62,7 +62,7 @@ export const WithdrawalService = {
 
     const response = await apiClient.post(
       ENDPOINTS.WITHDRAWAL.RESOLVE_ACCOUNT,
-      cleanPayload
+      cleanPayload,
     );
 
     return response.data;
@@ -70,7 +70,7 @@ export const WithdrawalService = {
 
   initiateWithdrawal: async (payload: WithdrawalPayload) => {
     const idempotencyKey =
-      typeof crypto !== 'undefined' && crypto.randomUUID
+      typeof crypto !== "undefined" && crypto.randomUUID
         ? crypto.randomUUID()
         : `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
 
@@ -82,9 +82,10 @@ export const WithdrawalService = {
       bankcode: payload.bankcode.trim(),
       bankname: payload.bankname.trim(),
       credential: payload.credential.trim(),
-      narration: payload.narration?.trim() || 'Withdrawal',
+      narration: payload.narration?.trim() || "Outward",
 
       account_name: payload.accountname.trim(),
+
       account_number: payload.accountnumber.trim(),
       auth_method: payload.authmethod.trim(),
       bank_code: payload.bankcode.trim(),
@@ -92,8 +93,8 @@ export const WithdrawalService = {
     };
 
     console.log(
-      '[WithdrawalService] initiateWithdrawal payload:',
-      JSON.stringify(cleanPayload, null, 2)
+      "[WithdrawalService] initiateWithdrawal payload:",
+      JSON.stringify(cleanPayload, null, 2),
     );
 
     const response = await apiClient.post(
@@ -101,9 +102,9 @@ export const WithdrawalService = {
       cleanPayload,
       {
         headers: {
-          'idempotency-key': idempotencyKey,
+          "idempotency-key": idempotencyKey,
         },
-      }
+      },
     );
 
     return response.data;

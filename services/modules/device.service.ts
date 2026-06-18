@@ -1,7 +1,5 @@
 import apiClient from "../api/client";
 import { ENDPOINTS } from "../api/endpoints";
-// import * as SecureStore from "expo-secure-store";
-// import { Config } from "@/constants/Config";
 
 /**
  * Industrial-Grade Device Service
@@ -11,24 +9,24 @@ export const DeviceService = {
   /**
    * Get a list of all devices (trusted and untrusted) that have logged into this account.
    */
-  getAll: async (deviceId: string) => {
-    const response = await apiClient.get(ENDPOINTS.DEVICES.GET_ALL, {
-      headers: {
-        "device-id": deviceId,
-      },
-    });
+  getAll: async () => {
+    const response = await apiClient.get(ENDPOINTS.DEVICES.GET_ALL);
     return response.data;
   },
 
   /**
    * Resend the verification code for device trust to the user's email.
    */
-  resendOtp: async (deviceId: string, data: { email: string }) => {
-    const response = await apiClient.post(ENDPOINTS.DEVICES.RESEND_OTP, data, {
-      headers: {
-        "device-id": deviceId,
-      },
-    });
+  resendOtp: async (data: { email: string }) => {
+    const response = await apiClient.post(ENDPOINTS.DEVICES.RESEND_OTP, data, { skipAuth: true });
+    return response.data;
+  },
+
+  /**
+   * Verify a new device with OTP sent to the user's email.
+   */
+  verifyNewDevice: async (data: { email: string; verification_code: string }) => {
+    const response = await apiClient.post(ENDPOINTS.DEVICES.VERIFY_NEW_DEVICE, data, { skipAuth: true });
     return response.data;
   },
 
@@ -46,7 +44,7 @@ export const DeviceService = {
    * Update the Firebase Cloud Messaging token for a specific device.
    */
   updateToken: async (deviceId: string, data: { fcm_token: string }) => {
-    const response = await apiClient.post(
+    const response = await apiClient.patch(
       ENDPOINTS.DEVICES.UPDATE_TOKEN(deviceId),
       data,
     );

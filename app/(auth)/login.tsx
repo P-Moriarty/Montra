@@ -1,23 +1,35 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { AuthInput } from '@/components/auth-input';
-import { Feather } from '@expo/vector-icons';
-import { LoginSchema } from '@/services/api/validation';
-import { AuthService } from '@/services/modules/auth.service';
-import { useApiMutation } from '@/hooks/api/use-api';
-import { Toast } from '@/components/ui/toast';
-import { useAuth } from '@/context/AuthContext';
+import React, { useState, useMemo } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { AuthInput } from "@/components/auth-input";
+import { Feather } from "@expo/vector-icons";
+import { LoginSchema } from "@/services/api/validation";
+import { AuthService } from "@/services/modules/auth.service";
+import { useApiMutation } from "@/hooks/api/use-api";
+import { Toast } from "@/components/ui/toast";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [toast, setToast] = useState({ visible: false, message: '', type: 'success' as 'success' | 'error' });
+  const [toast, setToast] = useState({
+    visible: false,
+    message: "",
+    type: "success" as "success" | "error",
+  });
 
   // Industrial-grade validation check
   const errors = useMemo(() => {
@@ -27,12 +39,50 @@ export default function LoginScreen() {
   }, [email, password]);
 
   const isValid = LoginSchema.safeParse({ email, password }).success;
+
   const loginMutation = useApiMutation(AuthService.login, {
     onSuccess: async (data: any) => {
-      console.log('[Auth Hub] Login Success Payload Audit:', data);
+      console.log(
+        "[Auth Hub] Login Success Payload Audit:",
+        JSON.stringify(data, null, 2),
+      );
+
+      const isVerified =
+        data?.data?.is_verified ?? data?.user?.is_verified ?? data?.is_verified;
+
+      console.log("[Auth Hub] Verification check:", { isVerified });
+
+      const notVerifiedSuccessMsg =
+        typeof data?.message === "string" &&
+        ["not verified", "unverified", "verify your account"].some((kw) =>
+          data.message.toLowerCase().includes(kw),
+        );
+
+      if (isVerified === false || notVerifiedSuccessMsg) {
+        console.log(
+          "[Auth Hub] Account unverified in success handler. Routing to verification...",
+        );
+        setToast({
+          visible: true,
+          message: data?.message || "Please verify your account to continue.",
+          type: "error",
+        });
+        setTimeout(() => {
+          try {
+            router.push({
+              pathname: "/verify-email",
+              params: { email: email.trim() },
+            });
+          } catch (e) {
+            console.error("[Auth Hub] router.push failed in onSuccess:", e);
+          }
+        }, 1500);
+        return;
+      }
 
       // Robust token extraction mirroring the AuthService engine
-      const token = data?.token ||
+      const token =
+        data?.token ||
         data?.access_token ||
         data?.user?.token ||
         data?.user?.access_token ||
@@ -40,42 +90,107 @@ export default function LoginScreen() {
         data?.data?.access_token;
 
       if (token) {
-        console.log('[Auth Hub] Token Verified. Length:', token.length, 'Anchoring session...');
-        setToast({ visible: true, message: data.message || 'Authentication successful!', type: 'success' });
+        console.log(
+          "[Auth Hub] Token Verified. Length:",
+          token.length,
+          "Anchoring session...",
+        );
+        setToast({
+          visible: true,
+          message: data.message || "Authentication successful!",
+          type: "success",
+        });
 
         // Immediate session anchoring
         try {
           await signIn(token);
-          console.log('[Auth Hub] Session anchored successfully.');
+          console.log("[Auth Hub] Session anchored successfully.");
+          router.replace("/(tabs)");
         } catch (authError) {
-          console.error('[Auth Hub] Session anchoring failed:', authError);
+          console.error("[Auth Hub] Session anchoring failed:", authError);
         }
       } else {
-        const message = data?.message || 'Verification successful but no session token received.';
-        console.warn('[Auth Hub] Handshake Alert:', message);
-        setToast({ visible: true, message: String(message), type: 'error' });
+        const message =
+          data?.message ||
+          "Verification successful but no session token received.";
+        console.warn("[Auth Hub] Handshake Alert:", message);
+        setToast({ visible: true, message: String(message), type: "error" });
       }
     },
     onError: (error: any) => {
-      // Robust error parsing for industrial-grade validation objects
-      const data = error.response?.data;
-      let message = 'Invalid credentials or server error';
+      console.log("[Auth Hub] Login Error Audit:", {
+        status: error.response?.status,
+        data: JSON.stringify(error.response?.data, null, 2),
+        message: error.message,
+      });
 
-      if (typeof data?.message === 'string') {
+      const status = error.response?.status;
+      const data = error.response?.data;
+
+      let message = "Invalid credentials or server error";
+
+      if (typeof data?.message === "string") {
         message = data.message;
-      } else if (typeof data?.errors === 'object') {
+      } else if (typeof data?.errors === "object") {
         const firstError = Object.values(data.errors)[0];
-        message = Array.isArray(firstError) ? firstError[0] : String(firstError);
-      } else if (typeof data === 'object' && !data.message) {
+        message = Array.isArray(firstError)
+          ? firstError[0]
+          : String(firstError);
+      } else if (typeof data === "object" && !data.message) {
         const firstValue = Object.values(data)[0];
-        message = Array.isArray(firstValue) ? firstValue[0] : String(firstValue);
+        message = Array.isArray(firstValue)
+          ? firstValue[0]
+          : String(firstValue);
       }
 
-      setToast({ visible: true, message: String(message), type: 'error' });
-    }
+      const lowerMsg = message.toLowerCase();
+
+      const isNewDeviceError =
+        lowerMsg.includes("new device") || lowerMsg.includes("device detected");
+
+      const isNotVerifiedError = [
+        "not verified",
+        "unverified",
+        "verify your account",
+        "account not verified",
+        "email not verified",
+        "user not verified",
+      ].some((kw) => lowerMsg.includes(kw));
+
+      if (status === 403 || isNewDeviceError || isNotVerifiedError) {
+        const target = isNewDeviceError ? "/verify-device" : "/verify-email";
+
+        setToast({
+          visible: true,
+          message:
+            data?.message || "Redirecting to verification...",
+          type: "error",
+        });
+        setTimeout(() => {
+          try {
+            console.log(`[Auth Hub] Redirecting to ${target}`);
+            router.push({
+              pathname: target,
+              params: { email: email.trim() },
+            });
+          } catch (e) {
+            console.error("[Auth Hub] router.push FAILED in onError:", e);
+          }
+        }, 1500);
+        return;
+      }
+
+      setToast({ visible: true, message: String(message), type: "error" });
+    },
   });
 
   const handleLogin = () => {
+    console.log(
+      "[Auth Hub] handleLogin called. isValid:",
+      isValid,
+      "email:",
+      email,
+    );
     if (isValid) {
       loginMutation.mutate({ email, password });
     }
@@ -87,11 +202,11 @@ export default function LoginScreen() {
         visible={toast.visible}
         message={toast.message}
         type={toast.type}
-        onClose={() => setToast(prev => ({ ...prev, visible: false }))}
+        onClose={() => setToast((prev) => ({ ...prev, visible: false }))}
       />
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
       >
         <ScrollView
@@ -119,7 +234,9 @@ export default function LoginScreen() {
               autoCapitalize="none"
             />
             {email.length > 0 && errors.email && (
-              <Text className="text-red-500 text-xs ml-4 mb-2">{errors.email[0]}</Text>
+              <Text className="text-red-500 text-xs ml-4 mb-2">
+                {errors.email[0]}
+              </Text>
             )}
           </View>
 
@@ -128,13 +245,15 @@ export default function LoginScreen() {
               icon="lock"
               placeholder="Enter your password"
               secureTextEntry={!showPassword}
-              rightIcon={showPassword ? 'eye' : 'eye-off'}
+              rightIcon={showPassword ? "eye" : "eye-off"}
               onRightIconPress={() => setShowPassword(!showPassword)}
               value={password}
               onChangeText={setPassword}
             />
             {password.length > 0 && errors.password && (
-              <Text className="text-red-500 text-xs ml-4 mb-2">{errors.password[0]}</Text>
+              <Text className="text-red-500 text-xs ml-4 mb-2">
+                {errors.password[0]}
+              </Text>
             )}
           </View>
 
@@ -145,21 +264,26 @@ export default function LoginScreen() {
               onPress={() => setRememberMe(!rememberMe)}
               activeOpacity={0.7}
             >
-              <View className={`w-5 h-5 rounded-md items-center justify-center border ${rememberMe ? 'bg-[#5E5CE6] border-[#5E5CE6]' : 'border-gray-300'}`}>
+              <View
+                className={`w-5 h-5 rounded-md items-center justify-center border ${rememberMe ? "bg-[#5E5CE6] border-[#5E5CE6]" : "border-gray-300"}`}
+              >
                 {rememberMe && <Feather name="check" size={14} color="white" />}
               </View>
               <Text className="text-[#6C7278] text-base ml-2">Remember me</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => router.push('/forgot-password')}>
-              <Text className="text-[#5E5CE6] text-base font-bold">Forgot password?</Text>
+            <TouchableOpacity onPress={() => router.push("/forgot-password")}>
+              <Text className="text-[#5E5CE6] text-base font-bold">
+                Forgot password?
+              </Text>
             </TouchableOpacity>
           </View>
 
           {/* Login Button */}
           <TouchableOpacity
-            className={`h-16 rounded-[20px] items-center justify-center shadow-lg ${isValid ? 'bg-[#5E5CE6] shadow-[#5E5CE6]/40' : 'bg-gray-400'
-              }`}
+            className={`h-16 rounded-[20px] items-center justify-center shadow-lg ${
+              isValid ? "bg-[#5E5CE6] shadow-[#5E5CE6]/40" : "bg-gray-400"
+            }`}
             onPress={handleLogin}
             activeOpacity={0.8}
             disabled={!isValid || loginMutation.isPending}
@@ -173,9 +297,13 @@ export default function LoginScreen() {
 
           {/* Signup Link */}
           <View className="flex-row justify-center mt-12">
-            <Text className="text-[#1F2C37] text-base">Don’t have an account? </Text>
-            <TouchableOpacity onPress={() => router.push('/signup')}>
-              <Text className="text-[#5E5CE6] text-base font-bold">Sign up</Text>
+            <Text className="text-[#1F2C37] text-base">
+              Don’t have an account?{" "}
+            </Text>
+            <TouchableOpacity onPress={() => router.push("/signup")}>
+              <Text className="text-[#5E5CE6] text-base font-bold">
+                Sign up
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

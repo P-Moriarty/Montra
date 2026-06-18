@@ -5,13 +5,12 @@ import { useApiMutation, useApiQuery } from '@/hooks/api/use-api';
 import { UpdateProfileSchema } from '@/services/api/validation';
 import { ProfileService } from '@/services/modules/profile.service';
 import { Feather, Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
+// import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
-import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Image, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function EditProfileScreen() {
@@ -23,30 +22,39 @@ export default function EditProfileScreen() {
 
   const [fullName, setFullName] = useState(user?.full_name || '');
   const [dob, setDob] = useState(user?.date_of_birth || '');
-  const [date, setDate] = useState(user?.date_of_birth ? new Date(user.date_of_birth) : new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  // const [date, setDate] = useState(user?.date_of_birth ? new Date(user.date_of_birth) : new Date());
+  // const [showDatePicker, setShowDatePicker] = useState(false);
   const [gender, setGender] = useState<any>(user?.gender || 'male');
   const [showGenderModal, setShowGenderModal] = useState(false);
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' as 'success' | 'error' });
+
+  // Sync form state when profile loads
+  useEffect(() => {
+    if (user) {
+      setFullName(user.full_name || '');
+      setDob(user.date_of_birth || '');
+      // if (user.date_of_birth) setDate(new Date(user.date_of_birth));
+      if (user.gender) setGender(user.gender);
+    }
+  }, [user]);
 
   // Industrial-grade resilient image logic
   const imageUrl = useMemo(() => {
     const avatar = user?.profilePicture;
 
-    if (!avatar) return 'https://i.pravatar.cc/150';
+    if (!avatar) return null;
 
     if (avatar.startsWith('http')) return avatar;
 
-    // 🔥 REMOVE /api/v1 completely
-    const baseUrl = Config.api.baseUrl
-      .replace('/api/v1', '') // <-- FIX
-      .replace(/\/$/, '');    // remove trailing slash
+    // Strip the last path segment from the base URL (/v1) and any trailing slash
+    const baseUrl = Config.api.baseUrl.replace(/\/[^/]+\/?$/, '');
 
     const cleanAvatar = avatar.startsWith('/') ? avatar : `/${avatar}`;
 
     return `${baseUrl}${cleanAvatar}?t=${Date.now()}`;
   }, [user?.profilePicture]);
-  // console.log('FINAL IMAGE URL:', imageUrl);
+
+  console.log("edit-user", JSON.stringify(user, null, 2))
 
   // Industrial-grade avatar upload mutation
   const uploadMutation = useApiMutation(ProfileService.uploadAvatar, {
@@ -92,17 +100,21 @@ export default function EditProfileScreen() {
     }
   };
 
-  const onDateChange = (event: any, selectedDate?: Date) => {
-    const currentDate = selectedDate || date;
-    setShowDatePicker(Platform.OS === 'ios');
-    setDate(currentDate);
+  // const onDateChange = (event: any, selectedDate?: Date) => {
+  //   if (Platform.OS === 'android' && event.type === 'dismissed') {
+  //     setShowDatePicker(false);
+  //     return;
+  //   }
 
-    // Format to YYYY-MM-DD
-    const year = currentDate.getFullYear();
-    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-    const day = String(currentDate.getDate()).padStart(2, '0');
-    setDob(`${year}-${month}-${day}`);
-  };
+  //   const currentDate = selectedDate || date;
+  //   setShowDatePicker(Platform.OS === 'ios');
+  //   setDate(currentDate);
+
+  //   const year = currentDate.getFullYear();
+  //   const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+  //   const day = String(currentDate.getDate()).padStart(2, '0');
+  //   setDob(`${year}-${month}-${day}`);
+  // };
 
   const updateMutation = useApiMutation(ProfileService.updateProfile, {
     onSuccess: (data, variables) => {
@@ -184,6 +196,7 @@ export default function EditProfileScreen() {
         <ScrollView
           className="flex-1 px-6"
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="always"
           contentContainerStyle={{ paddingBottom: 40 }}
         >
           {/* Industrial-Grade Avatar Hub */}
@@ -193,12 +206,15 @@ export default function EditProfileScreen() {
               disabled={uploadMutation.isPending}
               className="w-32 h-32 rounded-full bg-white items-center justify-center shadow-md relative"
             >
-              <View className="w-[124px] h-[124px] rounded-full overflow-hidden bg-gray-100">
-                <Image
-                  source={{ uri: imageUrl }}
-                  style={{ width: '100%', height: '100%' }}
-                  contentFit="cover"
-                />
+              <View className="w-[124px] h-[124px] rounded-full overflow-hidden bg-gray-100 items-center justify-center">
+                {imageUrl ? (
+                  <Image
+                    source={{ uri: imageUrl }}
+                    style={{ width: '100%', height: '100%' }}
+                  />
+                ) : (
+                  <Ionicons name="person" size={48} color="#9DA3B6" />
+                )}
               </View>
 
               {/* Edit Badge */}
@@ -228,7 +244,7 @@ export default function EditProfileScreen() {
             </View>
 
             {/* Date of Birth */}
-            <View className="mt-4">
+            {/* <View className="mt-4">
               <Text className="text-[#6C7278] text-sm font-bold uppercase mb-2 ml-1">Date of Birth</Text>
               <TouchableOpacity
                 onPress={() => setShowDatePicker(true)}
@@ -250,7 +266,7 @@ export default function EditProfileScreen() {
                   maximumDate={new Date()}
                 />
               )}
-            </View>
+            </View> */}
 
             {/* Gender Selection */}
             <View className="mt-4">

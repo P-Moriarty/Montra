@@ -5,14 +5,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { CustomKeypad } from "@/components/custom-keypad";
 import { useApiMutation } from "@/hooks/api/use-api";
-import { AuthService } from "@/services/modules/auth.service";
+import { DeviceService } from "@/services/modules/device.service";
 import { Toast } from "@/components/ui/toast";
 
-import { useAuth } from "@/context/AuthContext";
-
-export default function VerifyEmailScreen() {
+export default function VerifyDeviceScreen() {
   const router = useRouter();
-  const { signIn } = useAuth();
   const { email } = useLocalSearchParams<{ email: string }>();
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -31,42 +28,16 @@ export default function VerifyEmailScreen() {
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
-  const verifyMutation = useApiMutation(AuthService.verifyAccount, {
-    onSuccess: async (data) => {
-      console.log("[Auth Hub] Verification Success:", data);
+  const verifyMutation = useApiMutation(DeviceService.verifyNewDevice, {
+    onSuccess: (data) => {
       setToast({
         visible: true,
-        message: "Account verified successfully!",
+        message: "Device verified successfully!",
         type: "success",
       });
-
-      // Anchor session immediately if token is present
-      const token =
-        data?.token ||
-        data?.access_token ||
-        data?.user?.token ||
-        data?.user?.access_token ||
-        data?.data?.token ||
-        data?.data?.access_token;
-
-      if (token) {
-        try {
-          await signIn(token);
-          setTimeout(() => {
-            router.replace("/(tabs)");
-          }, 1500);
-        } catch (authError) {
-          console.error(
-            "[Auth Hub] Session anchoring failed after verification:",
-            authError,
-          );
-          router.replace("/login");
-        }
-      } else {
-        setTimeout(() => {
-          router.replace("/login");
-        }, 1500);
-      }
+      setTimeout(() => {
+        router.replace("/login");
+      }, 1500);
     },
     onError: (error: any) => {
       const data = error.response?.data;
@@ -76,7 +47,7 @@ export default function VerifyEmailScreen() {
     },
   });
 
-  const resendMutation = useApiMutation(AuthService.resendOtp, {
+  const resendMutation = useApiMutation(DeviceService.resendOtp, {
     onSuccess: () => {
       setToast({
         visible: true,
@@ -124,7 +95,7 @@ export default function VerifyEmailScreen() {
   };
 
   const goBack = () => {
-    router.replace("/signup");
+    router.replace("/login");
   };
 
   return (
@@ -136,7 +107,6 @@ export default function VerifyEmailScreen() {
         onClose={() => setToast((prev) => ({ ...prev, visible: false }))}
       />
       <View className="px-6 flex-1">
-        {/* Back Button */}
         <TouchableOpacity
           className="w-12 h-12 rounded-full bg-gray-50 items-center justify-center mt-4"
           onPress={goBack}
@@ -144,20 +114,18 @@ export default function VerifyEmailScreen() {
           <Feather name="arrow-left" size={24} color="#1F2C37" />
         </TouchableOpacity>
 
-        {/* Header */}
         <View className="mt-8 mb-4 items-center">
           <Text className="text-[#1F2C37] text-2xl font-bold mb-3">
-            Verify your Email
+            Verify New Device
           </Text>
           <Text className="text-[#9DA3B6] text-base text-center leading-6">
-            We sent a 6-digit code to your email{"\n"}
+            A verification code was sent to{"\n"}
             <Text className="text-[#1F2C37] font-bold">
               {email || "your email"}
             </Text>
           </Text>
         </View>
 
-        {/* OTP Input Boxes */}
         <View className="flex-row justify-between mt-10 mb-8">
           {otp.map((digit, index) => (
             <View
@@ -169,10 +137,9 @@ export default function VerifyEmailScreen() {
           ))}
         </View>
 
-        {/* Resend Link */}
         <View className="flex-row justify-center mb-10">
           <Text className="text-[#1F2C37] text-base">
-            Didn’t receive any code?{" "}
+            Didn&apos;t receive any code?{" "}
           </Text>
           <TouchableOpacity
             onPress={() => {
@@ -199,7 +166,6 @@ export default function VerifyEmailScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Verify Button */}
         <TouchableOpacity
           className={`h-16 rounded-[20px] items-center justify-center shadow-lg ${
             currentIndex === 6
@@ -213,12 +179,11 @@ export default function VerifyEmailScreen() {
           {verifyMutation.isPending ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-white text-lg font-bold">Verify</Text>
+            <Text className="text-white text-lg font-bold">Verify Device</Text>
           )}
         </TouchableOpacity>
       </View>
 
-      {/* Custom Keypad */}
       <CustomKeypad onPress={handleKeyPress} onDelete={handleDelete} />
     </SafeAreaView>
   );

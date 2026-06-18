@@ -33,4 +33,14 @@ export const ProfileService = {
     });
     return response.data;
   },
+
+  upgradeTier2: async (data: { bvn: string }) => {
+    const response = await apiClient.post(ENDPOINTS.TIER2_UPGRADE, data);
+    return response.data;
+  },
+
+  upgradeTier3: async (data: { nin: string; passport_number?: string }) => {
+    const response = await apiClient.post(ENDPOINTS.TIER3_UPGRADE, data);
+    return response.data;
+  },
 };

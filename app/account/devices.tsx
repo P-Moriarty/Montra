@@ -7,8 +7,6 @@ import { useApiQuery, useApiMutation } from '@/hooks/api/use-api';
 import { DeviceService } from '@/services/modules/device.service';
 import { Toast } from '@/components/ui/toast';
 
-const DUMMY_DEVICE_ID = 'device_secure_enclave_key_0x123';
-
 export default function DevicesScreen() {
   const router = useRouter();
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' as 'success' | 'error' });
@@ -16,10 +14,10 @@ export default function DevicesScreen() {
   // Fetch all devices
   const { data: devicesData, isLoading, refetch } = useApiQuery(
     ['devices'],
-    () => DeviceService.getAll(DUMMY_DEVICE_ID)
+    () => DeviceService.getAll()
   );
 
-  const devices = devicesData?.data || [];
+  const devices = devicesData?.devices?.devices || [];
 
   // Remove Device Mutation
   const removeMutation = useApiMutation(DeviceService.removeDevice, {
@@ -34,18 +32,18 @@ export default function DevicesScreen() {
   });
 
   // Resend OTP Mutation
-  const resendOtpMutation = useApiMutation(
-    ({ email, deviceId }: { email: string, deviceId: string }) => DeviceService.resendOtp(deviceId, { email }),
-    {
-      onSuccess: () => {
-        setToast({ visible: true, message: 'OTP sent to your email.', type: 'success' });
-      },
-      onError: (error: any) => {
-        const message = error.response?.data?.message || 'Failed to resend OTP.';
-        setToast({ visible: true, message: typeof message === 'string' ? message : 'Error occurred', type: 'error' });
-      }
-    }
-  );
+  // const resendOtpMutation = useApiMutation(
+  //   (data: { email: string }) => DeviceService.resendOtp(data),
+  //   {
+  //     onSuccess: () => {
+  //       setToast({ visible: true, message: 'OTP sent to your email.', type: 'success' });
+  //     },
+  //     onError: (error: any) => {
+  //       const message = error.response?.data?.message || 'Failed to resend OTP.';
+  //       setToast({ visible: true, message: typeof message === 'string' ? message : 'Error occurred', type: 'error' });
+  //     }
+  //   }
+  // );
 
   const handleRemoveDevice = (deviceId: string) => {
     Alert.alert(
@@ -58,23 +56,21 @@ export default function DevicesScreen() {
     );
   };
 
-  const handleResendOtp = () => {
-    // In a real app, you would prompt for the email or use the authenticated user's email
-    Alert.prompt(
-      "Verify Device",
-      "Enter your email to receive an OTP for this device.",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Send", onPress: (email: any) => {
-            const currentDeviceId = devices[0]?.id || DUMMY_DEVICE_ID;
-            if (email) resendOtpMutation.mutate({ email, deviceId: currentDeviceId });
-          } 
-        }
-      ],
-      'plain-text',
-      ''
-    );
-  };
+  // const handleResendOtp = () => {
+  //   Alert.prompt(
+  //     "Verify Device",
+  //     "Enter your email to receive an OTP for this device.",
+  //     [
+  //       { text: "Cancel", style: "cancel" },
+  //       { text: "Send", onPress: (email: any) => {
+  //           if (email) resendOtpMutation.mutate({ email });
+  //         } 
+  //       }
+  //     ],
+  //     'plain-text',
+  //     ''
+  //   );
+  // };
 
   return (
     <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
@@ -115,11 +111,11 @@ export default function DevicesScreen() {
           <View>
             <View className="flex-row justify-between items-center mb-4 ml-4">
               <Text className="text-[#9DA3B6] text-xs font-bold uppercase tracking-widest">Active Devices</Text>
-              <TouchableOpacity onPress={handleResendOtp} disabled={resendOtpMutation.isPending}>
+              {/* <TouchableOpacity onPress={handleResendOtp} disabled={resendOtpMutation.isPending}>
                 <Text className="text-[#5E5CE6] text-xs font-bold uppercase tracking-widest mr-2">
                   {resendOtpMutation.isPending ? 'Sending...' : 'Verify This Device'}
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             <View className="bg-white/60 rounded-[40px] p-2 border border-white/40">
@@ -135,15 +131,27 @@ export default function DevicesScreen() {
                   >
                     <View className="flex-row items-center flex-1">
                       <View className="w-12 h-12 bg-[#5E5CE6]/10 rounded-2xl items-center justify-center mr-4">
-                        <Ionicons name={device.type === 'ios' ? 'logo-apple' : device.type === 'android' ? 'logo-android' : 'hardware-chip-outline'} size={24} color="#5E5CE6" />
+                        <Ionicons name="hardware-chip-outline" size={24} color="#5E5CE6" />
                       </View>
                       <View className="flex-1">
                         <Text className="text-[#1F2C37] font-bold text-[15px]" numberOfLines={1}>
-                          {device.name || 'Unknown Device'}
+                          {device.device_name || 'Unknown Device'}
                         </Text>
                         <Text className="text-[#9DA3B6] text-[11px] font-medium mt-1">
-                          Last active: {device.lastActive ? new Date(device.lastActive).toLocaleDateString() : 'Recently'}
+                          {device.location || ''}
                         </Text>
+                        <View className="flex-row items-center mt-1">
+                          <Text className="text-[#9DA3B6] text-[11px] font-medium">
+                            {device.last_login_at
+                              ? `Last login: ${new Date(device.last_login_at).toLocaleDateString()}`
+                              : 'Recently'}
+                          </Text>
+                          {device.is_trusted ? (
+                            <View className="ml-2 px-2 py-0.5 rounded-full bg-green-100">
+                              <Text className="text-green-700 text-[10px] font-semibold">Trusted</Text>
+                            </View>
+                          ) : null}
+                        </View>
                       </View>
                     </View>
                     <TouchableOpacity 

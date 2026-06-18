@@ -12,6 +12,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { WalletProvider } from '@/context/WalletContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { registerForPushNotifications } from '@/services/push-notifications';
 
 
 const queryClient = new QueryClient({
@@ -69,6 +70,11 @@ function RootLayoutNav() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userToken, isLoading, segments, navigationState?.key, isFirstLaunch]);
+
+  useEffect(() => {
+    if (!userToken || isLoading) return;
+    registerForPushNotifications();
+  }, [userToken, isLoading]);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

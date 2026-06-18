@@ -1,5 +1,5 @@
-import { Config } from '@/constants/Config';
 import { useApiQuery } from '@/hooks/api/use-api';
+import { Config } from "@/constants/Config";
 import { ProfileService } from '@/services/modules/profile.service';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -11,32 +11,35 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function MyProfileScreen() {
   const router = useRouter();
 
-  // Industrial-grade profile feed integration
   const { data: user, isLoading: isProfileLoading } = useApiQuery(['profile'], ProfileService.getProfile);
+
+  console.log("user", JSON.stringify(user, null, 2))
+
+  const displayTier = user?.tier
+    ? `Tier ${user.tier.replace('tier', '')}`
+    : '...';
 
   const profileData = [
     { label: 'Payment ID', value: user?.pay_id || '...', hasChevron: true },
-    { label: 'KYC Levels', value: user?.is_verified ? 'Verified' : 'Unverified', hasChevron: true },
+    { label: 'Tier', value: displayTier, hasChevron: true },
     { label: 'Email', value: user?.email || '...', hasChevron: true },
     { label: 'Phone number', value: user?.phone_number || '...', hasChevron: true },
     { label: 'Gender', value: user?.gender || 'Not specified', hasChevron: true },
-    { label: 'Date of birth', value: user?.date_of_birth || 'Not specified', hasChevron: true },
+    // { label: 'Date of birth', value: user?.date_of_birth || 'Not specified', hasChevron: true },
     { label: 'Country', value: user?.country || 'Nigeria', hasChevron: true },
-    { label: 'Address', value: user?.address || 'Not specified', hasChevron: true },
   ];
 
   const imageUrl = useMemo(() => {
     const avatar = user?.profilePicture;
 
-    if (!avatar) return 'https://i.pravatar.cc/150';
-
-    if (avatar.startsWith('http')) return avatar;
+    if (!avatar) return "https://i.pravatar.cc/150";
+    if (avatar.startsWith("http")) return avatar;
 
     const baseUrl = Config.api.baseUrl
-      .replace('/api/v1', '')
-      .replace(/\/$/, '');
+      .replace("/api/v1", "")
+      .replace(/\/$/, "");
 
-    const cleanAvatar = avatar.startsWith('/') ? avatar : `/${avatar}`;
+    const cleanAvatar = avatar.startsWith("/") ? avatar : `/${avatar}`;
 
     return `${baseUrl}${cleanAvatar}?t=${Date.now()}`;
   }, [user?.profilePicture]);
@@ -67,10 +70,10 @@ export default function MyProfileScreen() {
       >
         {/* Profile Summary */}
         <View className="items-center mt-6 mb-10">
-          <View className="w-28 h-28 rounded-full border-4 border-white shadow-lg overflow-hidden">
+          <View className="w-28 h-28 rounded-full border-4 border-white shadow-lg bg-gray-100 items-center justify-center">
             <Image
               source={{ uri: imageUrl }}
-              style={{ width: '100%', height: '100%' }}
+              style={{ width: "100%", height: "100%", borderRadius: 50 }}
               contentFit="cover"
             />
           </View>
