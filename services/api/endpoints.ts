@@ -92,4 +92,9 @@ export const ENDPOINTS = {
     BALANCE: "/csb/",
     REDEEM: "/csb/redeem",
   },
+  REFERRALS: {
+    COUNT: "/referrals",
+    BALANCE: "/referrals",
+    REDEEM: "/referrals/redeem",
+  },
 };

@@ -32,18 +32,18 @@ export default function DevicesScreen() {
   });
 
   // Resend OTP Mutation
-  const resendOtpMutation = useApiMutation(
-    (data: { email: string }) => DeviceService.resendOtp(data),
-    {
-      onSuccess: () => {
-        setToast({ visible: true, message: 'OTP sent to your email.', type: 'success' });
-      },
-      onError: (error: any) => {
-        const message = error.response?.data?.message || 'Failed to resend OTP.';
-        setToast({ visible: true, message: typeof message === 'string' ? message : 'Error occurred', type: 'error' });
-      }
-    }
-  );
+  // const resendOtpMutation = useApiMutation(
+  //   (data: { email: string }) => DeviceService.resendOtp(data),
+  //   {
+  //     onSuccess: () => {
+  //       setToast({ visible: true, message: 'OTP sent to your email.', type: 'success' });
+  //     },
+  //     onError: (error: any) => {
+  //       const message = error.response?.data?.message || 'Failed to resend OTP.';
+  //       setToast({ visible: true, message: typeof message === 'string' ? message : 'Error occurred', type: 'error' });
+  //     }
+  //   }
+  // );
 
   const handleRemoveDevice = (deviceId: string) => {
     Alert.alert(
@@ -56,21 +56,21 @@ export default function DevicesScreen() {
     );
   };
 
-  const handleResendOtp = () => {
-    Alert.prompt(
-      "Verify Device",
-      "Enter your email to receive an OTP for this device.",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Send", onPress: (email: any) => {
-            if (email) resendOtpMutation.mutate({ email });
-          } 
-        }
-      ],
-      'plain-text',
-      ''
-    );
-  };
+  // const handleResendOtp = () => {
+  //   Alert.prompt(
+  //     "Verify Device",
+  //     "Enter your email to receive an OTP for this device.",
+  //     [
+  //       { text: "Cancel", style: "cancel" },
+  //       { text: "Send", onPress: (email: any) => {
+  //           if (email) resendOtpMutation.mutate({ email });
+  //         } 
+  //       }
+  //     ],
+  //     'plain-text',
+  //     ''
+  //   );
+  // };
 
   return (
     <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
@@ -111,11 +111,11 @@ export default function DevicesScreen() {
           <View>
             <View className="flex-row justify-between items-center mb-4 ml-4">
               <Text className="text-[#9DA3B6] text-xs font-bold uppercase tracking-widest">Active Devices</Text>
-              <TouchableOpacity onPress={handleResendOtp} disabled={resendOtpMutation.isPending}>
+              {/* <TouchableOpacity onPress={handleResendOtp} disabled={resendOtpMutation.isPending}>
                 <Text className="text-[#5E5CE6] text-xs font-bold uppercase tracking-widest mr-2">
                   {resendOtpMutation.isPending ? 'Sending...' : 'Verify This Device'}
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             <View className="bg-white/60 rounded-[40px] p-2 border border-white/40">

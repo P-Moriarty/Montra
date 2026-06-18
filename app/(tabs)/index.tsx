@@ -361,13 +361,16 @@ export default function HomeScreen() {
         {/* Header Section */}
         <View className="flex-row items-center justify-between mt-4">
           <View className="flex-row items-center">
-            <View className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden mr-3">
+            <TouchableOpacity
+              onPress={() => router.push("/account/my-profile")}
+              className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden mr-3"
+            >
               <Image
                 source={{ uri: imageUrl }}
                 style={{ width: "100%", height: "100%" }}
                 contentFit="cover"
               />
-            </View>
+            </TouchableOpacity>
             <Text className="text-[#1F2C37] text-lg font-bold">
               {isProfileLoading
                 ? "Loading..."
@@ -608,7 +611,7 @@ export default function HomeScreen() {
               },
               { label: "Pay bills", icon: "rss", lib: "Feather" },
               { label: "Rewards", icon: "gift-outline", lib: "Ionicons" },
-              { label: "More", icon: "ellipsis-horizontal", lib: "Ionicons" },
+              { label: "Referral", icon: "users", lib: "Feather" },
             ].map((service, index) => (
               <TouchableOpacity
                 key={index}
@@ -617,6 +620,7 @@ export default function HomeScreen() {
                   if (service.label === "Pay bills") router.push("/pay-bills");
                   if (service.label === "Savings") router.push("/savings");
                   if (service.label === "Rewards") router.push("/rewards");
+                  if (service.label === "Referral") router.push("/rewards/refer");
                 }}
               >
                 <View className="w-16 h-16 bg-[#F0F1FF] rounded-full items-center justify-center shadow-sm mb-2">
