@@ -10,11 +10,13 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons} from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { AuthInput } from "@/components/auth-input";
 import { useApiQuery } from "@/hooks/api/use-api";
 import { VasService } from "@/services/modules/vas.service";
+import { providerLogos } from "@/constants/providerLogos";
+import { Image } from "expo-image";
 
 export default function BillFormScreen() {
   const { type, name } = useLocalSearchParams();
@@ -34,32 +36,40 @@ export default function BillFormScreen() {
   const providers =
     {
       airtime: [
-        { name: "MTN", id: "mtn", icon: "flare" },
-        { name: "Airtel", id: "airtel", icon: "circle" },
-        { name: "Glo", id: "glo", icon: "leaf" },
-        { name: "9Mobile", id: "9mobile", icon: "grid" },
+        { name: "MTN", id: "mtn", icon: providerLogos.mtn },
+        { name: "Airtel", id: "airtel", icon: providerLogos.airtel },
+        { name: "Glo", id: "glo", icon: providerLogos.glo },
+        { name: "9Mobile", id: "9mobile", icon: providerLogos["9mobile"] },
       ],
       electricity: [
-        { name: "EKEDC", id: "eko-electric", icon: "flash" },
-        { name: "IKEDC", id: "ikeja-electric", icon: "flash" },
-        { name: "AEDC", id: "abuja-electric", icon: "flash" },
-        { name: "KEDCO", id: "kano-electric", icon: "flash" },
+        { name: "EKEDC", id: "eko-electric", icon: providerLogos["eko-electric"] },
+        { name: "IKEDC", id: "ikeja-electric", icon: providerLogos["ikeja-electric"] },
+        { name: "AEDC", id: "abuja-electric", icon: providerLogos["abuja-electric"] },
+        { name: "KEDCO", id: "kano-electric", icon: providerLogos["kano-electric"] },
+        { name: "PHED", id: "port-harcourt-electric", icon: providerLogos["port-harcourt-electric"] },
+        { name: "JED", id: "jos-electric", icon: providerLogos["jos-electric"] },
+        { name: "IBEDC", id: "ibadan-electric", icon: providerLogos["ibadan-electric"] },
+        { name: "KAEDCO", id: "kaduna-electric", icon: providerLogos["kaduna-electric"] },
+        { name: "EEDC", id: "enugu-electric", icon: providerLogos["enugu-electric"] },
+        { name: "BEDC", id: "benin-electric", icon: providerLogos["benin-electric"] },
+        { name: "ABA", id: "aba-electric", icon: providerLogos["aba-electric"] },
+        { name: "YEDC", id: "yola-electric", icon: providerLogos["yola-electric"] },
       ],
       cable: [
-        { name: "DSTV", id: "dstv", icon: "television-box" },
-        { name: "GOTV", id: "gotv", icon: "television-box" },
-        { name: "Startimes", id: "startimes", icon: "television-box" },
-        { name: "Showmax", icon: "play-circle", id: "showmax" },
+        { name: "DSTV", id: "dstv", icon: providerLogos.dstv },
+        { name: "GOTV", id: "gotv", icon: providerLogos.gotv },
+        { name: "Startimes", id: "startimes", icon: providerLogos.startimes },
+        { name: "Showmax", icon: providerLogos.showmax, id: "showmax" },
       ],
       data: [
-        { name: "MTN Data", id: "mtn-data", icon: "wifi" },
-        { name: "Airtel Data", id: "airtel-data", icon: "wifi" },
-        { name: "Glo Data", id: "glo-data", icon: "wifi" },
-        { name: "9Mobile Data", id: "9mobile-data", icon: "wifi" },
+        { name: "MTN Data", id: "mtn-data", icon: providerLogos["mtn-data"] },
+        { name: "Airtel Data", id: "airtel-data", icon: providerLogos["airtel-data"] },
+        { name: "Glo Data", id: "glo-data", icon: providerLogos["glo-data"] },
+        { name: "9Mobile Data", id: "9mobile-data", icon: providerLogos["9mobile-data"] },
       ],
       internet: [
-        { name: "Smile", id: "smile-direct", icon: "wifi" },
-        { name: "Spectranet", id: "spectranet", icon: "wifi" },
+        { name: "Smile", id: "smile-direct", icon: providerLogos["smile-direct"] },
+        { name: "Spectranet", id: "spectranet", icon: providerLogos.spectranet },
       ],
     }[type as string] || [];
 
@@ -226,18 +236,28 @@ export default function BillFormScreen() {
                 key={p.id}
                 onPress={() => {
                   setSelectedProvider(p);
-                  setSelectedPlan(null); // Reset plan when provider changes
+                  setSelectedPlan(null);
                 }}
-                className={`px-6 py-4 rounded-3xl border ${selectedProvider?.id === p.id ? "bg-[#5154F4] border-[#5154F4]" : "bg-white border-gray-100"} items-center flex-row shadow-sm`}
+                className={`px-6 py-4 rounded-3xl border ${selectedProvider?.id === p.id
+                  ? "bg-[#5154F4] border-[#5154F4]"
+                  : "bg-white border-gray-100"
+                  } items-center flex-row shadow-sm`}
               >
-                <MaterialCommunityIcons
-                  name={p.icon as any}
-                  size={20}
-                  color={selectedProvider?.id === p.id ? "white" : "#5154F4"}
-                  className="mr-2"
+                <Image
+                  source={providerLogos[p.id as keyof typeof providerLogos]}
+                  style={{
+                    width: 30,
+                    height: 30,
+                    marginRight: 8,
+                  }}
+                  resizeMode="contain"
                 />
+
                 <Text
-                  className={`font-bold ${selectedProvider?.id === p.id ? "text-white" : "text-[#1F2C37]"}`}
+                  className={`font-bold ${selectedProvider?.id === p.id
+                      ? "text-white"
+                      : "text-[#1F2C37]"
+                    }`}
                 >
                   {p.name}
                 </Text>
