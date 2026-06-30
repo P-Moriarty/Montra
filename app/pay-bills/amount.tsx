@@ -4,8 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { CustomKeypad } from '@/components/custom-keypad';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function BillAmountScreen() {
+  const { colors } = useTheme();
   const { type, name, provider, identifier, fixedAmount, planCode, planName, providerId } = useLocalSearchParams();
   const [amount, setAmount] = useState(
     fixedAmount ? Number(fixedAmount).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'
@@ -50,16 +52,16 @@ export default function BillAmountScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity 
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm" style={{ backgroundColor: colors.surface }}
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">Amount</Text>
+        <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>Amount</Text>
       </View>
 
       <ScrollView 
@@ -67,36 +69,36 @@ export default function BillAmountScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Context Card */}
-        <View className="bg-white/80 p-6 rounded-[32px] mt-8 flex-row items-center border border-white shadow-sm">
+        <View className="p-6 rounded-[32px] mt-8 flex-row items-center border shadow-sm" style={{ backgroundColor: colors.surfaceSecondary, borderColor: colors.surface }}>
           <View className="w-12 h-12 bg-indigo-50 rounded-2xl items-center justify-center mr-4">
-            <Feather name={type === 'airtime' || type === 'data' ? 'phone' : 'zap'} size={24} color="#5154F4" />
+            <Feather name={type === 'airtime' || type === 'data' ? 'phone' : 'zap'} size={24} color={colors.primary} />
           </View>
           <View className="flex-1">
-            <Text className="text-[#1F2C37] font-bold text-base">{provider}</Text>
-            <Text className="text-[#9DA3B6] text-xs">{identifier}</Text>
+            <Text className="font-bold text-base" style={{ color: colors.text }}>{provider}</Text>
+            <Text className="text-xs" style={{ color: colors.textSecondary }}>{identifier}</Text>
           </View>
-          <View className="bg-[#5154F4]/10 px-3 py-1 rounded-lg">
-            <Text className="text-[#5154F4] text-[10px] font-bold uppercase">{type}</Text>
+          <View className="px-3 py-1 rounded-lg" style={{ backgroundColor: `${colors.primary}1A` }}>
+            <Text className="text-[10px] font-bold uppercase" style={{ color: colors.primary }}>{type}</Text>
           </View>
         </View>
 
         {/* Amount Display */}
         <View className="mt-12 items-center">
-          <Text className="text-[#6C7278] text-sm font-semibold uppercase tracking-widest mb-4">You&apos;re paying</Text>
+          <Text className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: colors.textTertiary }}>You&apos;re paying</Text>
           <View className="flex-row items-baseline mb-4">
-            <Text className="text-[#1F2C37] text-4xl font-extrabold mr-2">₦</Text>
-            <Text className="text-[#1F2C37] text-6xl font-extrabold">{amount}</Text>
+            <Text className="text-4xl font-extrabold mr-2" style={{ color: colors.text }}>₦</Text>
+            <Text className="text-6xl font-extrabold" style={{ color: colors.text }}>{amount}</Text>
           </View>
           
-          <Text className="text-[#9DA3B6] text-base text-center leading-6 px-4">
-            Paying <Text className="text-[#1F2C37] font-bold">₦{amount}</Text> for your <Text className="text-[#1F2C37] font-bold">{provider}</Text> {name?.toString().toLowerCase()} service.
+          <Text className="text-base text-center leading-6 px-4" style={{ color: colors.textSecondary }}>
+            Paying <Text className="font-bold" style={{ color: colors.text }}>₦{amount}</Text> for your <Text className="font-bold" style={{ color: colors.text }}>{provider}</Text> {name?.toString().toLowerCase()} service.
           </Text>
         </View>
 
         {/* Continue Button */}
         <TouchableOpacity 
           onPress={handleContinue}
-          className="bg-[#5154F4] mt-12 py-5 rounded-[28px] shadow-lg shadow-indigo-100"
+          className="mt-12 py-5 rounded-[28px] shadow-lg shadow-indigo-100" style={{ backgroundColor: colors.primary }}
         >
           <Text className="text-white text-center text-lg font-bold">Continue</Text>
         </TouchableOpacity>
@@ -107,7 +109,7 @@ export default function BillAmountScreen() {
 
       {/* Custom Keypad */}
       {!isFixed && (
-        <View className="absolute bottom-0 left-0 right-0 bg-[#D1D5DB]/30 pt-4 rounded-t-[40px]">
+        <View className="absolute bottom-0 left-0 right-0 pt-4 rounded-t-[40px]" style={{ backgroundColor: `${colors.switchTrackOff}30` }}>
           <CustomKeypad 
             onPress={handleKeyPress} 
             onDelete={handleDelete} 

@@ -7,8 +7,14 @@ import { AuthService } from '@/services/modules/auth.service';
 interface AuthContextType {
   userToken: string | null;
   isLoading: boolean;
-  signIn: (token: string) => Promise<void>;
+  isPinSet: boolean;
+  isBiometricEnabled: boolean;
+  isBiometricPending: boolean;
+  signIn: (token: string, isPinSet?: boolean) => Promise<void>;
   signOut: () => Promise<void>;
+  updatePinStatus: (pinSet: boolean) => Promise<void>;
+  setBiometricEnabled: (enabled: boolean) => Promise<void>;
+  loginWithBiometric: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,6 +25,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
  */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userToken, setUserToken] = useState<string | null>(null);
+  const [isPinSet, setIsPinSet] = useState<boolean>(false);
+  const [isBiometricEnabled, setIsBiometricEnabled] = useState<boolean>(false);
+  const [isBiometricPending, setIsBiometricPending] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Industrial-grade render audit
@@ -26,20 +35,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Initial session check on app launch
   useEffect(() => {
+    let mounted = true;
     const loadSession = async () => {
       try {
         const token = await SecureStore.getItemAsync(Config.auth.tokenKey);
+        const storedIsPinSet = await SecureStore.getItemAsync('montra_is_pin_set');
+        const storedBiometric = await SecureStore.getItemAsync('montra_biometric_enabled');
         console.log('[Auth Context] Session audit from SecureStore:', !!token);
+        if (!mounted) return;
         if (token) {
           setUserToken(token);
+          if (storedIsPinSet === 'true') setIsPinSet(true);
+          if (storedBiometric === 'true') setIsBiometricEnabled(true);
         }
       } catch (e) {
         console.error('[Auth Context] Session restoration failed:', e);
       } finally {
-        setIsLoading(false);
+        if (mounted) setIsLoading(false);
       }
     };
     loadSession();
+    return () => { mounted = false; };
   }, []);
 
   // Absolute Session Termination Handshake
@@ -53,16 +69,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const signIn = async (token: string) => {
+  const signIn = async (token: string, pinSet?: boolean) => {
     console.log('[Auth Context] signIn initiated with token length:', token?.length);
     try {
       // Anchor the token in secure storage FIRST to prevent race conditions
       await SecureStore.setItemAsync(Config.auth.tokenKey, token);
+      if (pinSet !== undefined) {
+        setIsPinSet(pinSet);
+        await SecureStore.setItemAsync('montra_is_pin_set', pinSet ? 'true' : 'false');
+      }
       // Then update UI state to trigger the dashboard reveal
       setUserToken(token);
       console.log('[Auth Context] signIn anchoring completed successfully.');
     } catch (e) {
       console.error('[Auth Context] signIn anchoring failed:', e);
+    }
+  };
+
+  const updatePinStatus = async (pinSet: boolean) => {
+    setIsPinSet(pinSet);
+    await SecureStore.setItemAsync('montra_is_pin_set', pinSet ? 'true' : 'false');
+  };
+
+  const setBiometricEnabled = async (enabled: boolean) => {
+    setIsBiometricEnabled(enabled);
+    await SecureStore.setItemAsync('montra_biometric_enabled', enabled ? 'true' : 'false');
+  };
+
+  const loginWithBiometric = async (): Promise<boolean> => {
+    setIsBiometricPending(true);
+    try {
+      const { BiometricService } = await import('@/services/biometric');
+      const authenticated = await BiometricService.authenticate('Sign in to Montra');
+      if (authenticated) {
+        const token = await SecureStore.getItemAsync(Config.auth.tokenKey);
+        if (token) {
+          setUserToken(token);
+          return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      console.error('[Auth Context] Biometric login failed:', e);
+      return false;
+    } finally {
+      setIsBiometricPending(false);
     }
   };
 
@@ -74,8 +125,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {
         console.error('[Auth Context] API logout failed, proceeding with local clear:', e);
       }
-      await SecureStore.deleteItemAsync(Config.auth.tokenKey);
       setUserToken(null);
+      setIsPinSet(false);
     } catch (e) {
       console.error('[Auth Context] signOut failed:', e);
     }
@@ -84,9 +135,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const authValue = useMemo(() => ({
     userToken,
     isLoading,
+    isPinSet,
+    isBiometricEnabled,
+    isBiometricPending,
     signIn,
-    signOut
-  }), [userToken, isLoading]);
+    signOut,
+    updatePinStatus,
+    setBiometricEnabled,
+    loginWithBiometric,
+  }), [userToken, isLoading, isPinSet, isBiometricEnabled, isBiometricPending]);
 
   return (
     <AuthContext.Provider value={authValue}>

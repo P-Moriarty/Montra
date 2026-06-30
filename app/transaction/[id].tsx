@@ -13,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useApiQuery } from "@/hooks/api/use-api";
 import { TransactionService } from "@/services/modules/transaction.service";
 import { getCurrencySymbol } from "@/constants/currencies";
+import { useTheme } from "@/context/ThemeContext";
 
 const safeFormat = (value: any, symbol = "") => {
   const num = Number(value);
@@ -21,6 +22,7 @@ const safeFormat = (value: any, symbol = "") => {
 };
 
 export default function TransactionDetailScreen() {
+  const { colors } = useTheme();
   const { id } = useLocalSearchParams();
   const queryClient = useQueryClient();
 
@@ -86,22 +88,22 @@ export default function TransactionDetailScreen() {
 
   if (isLoading && !transaction) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F8F9FE] items-center justify-center">
-        <ActivityIndicator size="large" color="#5154F4" />
+      <SafeAreaView className="flex-1 items-center justify-center" style={{ backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </SafeAreaView>
     );
   }
 
   if (!transaction) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F8F9FE] items-center justify-center px-6">
-        <Feather name="alert-circle" size={48} color="#9DA3B6" />
-        <Text className="mt-4 text-[#1F2C37] text-lg font-bold">
+      <SafeAreaView className="flex-1 items-center justify-center px-6" style={{ backgroundColor: colors.background }}>
+        <Feather name="alert-circle" size={48} color={colors.textSecondary} />
+        <Text className="mt-4 text-lg font-bold" style={{ color: colors.text }}>
           Transaction not found
         </Text>
         <TouchableOpacity
           onPress={() => router.back()}
-          className="mt-6 bg-[#5154F4] px-8 py-3 rounded-2xl"
+          className="mt-6 px-8 py-3 rounded-2xl" style={{ backgroundColor: colors.primary }}
         >
           <Text className="text-white font-bold">Go Back</Text>
         </TouchableOpacity>
@@ -130,16 +132,16 @@ export default function TransactionDetailScreen() {
   const currencySymbol = getCurrencySymbol(transaction.currency);
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={["top"]}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
       {/* Header */}
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm" style={{ backgroundColor: colors.surface }}
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">
+        <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>
           Details
         </Text>
       </View>
@@ -148,7 +150,8 @@ export default function TransactionDetailScreen() {
         {/* Status Badge & Amount */}
         <View className="items-center mt-8 mb-10">
           <View
-            className={`w-20 h-20 ${transaction.status?.toLowerCase() === "failed" || transaction.status?.toLowerCase() === "reversed" ? "bg-red-50" : "bg-green-50"} rounded-full items-center justify-center mb-4`}
+            className="w-20 h-20 rounded-full items-center justify-center mb-4"
+            style={{ backgroundColor: transaction.status?.toLowerCase() === "failed" || transaction.status?.toLowerCase() === "reversed" ? colors.errorLight : colors.successLight }}
           >
             <Ionicons
               name={
@@ -161,20 +164,20 @@ export default function TransactionDetailScreen() {
               color={
                 transaction.status?.toLowerCase() === "failed" ||
                 transaction.status?.toLowerCase() === "reversed"
-                  ? "#EF4444"
-                  : "#22C55E"
+                  ? colors.error
+                  : colors.success
               }
             />
           </View>
           {transaction.category?.toLowerCase() === "swap" && (
-            <Text className="text-[#9DA3B6] text-sm font-medium mb-2">
+            <Text className="text-sm font-medium mb-2" style={{ color: colors.textSecondary }}>
               {safeFormat(transaction.from_amount, getCurrencySymbol(transaction.from_currency))}{" "}
               {transaction.from_currency?.toUpperCase() || "?"} →{" "}
               {safeFormat(transaction.to_amount, getCurrencySymbol(transaction.to_currency))}{" "}
               {transaction.to_currency?.toUpperCase() || "?"}
             </Text>
           )}
-          <Text className="text-[#1F2C37] text-4xl font-extrabold mb-2">
+          <Text className="text-4xl font-extrabold mb-2" style={{ color: colors.text }}>
             {isCredit ? "+" : "-"}
             {currencySymbol}
             {Number(Math.abs(transaction.amount) / 100).toLocaleString(
@@ -183,10 +186,12 @@ export default function TransactionDetailScreen() {
             )}
           </Text>
           <View
-            className={`px-4 py-1.5 rounded-full ${transaction.status?.toLowerCase() === "failed" || transaction.status?.toLowerCase() === "reversed" ? "bg-red-50" : "bg-green-50"}`}
+            className="px-4 py-1.5 rounded-full"
+            style={{ backgroundColor: transaction.status?.toLowerCase() === "failed" || transaction.status?.toLowerCase() === "reversed" ? colors.errorLight : colors.successLight }}
           >
             <Text
-              className={`${transaction.status?.toLowerCase() === "failed" || transaction.status?.toLowerCase() === "reversed" ? "text-red-500" : "text-green-500"} font-bold text-sm`}
+              className="font-bold text-sm"
+              style={{ color: transaction.status?.toLowerCase() === "failed" || transaction.status?.toLowerCase() === "reversed" ? colors.error : colors.success }}
             >
               {transaction.status}
             </Text>
@@ -194,26 +199,26 @@ export default function TransactionDetailScreen() {
         </View>
 
         {/* Info Card */}
-        <View className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-50 mb-6">
+        <View className="p-8 rounded-[40px] shadow-sm mb-6" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: 1 }}>
           {transaction.category?.toLowerCase() === "outward" && (
             <>
               <View className="flex-row justify-between mb-6">
-                <Text className="text-[#6C7278] font-medium">Bank Name</Text>
-                <Text className="text-[#1F2C37] font-bold text-right">
+                <Text className="font-medium" style={{ color: colors.textTertiary }}>Bank Name</Text>
+                <Text className="font-bold text-right" style={{ color: colors.text }}>
                   {transaction.bank_name || "N/A"}
                 </Text>
               </View>
               <View className="flex-row justify-between mb-6">
-                <Text className="text-[#6C7278] font-medium">Account Name</Text>
-                <Text className="text-[#1F2C37] font-bold text-right">
+                <Text className="font-medium" style={{ color: colors.textTertiary }}>Account Name</Text>
+                <Text className="font-bold text-right" style={{ color: colors.text }}>
                   {transaction.account_name || "N/A"}
                 </Text>
               </View>
               <View className="flex-row justify-between mb-6">
-                <Text className="text-[#6C7278] font-medium">
+                <Text className="font-medium" style={{ color: colors.textTertiary }}>
                   Account Number
                 </Text>
-                <Text className="text-[#1F2C37] font-bold text-right">
+                <Text className="font-bold text-right" style={{ color: colors.text }}>
                   {transaction.account_number || "N/A"}
                 </Text>
               </View>
@@ -223,23 +228,23 @@ export default function TransactionDetailScreen() {
           {transaction.category?.toLowerCase() === "swap" ? (
             <>
               <View className="flex-row justify-between mb-6">
-                <Text className="text-[#6C7278] font-medium">From</Text>
-                <Text className="text-[#1F2C37] font-bold text-right">
+                <Text className="font-medium" style={{ color: colors.textTertiary }}>From</Text>
+                <Text className="font-bold text-right" style={{ color: colors.text }}>
                   {safeFormat(transaction.from_amount, getCurrencySymbol(transaction.from_currency))}{" "}
                   {transaction.from_currency?.toUpperCase() || ""}
                 </Text>
               </View>
               <View className="flex-row justify-between mb-6">
-                <Text className="text-[#6C7278] font-medium">To</Text>
-                <Text className="text-[#1F2C37] font-bold text-right">
+                <Text className="font-medium" style={{ color: colors.textTertiary }}>To</Text>
+                <Text className="font-bold text-right" style={{ color: colors.text }}>
                   {safeFormat(transaction.to_amount, getCurrencySymbol(transaction.to_currency))}{" "}
                   {transaction.to_currency?.toUpperCase() || ""}
                 </Text>
               </View>
               {transaction.rate && (
                 <View className="flex-row justify-between mb-6">
-                  <Text className="text-[#6C7278] font-medium">Swap Rate</Text>
-                  <Text className="text-[#1F2C37] font-bold text-right">
+                  <Text className="font-medium" style={{ color: colors.textTertiary }}>Swap Rate</Text>
+                  <Text className="font-bold text-right" style={{ color: colors.text }}>
                     1 {transaction.from_currency?.toUpperCase() || "?"} = {transaction.rate}{" "}
                     {transaction.to_currency?.toUpperCase() || "?"}
                   </Text>
@@ -248,14 +253,15 @@ export default function TransactionDetailScreen() {
             </>
           ) : transaction.category?.toLowerCase() !== "outward" && (
             <View className="flex-row justify-between mb-6">
-              <Text className="text-[#6C7278] font-medium">
+              <Text className="font-medium" style={{ color: colors.textTertiary }}>
                 {transaction.category?.toLowerCase() === "electricity"
                   ? "Disco"
                   : "Recipient"}
               </Text>
               <View className="items-end max-w-[60%]">
                 <Text
-                  className="text-[#1F2C37] font-bold text-right"
+                  className="font-bold text-right"
+                  style={{ color: colors.text }}
                   numberOfLines={1}
                 >
                   {transaction.recipient_name ||
@@ -265,7 +271,7 @@ export default function TransactionDetailScreen() {
                     transaction.disco ||
                     "N/A"}
                 </Text>
-                <Text className="text-[#9DA3B6] text-xs mt-1">
+                <Text className="text-xs mt-1" style={{ color: colors.textSecondary }}>
                   {transaction.account_number ||
                     transaction.recipient_pay_id ||
                     transaction.requester_pay_id ||
@@ -279,7 +285,7 @@ export default function TransactionDetailScreen() {
 
           {transaction.category?.toLowerCase() !== "swap" && transaction.category?.toLowerCase() !== "outward" && (
             <View className="flex-row justify-between mb-6">
-              <Text className="text-[#6C7278] font-medium">
+              <Text className="font-medium" style={{ color: colors.textTertiary }}>
                 {transaction.category?.toLowerCase() === "airtime"
                   ? "Network"
                   : transaction.category?.toLowerCase() === "electricity"
@@ -288,7 +294,8 @@ export default function TransactionDetailScreen() {
               </Text>
               <View className="items-end max-w-[60%]">
                 <Text
-                  className="text-[#1F2C37] font-bold text-right"
+                  className="font-bold text-right"
+                  style={{ color: colors.text }}
                   numberOfLines={1}
                 >
                   {transaction.category?.toLowerCase() === "airtime"
@@ -299,7 +306,7 @@ export default function TransactionDetailScreen() {
                 </Text>
                 {transaction.category?.toLowerCase() !== "airtime" &&
                   transaction.category?.toLowerCase() !== "electricity" && (
-                    <Text className="text-[#9DA3B6] text-xs mt-1">
+                    <Text className="text-xs mt-1" style={{ color: colors.textSecondary }}>
                       {transaction.sender_account ||
                         transaction.sender_pay_id ||
                         transaction.payer_pay_id ||
@@ -311,8 +318,8 @@ export default function TransactionDetailScreen() {
           )}
 
           <View className="flex-row justify-between mb-6">
-            <Text className="text-[#6C7278] font-medium">Transaction Type</Text>
-            <Text className="text-[#1F2C37] font-bold capitalize">
+            <Text className="font-medium" style={{ color: colors.textTertiary }}>Transaction Type</Text>
+            <Text className="font-bold capitalize" style={{ color: colors.text }}>
               {transaction.type}
             </Text>
           </View>
@@ -320,14 +327,14 @@ export default function TransactionDetailScreen() {
           {transaction.category?.toLowerCase() === "electricity" && (
             <>
               <View className="flex-row justify-between mb-6">
-                <Text className="text-[#6C7278] font-medium">Meter Number</Text>
-                <Text className="text-[#1F2C37] font-bold">
+                <Text className="font-medium" style={{ color: colors.textTertiary }}>Meter Number</Text>
+                <Text className="font-bold" style={{ color: colors.text }}>
                   {transaction.meter_number || "N/A"}
                 </Text>
               </View>
               <View className="flex-row justify-between mb-6">
-                <Text className="text-[#6C7278] font-medium">Meter Type</Text>
-                <Text className="text-[#1F2C37] font-bold capitalize">
+                <Text className="font-medium" style={{ color: colors.textTertiary }}>Meter Type</Text>
+                <Text className="font-bold capitalize" style={{ color: colors.text }}>
                   {transaction.meter_type || "N/A"}
                 </Text>
               </View>
@@ -335,14 +342,14 @@ export default function TransactionDetailScreen() {
           )}
 
           <View className="flex-row justify-between mb-6">
-            <Text className="text-[#6C7278] font-medium">Category</Text>
+            <Text className="font-medium" style={{ color: colors.textTertiary }}>Category</Text>
             <View className="flex-row items-center">
               {transaction.category?.toLowerCase() === "swap" && (
-                <View className="bg-indigo-100 px-2.5 py-1 rounded-full mr-2">
-                  <Text className="text-indigo-600 text-xs font-bold">⇄</Text>
+                <View className="px-2.5 py-1 rounded-full mr-2" style={{ backgroundColor: colors.primary + '20' }}>
+                  <Text className="text-xs font-bold" style={{ color: colors.primary }}>⇄</Text>
                 </View>
               )}
-              <Text className="text-[#1F2C37] font-bold capitalize">
+              <Text className="font-bold capitalize" style={{ color: colors.text }}>
                 {transaction.category}
               </Text>
             </View>
@@ -350,16 +357,16 @@ export default function TransactionDetailScreen() {
 
 
           <View className="flex-row justify-between mb-6">
-            <Text className="text-[#6C7278] font-medium">Date & Time</Text>
-            <Text className="text-[#1F2C37] font-bold text-right">
+            <Text className="font-medium" style={{ color: colors.textTertiary }}>Date & Time</Text>
+            <Text className="font-bold text-right" style={{ color: colors.text }}>
               {formattedDate}, {formattedTime}
             </Text>
           </View>
 
           {(transaction.reference || transaction.id) && (
             <View className="mb-6">
-              <Text className="text-[#6C7278] font-medium mb-2">Reference</Text>
-              <Text className="text-[#1F2C37] font-bold bg-gray-50 p-3 rounded-xl" selectable>
+              <Text className="font-medium mb-2" style={{ color: colors.textTertiary }}>Reference</Text>
+              <Text className="font-bold p-3 rounded-xl" style={{ color: colors.text, backgroundColor: colors.surfaceSecondary }} selectable>
                 {transaction.reference ||
                   transaction.id}
               </Text>
@@ -368,18 +375,18 @@ export default function TransactionDetailScreen() {
 
           {transaction.session_id && transaction.session_id !== transaction.id && (
             <View className="mb-6">
-              <Text className="text-[#6C7278] font-medium mb-2">Session ID</Text>
-              <Text className="text-[#1F2C37] font-bold bg-gray-50 p-3 rounded-xl" selectable>
+              <Text className="font-medium mb-2" style={{ color: colors.textTertiary }}>Session ID</Text>
+              <Text className="font-bold p-3 rounded-xl" style={{ color: colors.text, backgroundColor: colors.surfaceSecondary }} selectable>
                 {transaction.session_id}
               </Text>
             </View>
           )}
 
-          <View className="h-[1px] bg-gray-100 mb-6" />
+          <View className="h-[1px] mb-6" style={{ backgroundColor: colors.cardBorder }} />
 
           <View className="flex-row justify-between mb-4">
-            <Text className="text-[#6C7278] font-medium">Amount</Text>
-            <Text className="text-[#1F2C37] font-bold">
+            <Text className="font-medium" style={{ color: colors.textTertiary }}>Amount</Text>
+            <Text className="font-bold" style={{ color: colors.text }}>
               {currencySymbol}
               {Number(transaction.amount / 100).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
@@ -388,8 +395,8 @@ export default function TransactionDetailScreen() {
           </View>
 
           <View className="flex-row justify-between mb-4">
-            <Text className="text-[#6C7278] font-medium">Fee</Text>
-            <Text className="text-[#1F2C37] font-bold">
+            <Text className="font-medium" style={{ color: colors.textTertiary }}>Fee</Text>
+            <Text className="font-bold" style={{ color: colors.text }}>
               {currencySymbol}
               {Number((transaction.fee || 0) / 100).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
@@ -398,10 +405,10 @@ export default function TransactionDetailScreen() {
           </View>
 
           <View className="flex-row justify-between mt-2">
-            <Text className="text-[#1F2C37] font-extrabold text-lg">
+            <Text className="font-extrabold text-lg" style={{ color: colors.text }}>
               Total Amount
             </Text>
-            <Text className="text-[#1F2C37] font-extrabold text-lg">
+            <Text className="font-extrabold text-lg" style={{ color: colors.text }}>
               {currencySymbol}
               {Number(
                 (Number(transaction.amount) + Number(transaction.fee || 0)) /
@@ -413,9 +420,9 @@ export default function TransactionDetailScreen() {
 
         {/* Footer Actions */}
         <View className="flex-row gap-4 mb-10">
-          <TouchableOpacity className="flex-1 bg-white border border-gray-100 py-5 rounded-[28px] items-center justify-center flex-row shadow-sm">
-            <Feather name="share-2" size={20} color="#1F2C37" />
-            <Text className="text-[#1F2C37] font-bold ml-2">Share</Text>
+          <TouchableOpacity className="flex-1 py-5 rounded-[28px] items-center justify-center flex-row shadow-sm" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: 1 }}>
+            <Feather name="share-2" size={20} color={colors.text} />
+            <Text className="font-bold ml-2" style={{ color: colors.text }}>Share</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() =>
@@ -423,7 +430,7 @@ export default function TransactionDetailScreen() {
                 ? router.push("/(tabs)/swap")
                 : router.back()
             }
-            className="flex-1 bg-[#5154F4] py-5 rounded-[28px] items-center justify-center flex-row shadow-lg shadow-indigo-100"
+            className="flex-1 py-5 rounded-[28px] items-center justify-center flex-row" style={{ backgroundColor: colors.primary }}
           >
             <Ionicons name="refresh" size={20} color="white" />
             <Text className="text-white font-bold ml-2">
@@ -435,7 +442,7 @@ export default function TransactionDetailScreen() {
         </View>
 
         <TouchableOpacity className="items-center mb-10">
-          <Text className="text-red-500 font-bold">Report a problem</Text>
+          <Text className="font-bold" style={{ color: colors.error }}>Report a problem</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

@@ -8,8 +8,10 @@ import { SignupSchema } from '@/services/api/validation';
 import { AuthService } from '@/services/modules/auth.service';
 import { useApiMutation } from '@/hooks/api/use-api';
 import { Toast } from '@/components/ui/toast';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function SignupScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const [agreed, setAgreed] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -80,7 +82,7 @@ export default function SignupScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
       <Toast
         visible={toast.visible}
         message={toast.message}
@@ -98,10 +100,10 @@ export default function SignupScreen() {
         >
           {/* Header */}
           <View className="mt-8 mb-10 items-center">
-            <Text className="text-[#1F2C37] text-2xl font-bold mb-2">
+            <Text className="text-2xl font-bold mb-2" style={{ color: colors.text }}>
               Create Your Montra Account
             </Text>
-            <Text className="text-[#9DA3B6] text-base text-center">
+            <Text className="text-base text-center" style={{ color: colors.textSecondary }}>
               Manage your money across currencies
             </Text>
           </View>
@@ -189,18 +191,20 @@ export default function SignupScreen() {
             onPress={() => setAgreed(!agreed)}
             activeOpacity={0.7}
           >
-            <View className={`w-6 h-6 rounded-md items-center justify-center border ${agreed ? 'bg-[#5E5CE6] border-[#5E5CE6]' : 'border-gray-300'}`}>
+            <View className={`w-6 h-6 rounded-md items-center justify-center border ${agreed ? '' : 'border-gray-300'}`}
+              style={agreed ? { backgroundColor: colors.primaryAuth, borderColor: colors.primaryAuth } : undefined}>
               {agreed && <Feather name="check" size={16} color="white" />}
             </View>
-            <Text className="text-[#1F2C37] text-base ml-3">
+            <Text className="text-base ml-3" style={{ color: colors.text }}>
               I agree to the Terms and Condition
             </Text>
           </TouchableOpacity>
 
           {/* Signup Button */}
           <TouchableOpacity
-            className={`h-16 rounded-[20px] items-center justify-center shadow-lg ${isValid ? 'bg-[#5E5CE6] shadow-[#5E5CE6]/40' : 'bg-gray-400'
+            className={`h-16 rounded-[20px] items-center justify-center shadow-lg${isValid ? '' : ' bg-gray-400'
               }`}
+            style={isValid ? { backgroundColor: colors.primaryAuth, shadowColor: colors.primaryAuth } : undefined}
             onPress={handleSignup}
             activeOpacity={0.8}
             disabled={!isValid || signupMutation.isPending}
@@ -214,9 +218,9 @@ export default function SignupScreen() {
 
           {/* Login Link */}
           <View className="flex-row justify-center mt-10">
-            <Text className="text-[#1F2C37] text-base">Already have an account? </Text>
+            <Text className="text-base" style={{ color: colors.text }}>Already have an account? </Text>
             <TouchableOpacity onPress={() => router.push('/login')}>
-              <Text className="text-[#5E5CE6] text-base font-bold">Login</Text>
+              <Text className="text-base font-bold" style={{ color: colors.primaryAuth }}>Login</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

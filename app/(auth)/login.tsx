@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,27 +9,47 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
+import * as SecureStore from 'expo-secure-store';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthInput } from "@/components/auth-input";
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LoginSchema } from "@/services/api/validation";
 import { AuthService } from "@/services/modules/auth.service";
 import { useApiMutation } from "@/hooks/api/use-api";
 import { Toast } from "@/components/ui/toast";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
+import { BiometricService } from '@/services/biometric';
+import { Config } from '@/constants/Config';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { signIn, isBiometricEnabled, loginWithBiometric } = useAuth();
+  const { colors } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricLabel, setBiometricLabel] = useState('FaceID');
+  const [biometricLoading, setBiometricLoading] = useState(false);
   const [toast, setToast] = useState({
     visible: false,
     message: "",
     type: "success" as "success" | "error",
   });
+
+  useEffect(() => {
+    (async () => {
+      const [status, token] = await Promise.all([
+        BiometricService.checkStatus(),
+        SecureStore.getItemAsync(Config.auth.tokenKey),
+      ]);
+      console.log('[LoginScreen] Biometric status:', JSON.stringify(status), 'token present:', !!token);
+      setBiometricAvailable(status.available && !!token && isBiometricEnabled);
+      setBiometricLabel(status.type);
+    })();
+  }, []);
 
   // Industrial-grade validation check
   const errors = useMemo(() => {
@@ -89,6 +109,14 @@ export default function LoginScreen() {
         data?.data?.token ||
         data?.data?.access_token;
 
+      const isPinSet =
+        data?.user?.is_pin_set ??
+        data?.data?.user?.is_pin_set ??
+        data?.data?.is_pin_set ??
+        data?.is_pin_set;
+
+      console.log("[Auth Hub] is_pin check:", { isPinSet });
+
       if (token) {
         console.log(
           "[Auth Hub] Token Verified. Length:",
@@ -103,7 +131,7 @@ export default function LoginScreen() {
 
         // Immediate session anchoring
         try {
-          await signIn(token);
+          await signIn(token, isPinSet);
           console.log("[Auth Hub] Session anchored successfully.");
           router.replace("/(tabs)");
         } catch (authError) {
@@ -184,6 +212,24 @@ export default function LoginScreen() {
     },
   });
 
+  const handleBiometricLogin = async () => {
+    setBiometricLoading(true);
+    try {
+      const ok = await loginWithBiometric();
+      if (ok) {
+        setToast({ visible: true, message: `${biometricLabel} verified!`, type: 'success' });
+        setTimeout(() => router.replace('/(tabs)'), 500);
+      } else {
+        setToast({ visible: true, message: `${biometricLabel} authentication failed`, type: 'error' });
+      }
+    } catch (e) {
+      console.error('[Login] Biometric error:', e);
+      setToast({ visible: true, message: 'Biometric authentication unavailable', type: 'error' });
+    } finally {
+      setBiometricLoading(false);
+    }
+  };
+
   const handleLogin = () => {
     console.log(
       "[Auth Hub] handleLogin called. isValid:",
@@ -197,7 +243,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
       <Toast
         visible={toast.visible}
         message={toast.message}
@@ -215,10 +261,10 @@ export default function LoginScreen() {
         >
           {/* Header */}
           <View className="mt-16 mb-12 items-center">
-            <Text className="text-[#1F2C37] text-3xl font-bold mb-3 text-center">
+            <Text className="text-3xl font-bold mb-3 text-center" style={{ color: colors.text }}>
               Welcome Back!
             </Text>
-            <Text className="text-[#9DA3B6] text-base text-center leading-6">
+            <Text className="text-base text-center leading-6" style={{ color: colors.textSecondary }}>
               Sign in to continue managing your {"\n"}cross border finances
             </Text>
           </View>
@@ -265,15 +311,16 @@ export default function LoginScreen() {
               activeOpacity={0.7}
             >
               <View
-                className={`w-5 h-5 rounded-md items-center justify-center border ${rememberMe ? "bg-[#5E5CE6] border-[#5E5CE6]" : "border-gray-300"}`}
+                className={`w-5 h-5 rounded-md items-center justify-center border ${rememberMe ? "" : "border-gray-300"}`}
+                style={rememberMe ? { backgroundColor: colors.primaryAuth, borderColor: colors.primaryAuth } : undefined}
               >
                 {rememberMe && <Feather name="check" size={14} color="white" />}
               </View>
-              <Text className="text-[#6C7278] text-base ml-2">Remember me</Text>
+              <Text className="text-base ml-2" style={{ color: colors.textTertiary }}>Remember me</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => router.push("/forgot-password")}>
-              <Text className="text-[#5E5CE6] text-base font-bold">
+              <Text className="text-base font-bold" style={{ color: colors.primaryAuth }}>
                 Forgot password?
               </Text>
             </TouchableOpacity>
@@ -281,9 +328,8 @@ export default function LoginScreen() {
 
           {/* Login Button */}
           <TouchableOpacity
-            className={`h-16 rounded-[20px] items-center justify-center shadow-lg ${
-              isValid ? "bg-[#5E5CE6] shadow-[#5E5CE6]/40" : "bg-gray-400"
-            }`}
+            className={`h-16 rounded-[20px] items-center justify-center shadow-lg${isValid ? "" : " bg-gray-400"}`}
+            style={isValid ? { backgroundColor: colors.primaryAuth, shadowColor: colors.primaryAuth } : undefined}
             onPress={handleLogin}
             activeOpacity={0.8}
             disabled={!isValid || loginMutation.isPending}
@@ -295,13 +341,36 @@ export default function LoginScreen() {
             )}
           </TouchableOpacity>
 
+          {/* Biometric Login */}
+          {biometricAvailable && isBiometricEnabled && (
+            <View className="mt-6 mb-4">
+              <TouchableOpacity
+                onPress={handleBiometricLogin}
+                disabled={biometricLoading}
+                className="flex-row items-center justify-center py-4 rounded-[20px] border"
+                style={{ borderColor: colors.cardBorder, backgroundColor: colors.surfaceSecondary }}
+              >
+                {biometricLoading ? (
+                  <ActivityIndicator color={colors.primary} size="small" />
+                ) : (
+                  <>
+                    <MaterialCommunityIcons name="face-recognition" size={24} color={colors.primary} />
+                    <Text className="ml-3 font-bold text-lg" style={{ color: colors.text }}>
+                      Login with {biometricLabel}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
+
           {/* Signup Link */}
-          <View className="flex-row justify-center mt-12">
-            <Text className="text-[#1F2C37] text-base">
+          <View className="flex-row justify-center mt-8">
+            <Text className="text-base" style={{ color: colors.text }}>
               Don’t have an account?{" "}
             </Text>
             <TouchableOpacity onPress={() => router.push("/signup")}>
-              <Text className="text-[#5E5CE6] text-base font-bold">
+              <Text className="text-base font-bold" style={{ color: colors.primaryAuth }}>
                 Sign up
               </Text>
             </TouchableOpacity>

@@ -7,29 +7,37 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
+import * as SecureStore from "expo-secure-store";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { CustomKeypad } from "@/components/custom-keypad";
 import { TransferService } from "@/services/modules/transfer.service";
 import { WithdrawalService } from "@/services/modules/withdrawal.service";
 import { WalletService } from "@/services/modules/wallet.service";
+import { BiometricService } from '@/services/biometric';
 import { useApiQuery } from "@/hooks/api/use-api";
 import { useAuth } from "@/context/AuthContext";
 import { Toast } from "@/components/ui/toast";
+import { useTheme } from '@/context/ThemeContext';
+
+const PIN_STORAGE_KEY = 'montra_transaction_pin';
 
 export default function ConfirmTransferScreen() {
+  const { colors } = useTheme();
   const params = useLocalSearchParams();
   const [showPinModal, setShowPinModal] = useState(false);
   const [pin, setPin] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
+  const [biometricLabel, setBiometricLabel] = useState('FaceID');
   const [toast, setToast] = useState({
     visible: false,
     message: "",
     type: "success" as "success" | "error",
   });
   const [balance, setBalance] = useState("");
-  const { userToken, isLoading: isAuthLoading } = useAuth();
+  const { userToken, isLoading: isAuthLoading, isBiometricEnabled, updatePinStatus } = useAuth();
 
   const { data: walletData } = useApiQuery(
     ["wallet"],
@@ -61,6 +69,10 @@ export default function ConfirmTransferScreen() {
     }
   }, [walletData]);
 
+  useEffect(() => {
+    BiometricService.getBiometricLabel().then(setBiometricLabel);
+  }, []);
+
   const getParam = (value: string | string[] | undefined) =>
     Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
 
@@ -80,9 +92,30 @@ export default function ConfirmTransferScreen() {
     }
   };
 
-  const handleConfirm = async () => {
-    if (pin.length < 4) return;
+  const handleBiometricConfirm = async () => {
+    setBiometricLoading(true);
+    try {
+      const authenticated = await BiometricService.authenticate('Authorize transfer');
+      if (!authenticated) { setBiometricLoading(false); return; }
+      const storedPin = await SecureStore.getItemAsync(PIN_STORAGE_KEY);
+      if (!storedPin) {
+        setToast({ visible: true, message: 'No PIN stored. Please set a transaction PIN first.', type: 'error' });
+        setBiometricLoading(false);
+        return;
+      }
+      setPin(storedPin);
+      setTimeout(() => { setShowPinModal(false); handleConfirm(storedPin); setBiometricLoading(false); }, 300);
+    } catch (e) {
+      setBiometricLoading(false);
+    }
+  };
 
+  const handleConfirm = async (submittedPin?: any) => {
+    const currentPin = typeof submittedPin === 'string' ? submittedPin : pin;
+    if (currentPin.length < 4) return;
+
+    SecureStore.setItemAsync(PIN_STORAGE_KEY, currentPin);
+    updatePinStatus(true);
     setIsSubmitting(true);
 
     try {
@@ -115,9 +148,9 @@ export default function ConfirmTransferScreen() {
           wallet_id: ngnWallet?.id,
           sender_wallet_id: ngnWallet?.id,
           narration,
-          pin,
+          pin: currentPin,
           auth_method: "pin",
-          credential: pin,
+          credential: currentPin,
         };
 
         console.log(
@@ -149,7 +182,7 @@ export default function ConfirmTransferScreen() {
           authmethod: "pin",
           bankcode: recipientBankCode.trim(),
           bankname: recipientBank.trim(),
-          credential: pin,
+          credential: currentPin,
           narration: narration || "Outward",
         };
 
@@ -206,7 +239,7 @@ export default function ConfirmTransferScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={["top"]}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
       <Toast
         visible={toast.visible}
         message={toast.message}
@@ -219,66 +252,66 @@ export default function ConfirmTransferScreen() {
           onPress={() => router.back()}
           className="w-10 h-10 rounded-full bg-[#F8F9FB] items-center justify-center shadow-sm"
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">
+        <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>
           Confirm transfer
         </Text>
       </View>
 
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         <View className="mt-10 items-center">
-          <View className="w-24 h-24 bg-[#5154F4] rounded-full items-center justify-center mb-4 overflow-hidden shadow-lg border-4 border-white">
+          <View className="w-24 h-24 rounded-full items-center justify-center mb-4 overflow-hidden shadow-lg border-4 border-white" style={{ backgroundColor: colors.primary }}>
             <View className="items-center justify-center p-4">
               <Text className="text-white text-2xl font-black tracking-tighter uppercase">
                 {recipientBank?.slice(0, 2) || "MT"}
               </Text>
             </View>
           </View>
-          <Text className="text-[#1F2C37] text-xl font-bold mb-1">
+          <Text className="text-xl font-bold mb-1" style={{ color: colors.text }}>
             {recipientName && recipientName !== "undefined"
               ? recipientName
               : "Recipient"}
           </Text>
-          <Text className="text-[#9DA3B6] text-sm">
+          <Text className="text-sm" style={{ color: colors.textSecondary }}>
             {transferType === "payid"
               ? `PayID: ${getParam(params.identifier)}`
               : `${recipientAccount && recipientAccount !== "undefined" ? recipientAccount : "---"} - ${recipientBank && recipientBank !== "undefined" ? recipientBank : "---"}`}
           </Text>
         </View>
 
-        <View className="bg-[#F8F9FB] w-full p-8 rounded-[40px] mt-10">
+        <View className="w-full p-8 rounded-[40px] mt-10" style={{ backgroundColor: colors.chevronBg }}>
           <View className="items-center mb-10">
-            <Text className="text-[#1F2C37] text-5xl font-extrabold">
+            <Text className="text-5xl font-extrabold" style={{ color: colors.text }}>
               ₦{amount || "0.00"}
             </Text>
           </View>
 
           <View className="flex-row justify-between mb-6">
-            <Text className="text-[#6C7278] font-medium">From</Text>
+            <Text className="font-medium" style={{ color: colors.textTertiary }}>From</Text>
             <View className="items-end">
-              <Text className="text-[#1F2C37] font-bold">
+              <Text className="font-bold" style={{ color: colors.text }}>
                 Available balance
               </Text>
-              <Text className="text-[#9DA3B6] text-xs">(₦{balance})</Text>
+              <Text className="text-xs" style={{ color: colors.textSecondary }}>(₦{balance})</Text>
             </View>
           </View>
 
           <View className="flex-row justify-between mb-6">
-            <Text className="text-[#6C7278] font-medium">Fee</Text>
-            <Text className="text-[#1F2C37] font-bold">₦0.00</Text>
+            <Text className="font-medium" style={{ color: colors.textTertiary }}>Fee</Text>
+            <Text className="font-bold" style={{ color: colors.text }}>₦0.00</Text>
           </View>
 
           <View className="flex-row justify-between mb-6">
-            <Text className="text-[#6C7278] font-medium">Transfer</Text>
-            <Text className="text-[#1F2C37] font-bold">Instantly</Text>
+            <Text className="font-medium" style={{ color: colors.textTertiary }}>Transfer</Text>
+            <Text className="font-bold" style={{ color: colors.text }}>Instantly</Text>
           </View>
 
-          <View className="h-[1px] bg-gray-200 mb-6" />
+          <View className="h-[1px] mb-6" style={{ backgroundColor: colors.cardBorder }} />
 
           <View className="flex-row justify-between">
-            <Text className="text-[#6C7278] font-bold">Total</Text>
-            <Text className="text-[#1F2C37] text-lg font-bold">
+            <Text className="font-bold" style={{ color: colors.textTertiary }}>Total</Text>
+            <Text className="text-lg font-bold" style={{ color: colors.text }}>
               ₦{amount || "0.00"}
             </Text>
           </View>
@@ -287,7 +320,7 @@ export default function ConfirmTransferScreen() {
         <View className="w-full mt-10 mb-8">
           <TouchableOpacity
             onPress={() => setShowPinModal(true)}
-            className="bg-[#5154F4] py-5 rounded-[28px] shadow-lg shadow-indigo-100"
+            className="py-5 rounded-[28px] shadow-lg shadow-indigo-100" style={{ backgroundColor: colors.primary }}
           >
             <Text className="text-white text-center text-lg font-bold">
               Confirm
@@ -297,17 +330,17 @@ export default function ConfirmTransferScreen() {
       </ScrollView>
 
       <Modal visible={showPinModal} animationType="slide" transparent>
-        <View className="flex-1 justify-end bg-black/40">
-          <View className="bg-white rounded-t-[48px] px-6 pt-10 pb-4">
+        <View className="flex-1 justify-end" style={{ backgroundColor: colors.overlay }}>
+          <View className="rounded-t-[48px] px-6 pt-10 pb-4" style={{ backgroundColor: colors.surface }}>
             <TouchableOpacity
               onPress={() => setShowPinModal(false)}
               className="self-end mb-4"
             >
-              <Ionicons name="close-circle-outline" size={28} color="#9DA3B6" />
+              <Ionicons name="close-circle-outline" size={28} color={colors.textSecondary} />
             </TouchableOpacity>
 
             <View className="items-center mb-10">
-              <Text className="text-[#1F2C37] text-2xl font-bold mb-10">
+              <Text className="text-2xl font-bold mb-10" style={{ color: colors.text }}>
                 Enter Pin
               </Text>
 
@@ -315,14 +348,11 @@ export default function ConfirmTransferScreen() {
                 {[1, 2, 3, 4].map((i) => (
                   <View
                     key={i}
-                    className={`w-14 h-14 rounded-2xl items-center justify-center border-2 ${
-                      pin.length >= i
-                        ? "bg-[#F8F9FB] border-[#5154F4]"
-                        : "bg-[#F8F9FB] border-transparent"
-                    }`}
+                    className="w-14 h-14 rounded-2xl items-center justify-center border-2"
+                    style={{ backgroundColor: colors.surface, borderColor: pin.length >= i ? colors.primary : 'transparent' }}
                   >
                     {pin.length >= i ? (
-                      <Text className="text-[#1F2C37] text-2xl font-bold">
+                      <Text className="text-2xl font-bold" style={{ color: colors.text }}>
                         *
                       </Text>
                     ) : null}
@@ -331,13 +361,34 @@ export default function ConfirmTransferScreen() {
               </View>
             </View>
 
+            {isBiometricEnabled && (
+              <TouchableOpacity
+                onPress={handleBiometricConfirm}
+                disabled={isSubmitting || biometricLoading}
+                className="flex-row items-center justify-center py-3 mb-4 rounded-2xl border"
+                style={{ borderColor: colors.cardBorder, backgroundColor: colors.surfaceSecondary }}
+              >
+                {biometricLoading ? (
+                  <ActivityIndicator color={colors.primary} size="small" />
+                ) : (
+                  <>
+                    <MaterialCommunityIcons name="face-recognition" size={22} color={colors.primary} />
+                    <Text className="ml-2 font-bold" style={{ color: colors.text }}>
+                      Use {biometricLabel}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity
               onPress={handleConfirm}
               className={`py-5 rounded-[28px] mb-8 shadow-lg ${
                 pin.length === 4
-                  ? "bg-[#5154F4] shadow-indigo-100"
-                  : "bg-indigo-200 shadow-none"
+                  ? "shadow-indigo-100"
+                  : "shadow-none"
               }`}
+              style={{ backgroundColor: pin.length === 4 ? colors.primary : colors.disabledBg }}
               disabled={pin.length < 4 || isSubmitting}
             >
               {isSubmitting ? (
@@ -349,7 +400,7 @@ export default function ConfirmTransferScreen() {
               )}
             </TouchableOpacity>
 
-            <View className="bg-[#D1D5DB]/30 pt-4 rounded-[40px] -mx-6">
+            <View className="pt-4 rounded-[40px] -mx-6" style={{ backgroundColor: `${colors.switchTrackOff}30` }}>
               <CustomKeypad
                 onPress={(key) => handlePinPress(key)}
                 onDelete={() => handlePinPress("delete")}

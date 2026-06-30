@@ -1,22 +1,25 @@
-import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import * as SecureStore from "expo-secure-store";
+import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { DeviceService } from "@/services/modules/device.service";
 import { initDeviceInfo } from "@/services/device-info";
 
 const PUSH_TOKEN_KEY = "montra_push_token";
 
-// Configure how notifications are shown when the app is in the foreground
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+async function getNotificationsModule() {
+  // expo-notifications native module is unavailable in Expo Go on Android SDK 53+
+  if (Constants.executionEnvironment === "storeClient" && Platform.OS === "android") {
+    console.log("[Push] expo-notifications not available in Expo Go on Android — skipping");
+    return null;
+  }
+  try {
+    const mod = await import("expo-notifications");
+    return mod.default || mod;
+  } catch {
+    return null;
+  }
+}
 
 async function getStoredToken(): Promise<string | null> {
   try {
@@ -33,6 +36,12 @@ async function storeToken(token: string) {
 }
 
 export async function registerForPushNotifications() {
+  const Notifications = await getNotificationsModule();
+  if (!Notifications) {
+    console.log("[Push] expo-notifications not available — skipping registration");
+    return null;
+  }
+
   const deviceInfo = await initDeviceInfo();
   const localDeviceId = deviceInfo.device_id!;
 
@@ -41,6 +50,19 @@ export async function registerForPushNotifications() {
     console.log("[Push] Skipping push registration — running on simulator");
     return null;
   }
+
+  // Configure how notifications are shown when the app is in the foreground
+  try {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+      }),
+    });
+  } catch {}
 
   // Check if we already have a token stored
   let token = await getStoredToken();

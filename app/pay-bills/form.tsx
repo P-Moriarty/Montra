@@ -17,8 +17,10 @@ import { useApiQuery } from "@/hooks/api/use-api";
 import { VasService } from "@/services/modules/vas.service";
 import { providerLogos } from "@/constants/providerLogos";
 import { Image } from "expo-image";
+import { useTheme } from '@/context/ThemeContext';
 
 export default function BillFormScreen() {
+  const { colors } = useTheme();
   const { type, name } = useLocalSearchParams();
   const [identifier, setIdentifier] = useState("");
   const [selectedProvider, setSelectedProvider] = useState<any>(null);
@@ -183,7 +185,7 @@ export default function BillFormScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={["top"]}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
@@ -194,9 +196,9 @@ export default function BillFormScreen() {
             onPress={() => router.back()}
             className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
           >
-            <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+            <Ionicons name="arrow-back" size={20} color={colors.text} />
           </TouchableOpacity>
-          <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">
+          <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>
             {name}
           </Text>
         </View>
@@ -206,13 +208,13 @@ export default function BillFormScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Text className="text-[#6C7278] text-base font-medium mt-6 mb-8">
+          <Text className="text-base font-medium mt-6 mb-8" style={{ color: colors.textTertiary }}>
             Select your provider and enter your {"\n"}
             {labels} to continue.
           </Text>
 
           {/* Sandbox Test Tips (Only for development) */}
-          <View className="bg-amber-50 p-4 rounded-2xl mb-8 border border-amber-100">
+          <View className="p-4 rounded-2xl mb-8 border border-amber-100" style={{ backgroundColor: colors.warningLight }}>
             <View className="flex-row items-center mb-2">
               <Ionicons name="information-circle" size={18} color="#D97706" />
               <Text className="text-[#D97706] font-bold ml-2 text-xs uppercase tracking-widest">
@@ -227,7 +229,7 @@ export default function BillFormScreen() {
           </View>
 
           {/* Provider Selection */}
-          <Text className="text-[#1F2C37] text-lg font-bold mb-4">
+          <Text className="text-lg font-bold mb-4" style={{ color: colors.text }}>
             Select Provider
           </Text>
           <View className="flex-row flex-wrap gap-3 mb-10">
@@ -238,10 +240,11 @@ export default function BillFormScreen() {
                   setSelectedProvider(p);
                   setSelectedPlan(null);
                 }}
-                className={`px-6 py-4 rounded-3xl border ${selectedProvider?.id === p.id
-                  ? "bg-[#5154F4] border-[#5154F4]"
-                  : "bg-white border-gray-100"
-                  } items-center flex-row shadow-sm`}
+                className={`px-6 py-4 rounded-3xl border items-center flex-row shadow-sm`}
+                style={{
+                  backgroundColor: selectedProvider?.id === p.id ? colors.primary : colors.surface,
+                  borderColor: selectedProvider?.id === p.id ? colors.primary : colors.cardBorder
+                }}
               >
                 <Image
                   source={providerLogos[p.id as keyof typeof providerLogos]}
@@ -254,10 +257,8 @@ export default function BillFormScreen() {
                 />
 
                 <Text
-                  className={`font-bold ${selectedProvider?.id === p.id
-                      ? "text-white"
-                      : "text-[#1F2C37]"
-                    }`}
+                  className={`font-bold`}
+                  style={{ color: selectedProvider?.id === p.id ? '#FFFFFF' : colors.text }}
                 >
                   {p.name}
                 </Text>
@@ -266,10 +267,10 @@ export default function BillFormScreen() {
           </View>
 
           {/* Identifier Input */}
-          <Text className="text-[#1F2C37] text-lg font-bold mb-4">
+          <Text className="text-lg font-bold mb-4" style={{ color: colors.text }}>
             {labels}
           </Text>
-          <View className="bg-white rounded-[32px] p-2 border border-white shadow-sm mb-4">
+          <View className="rounded-[32px] p-2 border shadow-sm mb-4" style={{ backgroundColor: colors.surface, borderColor: colors.surface }}>
             <AuthInput
               icon={
                 type === "airtime" || type === "data" ? "phone" : "credit-card"
@@ -289,15 +290,15 @@ export default function BillFormScreen() {
             <View className="flex-row items-center px-4 mb-10">
               {isVerifying ? (
                 <>
-                  <ActivityIndicator size="small" color="#5154F4" />
-                  <Text className="text-[#5154F4] text-xs font-bold ml-2">
+                  <ActivityIndicator size="small" color={colors.primary} />
+                  <Text className="text-xs font-bold ml-2" style={{ color: colors.primary }}>
                     Verifying account...
                   </Text>
                 </>
               ) : verificationResult?.Customer_Name ? (
-                <View className="bg-green-50 px-3 py-2 rounded-xl flex-row items-center flex-1 border border-green-100">
-                  <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                  <Text className="text-[#10B981] text-xs font-bold ml-2 flex-1">
+                <View className="px-3 py-2 rounded-xl flex-row items-center flex-1 border border-green-100" style={{ backgroundColor: colors.successLight }}>
+                  <Ionicons name="checkmark-circle" size={16} color={colors.green} />
+                  <Text className="text-xs font-bold ml-2 flex-1" style={{ color: colors.green }}>
                     Verified: {verificationResult.Customer_Name}
                   </Text>
                 </View>
@@ -309,14 +310,14 @@ export default function BillFormScreen() {
           {(isData || isCable) && selectedProvider && (
             <>
               <View className="flex-row justify-between items-center mb-4">
-                <Text className="text-[#1F2C37] text-lg font-bold">
+                <Text className="text-lg font-bold" style={{ color: colors.text }}>
                   Select Plan
                 </Text>
                 {plans.length > 5 && (
                   <TouchableOpacity
                     onPress={() => setShowAllPlans(!showAllPlans)}
                   >
-                    <Text className="text-[#5154F4] font-bold text-xs">
+                    <Text className="font-bold text-xs" style={{ color: colors.primary }}>
                       {showAllPlans
                         ? "Show Less"
                         : `View All (${plans.length})`}
@@ -326,19 +327,19 @@ export default function BillFormScreen() {
               </View>
 
               {/* Plan Search */}
-              <View className="bg-white rounded-2xl px-4 py-1 border border-gray-100 shadow-sm mb-4 flex-row items-center">
-                <Ionicons name="search" size={18} color="#9DA3B6" />
+              <View className="rounded-2xl px-4 py-1 border shadow-sm mb-4 flex-row items-center" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}>
+                <Ionicons name="search" size={18} color={colors.textSecondary} />
                 <TextInput
-                  className="flex-1 ml-2 py-3 text-[#1F2C37] font-medium"
+                  className="flex-1 ml-2 py-3 font-medium" style={{ color: colors.text }}
                   placeholder="Search for a plan..."
-                  placeholderTextColor="#9DA3B6"
+                  placeholderTextColor={colors.textSecondary}
                   value={planSearch}
                   onChangeText={setPlanSearch}
                 />
               </View>
 
               {isLoadingVariations ? (
-                <ActivityIndicator color="#5154F4" className="mb-10" />
+                <ActivityIndicator color={colors.primary} className="mb-10" />
               ) : errorVariations ? (
                 <Text className="text-red-500 text-sm italic mb-10 text-center">
                   Error:{" "}
@@ -355,23 +356,28 @@ export default function BillFormScreen() {
                     <TouchableOpacity
                       key={plan.variation_code || plan.code}
                       onPress={() => setSelectedPlan(plan)}
-                      className={`p-4 rounded-2xl border mb-3 flex-row justify-between items-center ${selectedPlan?.code === plan.code ? "bg-[#5154F4]/5 border-[#5154F4]" : "bg-white border-gray-100"} shadow-sm`}
+                      className={`p-4 rounded-2xl border mb-3 flex-row justify-between items-center shadow-sm`}
+                      style={{
+                        backgroundColor: selectedPlan?.code === plan.code ? `${colors.primary}0D` : colors.surface,
+                        borderColor: selectedPlan?.code === plan.code ? colors.primary : colors.cardBorder
+                      }}
                     >
                       <View className="flex-1 pr-4">
                         <Text
-                          className={`font-bold text-sm ${selectedPlan?.code === plan.code ? "text-[#5154F4]" : "text-[#1F2C37]"}`}
+                          className={`font-bold text-sm`}
+                          style={{ color: selectedPlan?.code === plan.code ? colors.primary : colors.text }}
                         >
                           {plan.name}
                         </Text>
                       </View>
-                      <Text className="text-[#1F2C37] font-bold text-base">
+                      <Text className="font-bold text-base" style={{ color: colors.text }}>
                         ₦{Number(plan.amount).toLocaleString()}
                       </Text>
                     </TouchableOpacity>
                   ))}
                 </View>
               ) : (
-                <Text className="text-[#9DA3B6] text-sm italic mb-10 text-center">
+                <Text className="text-sm italic mb-10 text-center" style={{ color: colors.textSecondary }}>
                   No plans match your search
                 </Text>
               )}
@@ -381,7 +387,7 @@ export default function BillFormScreen() {
           {/* Continue Button */}
           <TouchableOpacity
             onPress={handleContinue}
-            className="bg-[#5154F4] mb-12 py-5 rounded-[28px] shadow-lg shadow-indigo-100"
+            className="mb-12 py-5 rounded-[28px] shadow-lg shadow-indigo-100" style={{ backgroundColor: colors.primary }}
           >
             <Text className="text-white text-center text-lg font-bold">
               {isAirtime ? "Top Up Airtime" : isData ? "Buy Data" : "Continue"}

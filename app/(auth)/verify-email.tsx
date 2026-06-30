@@ -9,8 +9,10 @@ import { AuthService } from "@/services/modules/auth.service";
 import { Toast } from "@/components/ui/toast";
 
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function VerifyEmailScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const { signIn } = useAuth();
   const { email } = useLocalSearchParams<{ email: string }>();
@@ -128,7 +130,7 @@ export default function VerifyEmailScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
       <Toast
         visible={toast.visible}
         message={toast.message}
@@ -138,20 +140,21 @@ export default function VerifyEmailScreen() {
       <View className="px-6 flex-1">
         {/* Back Button */}
         <TouchableOpacity
-          className="w-12 h-12 rounded-full bg-gray-50 items-center justify-center mt-4"
+          className="w-12 h-12 rounded-full items-center justify-center mt-4"
+          style={{ backgroundColor: colors.chevronBg }}
           onPress={goBack}
         >
-          <Feather name="arrow-left" size={24} color="#1F2C37" />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
 
         {/* Header */}
         <View className="mt-8 mb-4 items-center">
-          <Text className="text-[#1F2C37] text-2xl font-bold mb-3">
+          <Text className="text-2xl font-bold mb-3" style={{ color: colors.text }}>
             Verify your Email
           </Text>
-          <Text className="text-[#9DA3B6] text-base text-center leading-6">
+          <Text className="text-base text-center leading-6" style={{ color: colors.textSecondary }}>
             We sent a 6-digit code to your email{"\n"}
-            <Text className="text-[#1F2C37] font-bold">
+            <Text className="font-bold" style={{ color: colors.text }}>
               {email || "your email"}
             </Text>
           </Text>
@@ -162,16 +165,17 @@ export default function VerifyEmailScreen() {
           {otp.map((digit, index) => (
             <View
               key={index}
-              className={`w-[50px] h-[64px] rounded-xl border-2 items-center justify-center ${currentIndex === index ? "border-[#5E5CE6]" : "border-gray-100"} bg-white`}
+              className={`w-[50px] h-[64px] rounded-xl border-2 items-center justify-center ${currentIndex === index ? "" : "border-gray-100"}`}
+              style={[{ backgroundColor: colors.surface }, currentIndex === index ? { borderColor: colors.primaryAuth } : {}]}
             >
-              <Text className="text-[#1F2C37] text-2xl font-bold">{digit}</Text>
+              <Text className="text-2xl font-bold" style={{ color: colors.text }}>{digit}</Text>
             </View>
           ))}
         </View>
 
         {/* Resend Link */}
         <View className="flex-row justify-center mb-10">
-          <Text className="text-[#1F2C37] text-base">
+          <Text className="text-base" style={{ color: colors.text }}>
             Didn’t receive any code?{" "}
           </Text>
           <TouchableOpacity
@@ -184,7 +188,7 @@ export default function VerifyEmailScreen() {
             disabled={resendCooldown > 0 || resendMutation.isPending}
           >
             {resendMutation.isPending ? (
-              <Text className="text-[#5E5CE6] text-base font-bold">
+              <Text className="text-base font-bold" style={{ color: colors.primaryAuth }}>
                 Sending...
               </Text>
             ) : resendCooldown > 0 ? (
@@ -192,7 +196,7 @@ export default function VerifyEmailScreen() {
                 Resend in {resendCooldown}s
               </Text>
             ) : (
-              <Text className="text-[#5E5CE6] text-base font-bold">
+              <Text className="text-base font-bold" style={{ color: colors.primaryAuth }}>
                 Resend code
               </Text>
             )}
@@ -201,11 +205,8 @@ export default function VerifyEmailScreen() {
 
         {/* Verify Button */}
         <TouchableOpacity
-          className={`h-16 rounded-[20px] items-center justify-center shadow-lg ${
-            currentIndex === 6
-              ? "bg-[#5E5CE6] shadow-[#5E5CE6]/40"
-              : "bg-gray-400"
-          }`}
+          className={`h-16 rounded-[20px] items-center justify-center shadow-lg${currentIndex === 6 ? "" : " bg-gray-400"}`}
+          style={currentIndex === 6 ? { backgroundColor: colors.primaryAuth, shadowColor: colors.primaryAuth } : undefined}
           onPress={handleVerify}
           activeOpacity={0.8}
           disabled={currentIndex < 6 || verifyMutation.isPending}

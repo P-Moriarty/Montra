@@ -3,8 +3,10 @@ import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function ExchangeRatesScreen() {
+  const { colors } = useTheme();
   const exchangePairs = [
     { from: 'USD', to: 'NGN', rate: '1,400.00', fromFlag: 'us', toFlag: 'ng' },
     { from: 'EUR', to: 'USD', rate: '1.08', fromFlag: 'eu', toFlag: 'us' },
@@ -15,16 +17,16 @@ export default function ExchangeRatesScreen() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity 
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm" style={{ backgroundColor: colors.surface }}
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">Exchange Rates</Text>
+        <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>Exchange Rates</Text>
       </View>
 
       <ScrollView 
@@ -32,13 +34,13 @@ export default function ExchangeRatesScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        <Text className="text-[#6C7278] text-sm font-semibold mb-6 mt-4 uppercase tracking-widest">Market Rates</Text>
+        <Text className="text-sm font-semibold mb-6 mt-4 uppercase tracking-widest" style={{ color: colors.textTertiary }}>Market Rates</Text>
 
         {/* Pair List */}
         {exchangePairs.map((pair, index) => (
           <View 
             key={index} 
-            className="bg-white p-5 rounded-[32px] flex-row items-center justify-between mb-4 shadow-sm border border-gray-50"
+            className="p-5 rounded-[32px] flex-row items-center justify-between mb-4 shadow-sm border" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}
           >
             <View className="flex-row items-center">
               <View className="flex-row items-center mr-4">
@@ -52,27 +54,27 @@ export default function ExchangeRatesScreen() {
                 />
               </View>
               <View>
-                <Text className="text-[#1F2C37] font-bold text-base">{pair.from}/{pair.to}</Text>
-                <Text className="text-[#9DA3B6] text-xs">Standard Rate</Text>
+                <Text className="font-bold text-base" style={{ color: colors.text }}>{pair.from}/{pair.to}</Text>
+                <Text className="text-xs" style={{ color: colors.textSecondary }}>Standard Rate</Text>
               </View>
             </View>
 
             <View className="items-end">
-              <Text className="text-[#5154F4] font-extrabold text-lg">
+              <Text className="font-extrabold text-lg" style={{ color: colors.primary }}>
                 {pair.to === 'NGN' ? '₦' : pair.to === 'USD' ? '$' : pair.to === 'GBP' ? '£' : '€'}
                 {pair.rate}
               </Text>
               <View className="flex-row items-center mt-1">
-                <Feather name="trending-up" size={12} color="#10B981" />
-                <Text className="text-[#10B981] text-[10px] font-bold ml-1">+0.24%</Text>
+                <Feather name="trending-up" size={12} color={colors.green} />
+                <Text className="text-[10px] font-bold ml-1" style={{ color: colors.green }}>+0.24%</Text>
               </View>
             </View>
           </View>
         ))}
 
         {/* Disclaimer */}
-        <View className="mt-6 p-6 bg-white/50 rounded-3xl border border-white/40">
-           <Text className="text-[#6C7278] text-xs text-center leading-5 italic">
+        <View className="mt-6 p-6 rounded-3xl border" style={{ backgroundColor: colors.surfaceSecondary, borderColor: colors.border }}>
+           <Text className="text-xs text-center leading-5 italic" style={{ color: colors.textTertiary }}>
              Exchange rates are provided for informational purposes only and are subject to market volatility. Real-time rates may vary at the time of transaction.
            </Text>
         </View>

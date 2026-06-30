@@ -4,8 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { BeneficiaryService } from '@/services/modules/beneficiary.service';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function PaymentIDListScreen() {
+  const { colors } = useTheme();
   const [search, setSearch] = useState('');
   const [beneficiaries, setBeneficiaries] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,16 +72,16 @@ export default function PaymentIDListScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity 
           onPress={() => router.back()}
           className="w-10 h-10 rounded-full bg-[#F8F9FB] items-center justify-center shadow-sm"
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">Payment ID</Text>
+        <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>Payment ID</Text>
       </View>
 
       <ScrollView 
@@ -87,17 +89,17 @@ export default function PaymentIDListScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        <Text className="text-[#6C7278] text-base font-medium mt-6 mb-8 leading-6">
+        <Text className="text-base font-medium mt-6 mb-8 leading-6" style={{ color: colors.textTertiary }}>
           Transfer money using payment ID
         </Text>
 
         {/* Search Bar */}
-        <View className="flex-row items-center bg-[#F8F9FB] h-14 rounded-2xl px-4 border border-gray-100 mb-6">
-          <Feather name="search" size={20} color="#9DA3B6" />
+        <View className="flex-row items-center bg-[#F8F9FB] h-14 rounded-2xl px-4 border mb-6" style={{ borderColor: colors.cardBorder }}>
+          <Feather name="search" size={20} color={colors.textSecondary} />
           <TextInput
-            className="flex-1 ml-3 text-[#1F2C37] font-medium"
+            className="flex-1 ml-3 font-medium" style={{ color: colors.text }}
             placeholder="Search beneficiary"
-            placeholderTextColor="#9DA3B6"
+            placeholderTextColor={colors.textSecondary}
             value={search}
             onChangeText={setSearch}
           />
@@ -106,24 +108,24 @@ export default function PaymentIDListScreen() {
         {/* Add New Button */}
         <TouchableOpacity 
           onPress={() => router.push('/transfer/add-payment-id')}
-          className="bg-[#5154F4] py-5 rounded-[28px] flex-row items-center justify-center mb-10 shadow-lg shadow-indigo-100"
+          className="py-5 rounded-[28px] flex-row items-center justify-center mb-10 shadow-lg shadow-indigo-100" style={{ backgroundColor: colors.primary }}
         >
           <Ionicons name="add" size={24} color="white" />
           <Text className="text-white text-lg font-bold ml-2">Add new recipient</Text>
         </TouchableOpacity>
 
-        <Text className="text-[#1F2C37] text-lg font-bold mb-6">Saved beneficiary</Text>
+        <Text className="text-lg font-bold mb-6" style={{ color: colors.text }}>Saved beneficiary</Text>
 
         {/* Beneficiary List */}
         {isLoading ? (
-          <ActivityIndicator color="#5154F4" />
+          <ActivityIndicator color={colors.primary} />
         ) : filteredBeneficiaries.length === 0 ? (
-          <Text className="text-[#9DA3B6] text-center mt-4">No beneficiaries found</Text>
+          <Text className="text-center mt-4" style={{ color: colors.textSecondary }}>No beneficiaries found</Text>
         ) : filteredBeneficiaries.map((item) => (
           <TouchableOpacity 
             key={item.id}
             onPress={() => router.push(`/transfer/amount?name=${item.account_name}&identifier=${item.pay_id}&type=payid`)}
-            className="flex-row items-center mb-6 pb-6 border-b border-gray-50"
+            className="flex-row items-center mb-6 pb-6 border-b" style={{ borderColor: colors.cardBorder }}
           >
             <View className="w-14 h-14 bg-gray-200 rounded-full items-center justify-center mr-4 overflow-hidden">
                <Image 
@@ -132,11 +134,11 @@ export default function PaymentIDListScreen() {
                />
             </View>
             <View className="flex-1">
-              <Text className="text-[#1F2C37] font-bold text-base mb-1">{item.account_name}</Text>
-              <Text className="text-[#9DA3B6] text-xs">{item.pay_id} - Payment ID</Text>
+              <Text className="font-bold text-base mb-1" style={{ color: colors.text }}>{item.account_name}</Text>
+              <Text className="text-xs" style={{ color: colors.textSecondary }}>{item.pay_id} - Payment ID</Text>
             </View>
             <TouchableOpacity onPress={() => handleDelete(item.id)}>
-              <Feather name="trash-2" size={20} color="#EF4444" />
+              <Feather name="trash-2" size={20} color={colors.error} />
             </TouchableOpacity>
           </TouchableOpacity>
         ))}

@@ -7,8 +7,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApiMutation } from '@/hooks/api/use-api';
 import { AuthService } from '@/services/modules/auth.service';
 import { Toast } from '@/components/ui/toast';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function ChangePasswordScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -46,7 +48,7 @@ export default function ChangePasswordScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
@@ -54,11 +56,12 @@ export default function ChangePasswordScreen() {
         <View className="flex-row items-center px-6 py-4">
           <TouchableOpacity 
             onPress={() => router.back()}
-            className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+            className="w-10 h-10 rounded-full items-center justify-center shadow-sm"
+            style={{ backgroundColor: colors.surface }}
           >
-            <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+            <Ionicons name="arrow-back" size={20} color={colors.text} />
           </TouchableOpacity>
-          <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">Change Password</Text>
+          <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>Change Password</Text>
         </View>
 
         <Toast 

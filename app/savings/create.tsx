@@ -15,8 +15,10 @@ import { Toast } from '@/components/ui/toast';
 import { useApiMutation } from '@/hooks/api/use-api';
 import { SavingsService } from '@/services/modules/savings.service';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function CreateGoalScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const queryClient = useQueryClient();
   const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -115,7 +117,7 @@ export default function CreateGoalScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
       <Toast
         visible={toast.visible}
         message={toast.message}
@@ -130,12 +132,12 @@ export default function CreateGoalScreen() {
         <View className="flex-row items-center px-6 py-4">
           <TouchableOpacity
             onPress={() => (step === 1 ? router.back() : setStep(1))}
-            className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+            className="w-10 h-10 rounded-full items-center justify-center shadow-sm" style={{ backgroundColor: colors.surface }}
           >
-            <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+            <Ionicons name="arrow-back" size={20} color={colors.text} />
           </TouchableOpacity>
 
-          <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">
+          <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>
             New Savings Goal
           </Text>
         </View>
@@ -147,10 +149,10 @@ export default function CreateGoalScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View className="mt-8 mb-10">
-            <Text className="text-[#1F2C37] text-3xl font-extrabold mb-3">
+            <Text className="text-3xl font-extrabold mb-3" style={{ color: colors.text }}>
               {step === 1 ? 'What are you saving for?' : 'Set your target'}
             </Text>
-            <Text className="text-[#9DA3B6] text-base leading-6">
+            <Text className="text-base leading-6" style={{ color: colors.textSecondary }}>
               {step === 1
                 ? 'Pick a category that best describes your goal.'
                 : 'Tell us how much you need and give it a name.'}
@@ -163,25 +165,26 @@ export default function CreateGoalScreen() {
                 <TouchableOpacity
                   key={cat.id}
                   onPress={() => setSelectedCategory(cat.id)}
-                  className={`w-[48%] p-6 rounded-[32px] items-center mb-4 border border-white shadow-sm ${
-                    selectedCategory === cat.id ? 'bg-[#5154F4] border-[#5154F4]' : 'bg-white'
-                  }`}
+                  className={`w-[48%] p-6 rounded-[32px] items-center mb-4 shadow-sm`}
+                  style={{
+                    backgroundColor: selectedCategory === cat.id ? colors.primary : colors.surface,
+                    borderWidth: 1,
+                    borderColor: selectedCategory === cat.id ? colors.primary : colors.cardBorder,
+                  }}
                 >
                   <View
-                    className={`w-14 h-14 rounded-2xl items-center justify-center mb-4 ${
-                      selectedCategory === cat.id ? 'bg-white/20' : 'bg-indigo-50'
-                    }`}
+                    className="w-14 h-14 rounded-2xl items-center justify-center mb-4"
+                    style={{ backgroundColor: selectedCategory === cat.id ? colors.primary + '33' : colors.chevronBg }}
                   >
                     <Ionicons
                       name={cat.icon as any}
                       size={28}
-                      color={selectedCategory === cat.id ? 'white' : '#5154F4'}
+                      color={selectedCategory === cat.id ? 'white' : colors.primary}
                     />
                   </View>
                   <Text
-                    className={`font-bold text-sm ${
-                      selectedCategory === cat.id ? 'text-white' : 'text-[#1F2C37]'
-                    }`}
+                    className="font-bold text-sm"
+                    style={{ color: selectedCategory === cat.id ? 'white' : colors.text }}
                   >
                     {cat.name}
                   </Text>
@@ -189,8 +192,8 @@ export default function CreateGoalScreen() {
               ))}
             </View>
           ) : (
-            <View className="bg-white p-8 rounded-[40px]">
-              <Text style={{ marginBottom: 12, color: '#1F2C37', fontWeight: '700' }}>
+            <View className="p-8 rounded-[40px]" style={{ backgroundColor: colors.surface }}>
+              <Text style={{ marginBottom: 12, color: colors.text, fontWeight: '700' }}>
                 Goal Name
               </Text>
               <TextInput
@@ -202,15 +205,15 @@ export default function CreateGoalScreen() {
                 style={{
                   height: 64,
                   borderWidth: 1,
-                  borderColor: '#E5E7EB',
+                  borderColor: colors.cardBorder,
                   borderRadius: 16,
                   paddingHorizontal: 20,
-                  color: '#1F2C37',
-                  backgroundColor: '#FFFFFF',
+                  color: colors.text,
+                  backgroundColor: colors.background,
                 }}
               />
 
-              <Text style={{ marginTop: 24, marginBottom: 12, color: '#1F2C37', fontWeight: '700' }}>
+              <Text style={{ marginTop: 24, marginBottom: 12, color: colors.text, fontWeight: '700' }}>
                 Target Amount
               </Text>
               <TextInput
@@ -222,30 +225,29 @@ export default function CreateGoalScreen() {
                 style={{
                   height: 64,
                   borderWidth: 1,
-                  borderColor: '#E5E7EB',
+                  borderColor: colors.cardBorder,
                   borderRadius: 16,
                   paddingHorizontal: 20,
-                  color: '#1F2C37',
-                  backgroundColor: '#FFFFFF',
+                  color: colors.text,
+                  backgroundColor: colors.background,
                 }}
               />
 
-              <Text style={{ marginTop: 24, marginBottom: 12, color: '#1F2C37', fontWeight: '700' }}>
+              <Text style={{ marginTop: 24, marginBottom: 12, color: colors.text, fontWeight: '700' }}>
                 Savings Preference
               </Text>
               <View className="flex-row gap-4">
                 <TouchableOpacity
                   onPress={() => setPreference('MANUAL')}
-                  className={`flex-1 p-4 rounded-2xl border ${
-                    preference === 'MANUAL'
-                      ? 'bg-[#5154F4] border-[#5154F4]'
-                      : 'bg-gray-50 border-gray-100'
-                  }`}
+                  className="flex-1 p-4 rounded-2xl border"
+                  style={{
+                    backgroundColor: preference === 'MANUAL' ? colors.primary : colors.surfaceSecondary,
+                    borderColor: preference === 'MANUAL' ? colors.primary : colors.cardBorder,
+                  }}
                 >
                   <Text
-                    className={`text-center font-bold text-xs ${
-                      preference === 'MANUAL' ? 'text-white' : 'text-[#6C7278]'
-                    }`}
+                    className="text-center font-bold text-xs"
+                    style={{ color: preference === 'MANUAL' ? 'white' : colors.textTertiary }}
                   >
                     Manual
                   </Text>
@@ -253,16 +255,15 @@ export default function CreateGoalScreen() {
 
                 <TouchableOpacity
                   onPress={() => setPreference('AUTO')}
-                  className={`flex-1 p-4 rounded-2xl border ${
-                    preference === 'AUTO'
-                      ? 'bg-[#5154F4] border-[#5154F4]'
-                      : 'bg-gray-50 border-gray-100'
-                  }`}
+                  className="flex-1 p-4 rounded-2xl border"
+                  style={{
+                    backgroundColor: preference === 'AUTO' ? colors.primary : colors.surfaceSecondary,
+                    borderColor: preference === 'AUTO' ? colors.primary : colors.cardBorder,
+                  }}
                 >
                   <Text
-                    className={`text-center font-bold text-xs ${
-                      preference === 'AUTO' ? 'text-white' : 'text-[#6C7278]'
-                    }`}
+                    className="text-center font-bold text-xs"
+                    style={{ color: preference === 'AUTO' ? 'white' : colors.textTertiary }}
                   >
                     Automatic
                   </Text>
@@ -274,9 +275,8 @@ export default function CreateGoalScreen() {
           <TouchableOpacity
             onPress={handleNext}
             disabled={createGoalMutation.isPending}
-            className={`mt-12 py-5 rounded-[28px] ${
-              createGoalMutation.isPending ? 'bg-[#5154F4]/70' : 'bg-[#5154F4]'
-            }`}
+            className="mt-12 py-5 rounded-[28px]"
+            style={{ backgroundColor: createGoalMutation.isPending ? colors.primary + 'B3' : colors.primary }}
           >
             <Text className="text-white text-center text-lg font-bold">
               {createGoalMutation.isPending

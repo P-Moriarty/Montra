@@ -9,8 +9,10 @@ import { useApiMutation } from '@/hooks/api/use-api';
 import { SavingsService } from '@/services/modules/savings.service';
 import { Toast } from '@/components/ui/toast';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function FundGoalScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const queryClient = useQueryClient();
   const { id, name, saved, target, color } = useLocalSearchParams();
@@ -68,16 +70,16 @@ export default function FundGoalScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity 
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm" style={{ backgroundColor: colors.surface }}
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">Add Funds</Text>
+        <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>Add Funds</Text>
       </View>
 
       <ScrollView 
@@ -85,30 +87,30 @@ export default function FundGoalScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Goal Summary Card */}
-        <View className="bg-white/80 p-6 rounded-[32px] mt-8 flex-row items-center border border-white shadow-sm">
+        <View className="p-6 rounded-[32px] mt-8 flex-row items-center shadow-sm" style={{ backgroundColor: colors.surface + 'CC', borderColor: colors.cardBorder, borderWidth: 1 }}>
           <View className={`w-12 h-12 rounded-2xl items-center justify-center mr-4`} style={{ backgroundColor: `${color}10` }}>
             <Ionicons name="sparkles" size={24} color={color as string} />
           </View>
           <View className="flex-1">
-            <Text className="text-[#1F2C37] font-bold text-base">{name}</Text>
-            <Text className="text-[#9DA3B6] text-xs">Currently saved: {saved}</Text>
+            <Text className="font-bold text-base" style={{ color: colors.text }}>{name}</Text>
+            <Text className="text-xs" style={{ color: colors.textSecondary }}>Currently saved: {saved}</Text>
           </View>
           <View className="items-end">
-             <Text className="text-[#5154F4] text-xs font-bold uppercase tracking-widest">Goal</Text>
-             <Text className="text-[#1F2C37] font-bold text-sm">{target}</Text>
+             <Text className="text-xs font-bold uppercase tracking-widest" style={{ color: colors.primary }}>Goal</Text>
+             <Text className="font-bold text-sm" style={{ color: colors.text }}>{target}</Text>
           </View>
         </View>
 
         {/* Amount Entry */}
         <View className="mt-16 items-center">
-           <Text className="text-[#6C7278] text-sm font-semibold uppercase tracking-widest mb-4">Adding to vault</Text>
+           <Text className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: colors.textTertiary }}>Adding to vault</Text>
            <View className="flex-row items-baseline mb-6">
-             <Text className="text-[#1F2C37] text-4xl font-extrabold mr-2">₦</Text>
-             <Text className="text-[#1F2C37] text-6xl font-extrabold">{amount}</Text>
+             <Text className="text-4xl font-extrabold mr-2" style={{ color: colors.text }}>₦</Text>
+             <Text className="text-6xl font-extrabold" style={{ color: colors.text }}>{amount}</Text>
            </View>
            
-           <View className="bg-white/40 px-6 py-3 rounded-full border border-white/20">
-             <Text className="text-[#9DA3B6] text-sm">Transferring from <Text className="text-[#1F2C37] font-bold">Available Balance</Text></Text>
+           <View className="px-6 py-3 rounded-full" style={{ backgroundColor: colors.surface + '66', borderColor: colors.cardBorder, borderWidth: 1 }}>
+             <Text className="text-sm" style={{ color: colors.textSecondary }}>Transferring from <Text className="font-bold" style={{ color: colors.text }}>Available Balance</Text></Text>
            </View>
         </View>
 
@@ -116,7 +118,7 @@ export default function FundGoalScreen() {
         <TouchableOpacity 
           onPress={handleFund}
           disabled={fundMutation.isPending}
-          className="bg-[#5154F4] mt-16 py-5 rounded-[28px] shadow-lg shadow-indigo-100"
+          className="mt-16 py-5 rounded-[28px]" style={{ backgroundColor: colors.primary }}
         >
           <Text className="text-white text-center text-lg font-bold">
             {fundMutation.isPending ? 'Processing...' : 'Fund Vault'}
@@ -135,7 +137,7 @@ export default function FundGoalScreen() {
       </ScrollView>
 
       {/* Custom Keypad */}
-      <View className="absolute bottom-0 left-0 right-0 bg-[#D1D5DB]/30 pt-4 rounded-t-[40px]">
+      <View className="absolute bottom-0 left-0 right-0 pt-4 rounded-t-[40px]" style={{ backgroundColor: `${colors.switchTrackOff}30` }}>
         <CustomKeypad 
           onPress={handleKeyPress} 
           onDelete={handleDelete} 

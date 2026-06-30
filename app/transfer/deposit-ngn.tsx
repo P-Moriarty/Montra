@@ -5,9 +5,11 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApiQuery } from '@/hooks/api/use-api';
 import { WalletService } from '@/services/modules/wallet.service';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function DepositScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
 
   const { data: accountsData, isLoading } = useApiQuery(['fiatAccounts'], async () => {
     const response = await WalletService.getFiatAccounts();
@@ -36,13 +38,13 @@ export default function DepositScreen() {
     if (details.account_type) items.push({ label: 'Account Type', value: details.account_type.toUpperCase() });
 
     return (
-      <View key={account.id} className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm mb-6">
+      <View key={account.id} className="p-6 rounded-[32px] border shadow-sm mb-6" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}>
         <View className="flex-row justify-between items-center mb-6">
           <View className="flex-row items-center">
             <View className="w-10 h-10 rounded-full bg-indigo-50 items-center justify-center mr-3">
-              <Text className="text-[#5154F4] font-bold text-xs">{account.currency.toUpperCase()}</Text>
+              <Text className="font-bold text-xs" style={{ color: colors.primary }}>{account.currency.toUpperCase()}</Text>
             </View>
-            <Text className="text-[#1F2C37] text-lg font-black">{account.currency.toUpperCase()} Account</Text>
+            <Text className="text-lg font-black" style={{ color: colors.text }}>{account.currency.toUpperCase()} Account</Text>
           </View>
           <View className="bg-green-50 px-3 py-1 rounded-full">
             <Text className="text-green-600 text-[10px] font-bold">ACTIVE</Text>
@@ -53,52 +55,52 @@ export default function DepositScreen() {
           <View key={idx} className={idx !== items.length - 1 ? 'mb-5' : ''}>
             <View className="flex-row justify-between items-center">
               <View className="flex-1 mr-4">
-                <Text className="text-[#9DA3B6] text-[10px] font-bold uppercase tracking-widest mb-1">{item.label}</Text>
-                <Text className="text-[#1F2C37] text-base font-bold" numberOfLines={1}>{item.value}</Text>
+                <Text className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: colors.textSecondary }}>{item.label}</Text>
+                <Text className="text-base font-bold" style={{ color: colors.text }} numberOfLines={1}>{item.value}</Text>
               </View>
               <TouchableOpacity className="p-2">
-                <Ionicons name="copy-outline" size={18} color="#9DA3B6" />
+                <Ionicons name="copy-outline" size={18} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
           </View>
         ))}
 
-        <TouchableOpacity className="mt-6 flex-row items-center justify-center bg-[#F0F1FF] py-4 rounded-2xl border border-blue-50">
-          <Feather name="share" size={18} color="#5154F4" />
-          <Text className="text-[#5154F4] font-bold ml-2">Share Details</Text>
+        <TouchableOpacity className="mt-6 flex-row items-center justify-center py-4 rounded-2xl border" style={{ backgroundColor: colors.iconBg, borderColor: colors.infoLight }}>
+          <Feather name="share" size={18} color={colors.primary} />
+          <Text className="font-bold ml-2" style={{ color: colors.primary }}>Share Details</Text>
         </TouchableOpacity>
       </View>
     );
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm" style={{ backgroundColor: colors.surface }}
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">Deposit Funds</Text>
+        <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>Deposit Funds</Text>
       </View>
 
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
-        <Text className="text-[#1F2C37] text-lg font-medium mt-6 mb-8 leading-6">
+        <Text className="text-lg font-medium mt-6 mb-8 leading-6" style={{ color: colors.text }}>
           Receive funds securely using any of your available fiat accounts below.
         </Text>
 
 
         {isLoading ? (
           <View className="py-20 items-center justify-center">
-            <ActivityIndicator color="#5154F4" size="large" />
-            <Text className="text-[#9DA3B6] mt-4 font-bold">Fetching your accounts...</Text>
+            <ActivityIndicator color={colors.primary} size="large" />
+            <Text className="mt-4 font-bold" style={{ color: colors.textSecondary }}>Fetching your accounts...</Text>
           </View>
         ) : accounts.length === 0 ? (
-          <View className="bg-white p-10 rounded-[40px] items-center justify-center mt-6 border border-gray-50 italic">
-            <Ionicons name="alert-circle-outline" size={48} color="#9DA3B6" />
-            <Text className="text-[#9DA3B6] mt-4 font-bold text-center">No fiat accounts found. Please contact support.</Text>
+          <View className="p-10 rounded-[40px] items-center justify-center mt-6 border italic" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}>
+            <Ionicons name="alert-circle-outline" size={48} color={colors.textSecondary} />
+            <Text className="mt-4 font-bold text-center" style={{ color: colors.textSecondary }}>No fiat accounts found. Please contact support.</Text>
           </View>
         ) : (
           <View className="pb-10">

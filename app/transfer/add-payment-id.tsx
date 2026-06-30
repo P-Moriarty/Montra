@@ -5,8 +5,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { TransferService } from '@/services/modules/transfer.service';
 import { BeneficiaryService } from '@/services/modules/beneficiary.service';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function AddPaymentIDScreen() {
+  const { colors } = useTheme();
   const [payID, setPayID] = useState('');
   const [accountName, setAccountName] = useState('');
   const [saveAsBeneficiary, setSaveAsBeneficiary] = useState(false);
@@ -71,16 +73,16 @@ export default function AddPaymentIDScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity 
           onPress={() => router.back()}
           className="w-10 h-10 rounded-full bg-[#F8F9FB] items-center justify-center shadow-sm"
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">Payment ID</Text>
+        <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>Payment ID</Text>
       </View>
 
       <ScrollView 
@@ -90,13 +92,13 @@ export default function AddPaymentIDScreen() {
       >
         <View className="mt-8 mb-6">
           <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-[#1F2C37] text-base font-semibold">Payment ID</Text>
-            {isLoading && <ActivityIndicator size="small" color="#5154F4" />}
+            <Text className="text-base font-semibold" style={{ color: colors.text }}>Payment ID</Text>
+            {isLoading && <ActivityIndicator size="small" color={colors.primary} />}
           </View>
           <TextInput
-            className="w-full h-16 bg-white border border-gray-200 rounded-2xl px-5 text-[#1F2C37] font-medium"
+            className="w-full h-16 bg-white border rounded-2xl px-5 font-medium" style={{ borderColor: colors.cardBorder, color: colors.text, backgroundColor: colors.surface }}
             placeholder="Enter recipient payment ID"
-            placeholderTextColor="#9DA3B6"
+            placeholderTextColor={colors.textSecondary}
             keyboardType="numeric"
             value={payID}
             onChangeText={(text) => {
@@ -108,11 +110,11 @@ export default function AddPaymentIDScreen() {
 
         {/* Account Name Input */}
         <View className="mb-10">
-          <Text className="text-[#1F2C37] text-base font-semibold mb-3">Account Name</Text>
+          <Text className="text-base font-semibold mb-3" style={{ color: colors.text }}>Account Name</Text>
           <TextInput
-            className="w-full h-16 bg-white border border-gray-200 rounded-2xl px-5 text-[#1F2C37] font-medium"
+            className="w-full h-16 bg-white border rounded-2xl px-5 font-medium" style={{ borderColor: colors.cardBorder, color: colors.text, backgroundColor: colors.surface }}
             placeholder="Enter recipient account name"
-            placeholderTextColor="#9DA3B6"
+            placeholderTextColor={colors.textSecondary}
             value={accountName}
             onChangeText={setAccountName}
             editable={!isLoading}
@@ -121,11 +123,11 @@ export default function AddPaymentIDScreen() {
 
         {/* Save as Beneficiary */}
         <View className="flex-row items-center justify-between mb-20">
-          <Text className="text-[#1F2C37] text-base font-medium">Save as beneficiary</Text>
+          <Text className="text-base font-medium" style={{ color: colors.text }}>Save as beneficiary</Text>
           <Switch
-            trackColor={{ false: '#E2E8F0', true: '#5154F4' }}
+            trackColor={{ false: colors.switchTrackOff, true: colors.primary }}
             thumbColor={'#fff'}
-            ios_backgroundColor="#E2E8F0"
+            ios_backgroundColor={colors.switchTrackOff}
             onValueChange={() => setSaveAsBeneficiary(!saveAsBeneficiary)}
             value={saveAsBeneficiary}
           />
@@ -135,7 +137,7 @@ export default function AddPaymentIDScreen() {
         <TouchableOpacity 
           onPress={handleContinue}
           disabled={isLoading}
-          className="bg-[#5154F4] py-5 rounded-[28px] shadow-lg shadow-indigo-100 items-center justify-center"
+          className="py-5 rounded-[28px] shadow-lg shadow-indigo-100 items-center justify-center" style={{ backgroundColor: colors.primary }}
         >
           {isLoading ? (
             <ActivityIndicator color="white" />

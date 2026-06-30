@@ -11,6 +11,8 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { WalletProvider } from '@/context/WalletContext';
+import { ThemeProvider as AppThemeProvider, useTheme } from '@/context/ThemeContext';
+import BiometricGate from '@/components/biometric-gate';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { registerForPushNotifications } from '@/services/push-notifications';
 
@@ -30,12 +32,15 @@ function RootLayoutNav() {
   const router = useRouter();
   const navigationState = useRootNavigationState();
   const colorScheme = useColorScheme();
+  const { isDark } = useTheme();
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null);
 
   useEffect(() => {
+    let mounted = true;
     SecureStore.getItemAsync('montra_onboarding_complete').then(val => {
-      setIsFirstLaunch(!val);
+      if (mounted) setIsFirstLaunch(!val);
     });
+    return () => { mounted = false; };
   }, []);
 
   useEffect(() => {
@@ -77,15 +82,17 @@ function RootLayoutNav() {
   }, [userToken, isLoading]);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <BiometricGate>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        </Stack>
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+      </ThemeProvider>
+    </BiometricGate>
   );
 }
 
@@ -95,11 +102,20 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <WalletProvider>
-          <GluestackUIProvider mode="dark">
-            <RootLayoutNav />
-          </GluestackUIProvider>
+          <AppThemeProvider>
+            <RootLayoutWithTheme />
+          </AppThemeProvider>
         </WalletProvider>
       </AuthProvider>
     </QueryClientProvider>
+  );
+}
+
+function RootLayoutWithTheme() {
+  const { resolvedMode } = useTheme();
+  return (
+    <GluestackUIProvider mode={resolvedMode}>
+      <RootLayoutNav />
+    </GluestackUIProvider>
   );
 }
