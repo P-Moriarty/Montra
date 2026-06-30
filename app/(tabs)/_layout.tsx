@@ -3,9 +3,11 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Text, View } from 'react-native';
 import { BlurView } from 'expo-blur';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function TabLayout() {
-  const primaryColor = '#5154F4';
+  const { colors } = useTheme();
+  const primaryColor = colors.primary;
   const inactiveColor = 'rgba(255, 255, 255, 0.6)';
 
   return (

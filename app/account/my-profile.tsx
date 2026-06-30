@@ -7,8 +7,10 @@ import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function MyProfileScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
 
   const { data: user, isLoading: isProfileLoading } = useApiQuery(['profile'], ProfileService.getProfile);
@@ -45,19 +47,21 @@ export default function MyProfileScreen() {
   }, [user?.profilePicture]);
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm"
+          style={{ backgroundColor: colors.surface }}
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold">My Profile</Text>
+        <Text className="flex-1 text-center text-xl font-bold" style={{ color: colors.text }}>My Profile</Text>
         <TouchableOpacity
           onPress={() => router.push('/account/edit-profile')}
-          className="w-10 h-10 rounded-full bg-[#F0F1FF] items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm"
+          style={{ backgroundColor: colors.iconBg }}
         >
           <Feather name="edit-3" size={18} color="#5E5CE6" />
         </TouchableOpacity>
@@ -77,7 +81,7 @@ export default function MyProfileScreen() {
               contentFit="cover"
             />
           </View>
-          <Text className="text-[#1F2C37] text-2xl font-bold mt-4">
+          <Text className="text-2xl font-bold mt-4" style={{ color: colors.text }}>
             {isProfileLoading ? 'Loading...' : (user?.full_name || 'User')}
           </Text>
         </View>
@@ -88,17 +92,18 @@ export default function MyProfileScreen() {
             <TouchableOpacity
               key={index}
               disabled={!item.hasChevron}
-              className="bg-white p-5 rounded-3xl flex-row items-center justify-between shadow-sm border border-gray-50 mb-3"
+              className="p-5 rounded-3xl flex-row items-center justify-between shadow-sm border mb-3"
+              style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}
             >
-              <Text className="text-[#6C7278] text-base font-medium">{item.label}</Text>
+              <Text className="text-base font-medium" style={{ color: colors.textTertiary }}>{item.label}</Text>
               <View className="flex-row items-center">
                 {item.value && (
-                  <Text className="text-[#1F2C37] text-base font-bold mr-2">
+                  <Text className="text-base font-bold mr-2" style={{ color: colors.text }}>
                     {item.value}
                   </Text>
                 )}
                 {item.hasChevron && (
-                  <Feather name="chevron-right" size={20} color="#9DA3B6" />
+                  <Feather name="chevron-right" size={20} color={colors.textSecondary} />
                 )}
               </View>
             </TouchableOpacity>

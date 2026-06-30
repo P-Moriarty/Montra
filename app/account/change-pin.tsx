@@ -2,12 +2,17 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, TextInput, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather, } from '@expo/vector-icons';
+import * as SecureStore from 'expo-secure-store';
 import { router } from 'expo-router';
 import { AccountService } from '../../services/modules/account.service';
 import { useApiMutation } from '@/hooks/api/use-api';
 import { Toast } from '../../components/ui/toast';
+import { useTheme } from '@/context/ThemeContext';
+
+const PIN_STORAGE_KEY = 'montra_transaction_pin';
 
 export default function ChangePinScreen() {
+  const { colors } = useTheme();
   const [password, setPassword] = useState('');
   const [pin, setPin] = useState('');
   const [step, setStep] = useState<'password' | 'old' | 'new' | 'confirm'>('password');
@@ -58,6 +63,7 @@ export default function ChangePinScreen() {
           }, 300);
         } else if (step === 'confirm') {
           if (updatedPin === newPin) {
+            SecureStore.setItemAsync(PIN_STORAGE_KEY, newPin);
             changePinMutation.mutate({
               current_password: password,
               old_pin: oldPin,
@@ -85,7 +91,7 @@ export default function ChangePinScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F8F9FE]" edges={['top']}>
+    <SafeAreaView className="flex-1" edges={['top']} style={{ backgroundColor: colors.background }}>
       <Toast
         visible={toast.visible}
         message={toast.message}
@@ -97,24 +103,25 @@ export default function ChangePinScreen() {
       <View className="flex-row items-center px-6 py-6">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-12 h-12 rounded-2xl bg-white items-center justify-center shadow-sm border border-gray-50"
+          className="w-12 h-12 rounded-2xl items-center justify-center shadow-sm border"
+          style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}
         >
-          <Ionicons name="chevron-back" size={24} color="#1F2C37" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-12">{getTitle()}</Text>
+        <Text className="flex-1 text-center text-xl font-bold pr-12" style={{ color: colors.text }}>{getTitle()}</Text>
       </View>
 
       <ScrollView>
 
         <View className="flex-1 items-center px-8 pt-6">
-          <View className="w-20 h-20 bg-[#5154F4]/10 rounded-[32px] items-center justify-center mb-8">
-            <Feather name={step === 'password' ? 'lock' : 'key'} size={32} color="#5154F4" />
+          <View className="w-20 h-20 rounded-[32px] items-center justify-center mb-8" style={{ backgroundColor: colors.iconBg }}>
+            <Feather name={step === 'password' ? 'lock' : 'key'} size={32} color={colors.primary} />
           </View>
 
-          <Text className="text-2xl font-bold text-[#1F2C37] mb-2 text-center">
+          <Text className="text-2xl font-bold mb-2 text-center" style={{ color: colors.text }}>
             {step === 'password' ? 'Authentication Required' : step === 'old' ? 'Verify PIN' : step === 'new' ? 'New Transaction PIN' : 'Confirm New PIN'}
           </Text>
-          <Text className="text-[#9DA3B6] text-center mb-10 font-medium leading-6 px-4">
+          <Text className="text-center mb-10 font-medium leading-6 px-4" style={{ color: colors.textSecondary }}>
             {step === 'password'
               ? 'Enter your account login password to authorize this sensitive change.'
               : step === 'old'
@@ -126,23 +133,26 @@ export default function ChangePinScreen() {
 
           {step === 'password' ? (
             <View className="w-full">
-              <View className="bg-white rounded-2xl px-4 py-4 flex-row items-center border border-gray-100 shadow-sm mb-6">
-                <Feather name="shield" size={20} color="#9DA3B6" className="mr-3" />
+              <View className="rounded-2xl px-4 py-4 flex-row items-center border shadow-sm mb-6" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}>
+                <Feather name="shield" size={20} color={colors.textSecondary} className="mr-3" />
                 <TextInput
-                  className="flex-1 text-[#1F2C37] font-bold text-lg"
+                  className="flex-1 font-bold text-lg"
+                  style={{ color: colors.text }}
                   placeholder="Account Password"
+                  placeholderTextColor={colors.textTertiary}
                   secureTextEntry={!isPasswordVisible}
                   value={password}
                   onChangeText={setPassword}
                   autoFocus
                 />
                 <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-                  <Feather name={isPasswordVisible ? "eye-off" : "eye"} size={20} color="#9DA3B6" />
+                  <Feather name={isPasswordVisible ? "eye-off" : "eye"} size={20} color={colors.textSecondary} />
                 </TouchableOpacity>
               </View>
               <TouchableOpacity
                 onPress={() => password.length > 0 && setStep('old')}
-                className={`w-full h-16 rounded-2xl items-center justify-center ${password.length > 0 ? 'bg-[#5154F4]' : 'bg-gray-200'}`}
+                className="w-full h-16 rounded-2xl items-center justify-center"
+                style={{ backgroundColor: password.length > 0 ? colors.primary : colors.disabledBg }}
                 disabled={password.length === 0}
               >
                 <Text className="text-white font-bold text-lg">Continue to PIN</Text>
@@ -155,7 +165,8 @@ export default function ChangePinScreen() {
                 {[...Array(4)].map((_, i) => (
                   <View
                     key={i}
-                    className={`w-4 h-4 rounded-full ${i < pin.length ? 'bg-[#5154F4]' : 'bg-gray-200'}`}
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: i < pin.length ? colors.primary : colors.disabled }}
                   />
                 ))}
               </View>
@@ -163,30 +174,31 @@ export default function ChangePinScreen() {
           )}
 
           {changePinMutation.isPending && (
-            <View className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-50 flex-row items-center mt-4">
-              <ActivityIndicator color="#5154F4" size="small" />
-              <Text className="ml-3 text-[#5154F4] font-bold">Updating PIN...</Text>
+            <View className="px-6 py-3 rounded-2xl shadow-sm border flex-row items-center mt-4" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}>
+              <ActivityIndicator color={colors.primary} size="small" />
+              <Text className="ml-3 font-bold" style={{ color: colors.primary }}>Updating PIN...</Text>
             </View>
           )}
         </View>
       </ScrollView>
 
       {step !== 'password' && (
-        <View className="bg-white rounded-t-[48px] px-10 pt-10 pb-12 shadow-2xl border-t border-gray-50">
+        <View className="rounded-t-[48px] px-10 pt-10 pb-12 shadow-2xl border-t" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}>
           <View className="flex-row flex-wrap justify-between gap-y-6">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, 'del'].map((item, idx) => (
               <TouchableOpacity
                 key={idx}
                 onPress={() => item === 'del' ? handlePinDelete() : item !== '' && handlePinPress(item.toString())}
                 disabled={changePinMutation.isPending}
-                className={`w-[28%] aspect-square items-center justify-center rounded-3xl ${item === '' ? 'opacity-0' : 'active:bg-gray-100'}`}
+                className={`w-[28%] aspect-square items-center justify-center rounded-3xl ${item === '' ? 'opacity-0' : ''}`}
+                activeOpacity={0.6}
               >
                 {item === 'del' ? (
-                  <View className="w-14 h-14 bg-red-50 rounded-2xl items-center justify-center">
-                    <Ionicons name="backspace-outline" size={24} color="#EF4444" />
+                  <View className="w-14 h-14 rounded-2xl items-center justify-center" style={{ backgroundColor: colors.errorLight }}>
+                    <Ionicons name="backspace-outline" size={24} color={colors.error} />
                   </View>
                 ) : item === '' ? null : (
-                  <Text className="text-2xl font-bold text-[#1F2C37]">{item}</Text>
+                  <Text className="text-2xl font-bold" style={{ color: colors.text }}>{item}</Text>
                 )}
               </TouchableOpacity>
             ))}

@@ -6,9 +6,13 @@ import { router } from 'expo-router';
 import { AccountService } from '../../services/modules/account.service';
 import { useApiMutation } from '@/hooks/api/use-api';
 import { Toast } from '../../components/ui/toast';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function ForgotPinScreen() {
+  const { colors } = useTheme();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [step, setStep] = useState<'email' | 'otp' | 'success'>('email');
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' as 'success' | 'error' });
@@ -77,7 +81,7 @@ export default function ForgotPinScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F8F9FE]" edges={['top']}>
+    <SafeAreaView className="flex-1" edges={['top']} style={{ backgroundColor: colors.background }}>
       <Toast 
         visible={toast.visible} 
         message={toast.message} 
@@ -89,27 +93,28 @@ export default function ForgotPinScreen() {
       <View className="flex-row items-center px-6 py-6">
         <TouchableOpacity 
           onPress={() => router.back()}
-          className="w-12 h-12 rounded-2xl bg-white items-center justify-center shadow-sm border border-gray-50"
+          className="w-12 h-12 rounded-2xl items-center justify-center shadow-sm border"
+          style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}
         >
-          <Ionicons name="chevron-back" size={24} color="#1F2C37" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-12">Account Recovery</Text>
+        <Text className="flex-1 text-center text-xl font-bold pr-12" style={{ color: colors.text }}>Account Recovery</Text>
       </View>
 
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View className="flex-1 px-8 pt-10">
-          <View className="w-20 h-20 bg-[#5154F4]/10 rounded-[32px] items-center justify-center mb-8 self-center">
+          <View className="w-20 h-20 rounded-[32px] items-center justify-center mb-8 self-center" style={{ backgroundColor: colors.iconBg }}>
             <MaterialCommunityIcons 
                 name={step === 'email' ? 'email-outline' : step === 'otp' ? 'shield-key-outline' : 'check-decagram-outline'} 
                 size={32} 
-                color="#5154F4" 
+                color={colors.primary}
             />
           </View>
 
-          <Text className="text-2xl font-bold text-[#1F2C37] mb-2 text-center">
+          <Text className="text-2xl font-bold mb-2 text-center" style={{ color: colors.text }}>
             {step === 'email' ? 'Forgot PIN?' : step === 'otp' ? 'Enter OTP' : 'Verification Complete'}
           </Text>
-          <Text className="text-[#9DA3B6] text-center mb-10 font-medium leading-6 px-4">
+          <Text className="text-center mb-10 font-medium leading-6 px-4" style={{ color: colors.textSecondary }}>
             {step === 'email' 
               ? 'Enter the email address associated with your account to receive a reset code.' 
               : step === 'otp' 
@@ -119,11 +124,13 @@ export default function ForgotPinScreen() {
 
           {step === 'email' && (
             <View className="w-full">
-              <View className="bg-white rounded-2xl px-4 py-4 flex-row items-center border border-gray-100 shadow-sm mb-6">
-                  <Feather name="mail" size={20} color="#9DA3B6" className="mr-3" />
+              <View className="rounded-2xl px-4 py-4 flex-row items-center border shadow-sm mb-6" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}>
+                  <Feather name="mail" size={20} color={colors.textSecondary} className="mr-3" />
                   <TextInput
-                      className="flex-1 text-[#1F2C37] font-bold text-lg"
+                      className="flex-1 font-bold text-lg"
+                      style={{ color: colors.text }}
                       placeholder="Email Address"
+                      placeholderTextColor={colors.textTertiary}
                       keyboardType="email-address"
                       autoCapitalize="none"
                       value={email}
@@ -131,10 +138,27 @@ export default function ForgotPinScreen() {
                       autoFocus
                   />
               </View>
+              <View className="rounded-2xl px-4 py-4 flex-row items-center border shadow-sm mb-6" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}>
+                  <Feather name="lock" size={20} color={colors.textSecondary} className="mr-3" />
+                  <TextInput
+                      className="flex-1 font-bold text-lg"
+                      style={{ color: colors.text }}
+                      placeholder="Password"
+                      placeholderTextColor={colors.textTertiary}
+                      secureTextEntry={!showPassword}
+                      autoCapitalize="none"
+                      value={password}
+                      onChangeText={setPassword}
+                  />
+                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                    <Feather name={showPassword ? 'eye' : 'eye-off'} size={20} color={colors.textSecondary} />
+                  </TouchableOpacity>
+              </View>
               <TouchableOpacity 
-                  onPress={() => email.includes('@') && forgotPinMutation.mutate(undefined)}
-                  className={`w-full h-16 rounded-2xl items-center justify-center ${email.includes('@') ? 'bg-[#5154F4]' : 'bg-gray-200'}`}
-                  disabled={forgotPinMutation.isPending || !email.includes('@')}
+                  onPress={() => email.includes('@') && password.length > 0 && forgotPinMutation.mutate({ email, password })}
+                  className="w-full h-16 rounded-2xl items-center justify-center"
+                  style={{ backgroundColor: email.includes('@') && password.length > 0 ? colors.primary : colors.disabledBg }}
+                  disabled={forgotPinMutation.isPending || !email.includes('@') || password.length === 0}
               >
                   {forgotPinMutation.isPending ? (
                       <ActivityIndicator color="white" />
@@ -149,9 +173,10 @@ export default function ForgotPinScreen() {
             <View className="items-center">
               <View className="flex-row justify-center space-x-2 gap-2 mb-8">
                 {otp.map((digit, idx) => (
-                  <View key={idx} className="w-12 h-14 bg-white rounded-2xl items-center justify-center border border-gray-100 shadow-sm">
+                  <View key={idx} className="w-12 h-14 rounded-2xl items-center justify-center border shadow-sm" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}>
                     <TextInput
-                      className="text-xl font-bold text-[#1F2C37] text-center w-full h-full"
+                      className="text-xl font-bold text-center w-full h-full"
+                      style={{ color: colors.text }}
                       keyboardType="number-pad"
                       maxLength={1}
                       value={digit}
@@ -167,7 +192,7 @@ export default function ForgotPinScreen() {
                 disabled={timer > 0 || resendMutation.isPending}
                 className="mt-4"
               >
-                <Text className={`font-bold ${timer === 0 ? 'text-[#5154F4]' : 'text-[#9DA3B6]'}`}>
+                <Text className="font-bold" style={{ color: timer === 0 ? colors.primary : colors.textSecondary }}>
                   {resendMutation.isPending ? 'Resending...' : timer === 0 ? 'Resend Code' : `Resend code in ${timer}s`}
                 </Text>
               </TouchableOpacity>
@@ -177,16 +202,17 @@ export default function ForgotPinScreen() {
           {step === 'success' && (
              <TouchableOpacity 
                 onPress={() => router.push('/account/set-pin')}
-                className="w-full h-16 rounded-2xl bg-[#10B981] items-center justify-center mt-6 shadow-lg shadow-emerald-200"
+                className="w-full h-16 rounded-2xl items-center justify-center mt-6 shadow-lg"
+                style={{ backgroundColor: colors.green }}
              >
                 <Text className="text-white font-bold text-lg">Set New PIN Now</Text>
              </TouchableOpacity>
           )}
 
           {verifyMutation.isPending && (
-            <View className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-50 flex-row items-center self-center mt-8">
-              <ActivityIndicator color="#5154F4" size="small" />
-              <Text className="ml-3 text-[#5154F4] font-bold">Verifying OTP...</Text>
+            <View className="px-6 py-3 rounded-2xl shadow-sm border flex-row items-center self-center mt-8" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}>
+              <ActivityIndicator color={colors.primary} size="small" />
+              <Text className="ml-3 font-bold" style={{ color: colors.primary }}>Verifying OTP...</Text>
             </View>
           )}
         </View>

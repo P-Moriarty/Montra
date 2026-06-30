@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useApiQuery, useApiMutation } from '@/hooks/api/use-api';
 import { NotificationService } from '@/services/modules/notification.service';
 import { useRouter } from 'expo-router';
+import { useTheme } from '@/context/ThemeContext';
 
 const TYPE_CONFIG: Record<string, { icon: any; family: string; color: string; bg: string }> = {
   WITHDRAWAL: { icon: "arrow-down-circle", family: "Ionicons", color: "#EF4444", bg: "#FEF2F2" },
@@ -44,6 +45,7 @@ const extractItems = (data: any): any[] => {
 };
 
 export default function NotificationsScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
@@ -120,29 +122,30 @@ export default function NotificationsScreen() {
       <TouchableOpacity
         onPress={() => handleMarkAsRead(item)}
         disabled={!isUnread || markAsReadMutation.isPending}
-        className={`flex-row items-start px-6 py-4 ${isUnread ? "bg-blue-50/40" : ""} border-b border-gray-100`}
+        className={`flex-row items-start px-6 py-4 ${isUnread ? "bg-blue-50/40" : ""} border-b`}
+        style={{ borderColor: colors.cardBorder }}
       >
         <View className={`w-11 h-11 rounded-full items-center justify-center mr-3 mt-0.5`} style={{ backgroundColor: config.bg }}>
           <IconComponent name={config.icon} size={20} color={config.color} />
         </View>
         <View className="flex-1 min-w-0">
           <View className="flex-row items-center justify-between mb-0.5">
-            <Text className={`text-sm ${isUnread ? "font-bold text-[#1F2C37]" : "font-medium text-[#4B5563]"}`} numberOfLines={1}>
+            <Text className={`text-sm ${isUnread ? "font-bold" : "font-medium"}`} style={{ color: isUnread ? colors.text : '#4B5563' }} numberOfLines={1}>
               {item.title || "Notification"}
             </Text>
-            {isUnread && <View className="w-2 h-2 rounded-full bg-[#5154F4] ml-2 flex-shrink-0" />}
+            {isUnread && <View className="w-2 h-2 rounded-full ml-2 flex-shrink-0" style={{ backgroundColor: colors.primary }} />}
           </View>
-          <Text className="text-[#6C7278] text-sm leading-5 mb-1.5" numberOfLines={2}>
+          <Text className="text-sm leading-5 mb-1.5" style={{ color: colors.textTertiary }} numberOfLines={2}>
             {item.message || item.subtitle || ""}
           </Text>
           <View className="flex-row items-center gap-3">
             <View className="flex-row items-center gap-1">
-              <Ionicons name={getStatusIcon(item.status)} size={12} color={item.status?.toLowerCase() === "success" ? "#10B981" : item.status?.toLowerCase() === "failed" ? "#EF4444" : "#9CA3AF"} />
+              <Ionicons name={getStatusIcon(item.status)} size={12} color={item.status?.toLowerCase() === "success" ? colors.green : item.status?.toLowerCase() === "failed" ? colors.error : "#9CA3AF"} />
               <Text className={`text-xs font-medium ${item.status?.toLowerCase() === "success" ? "text-green-600" : item.status?.toLowerCase() === "failed" ? "text-red-500" : "text-gray-400"}`}>
                 {item.status || ""}
               </Text>
             </View>
-            <Text className="text-[#9DA3B6] text-xs">
+            <Text className="text-xs" style={{ color: colors.textSecondary }}>
               {item.display_time || item.created_at || ""}
             </Text>
           </View>
@@ -156,22 +159,24 @@ export default function NotificationsScreen() {
       <View className="flex-row items-center flex-1">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm"
+          style={{ backgroundColor: colors.surface }}
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="text-[#1F2C37] text-xl font-bold ml-4">Notifications</Text>
+        <Text className="text-xl font-bold ml-4" style={{ color: colors.text }}>Notifications</Text>
       </View>
       {hasUnread && (
         <TouchableOpacity
           onPress={() => markAllAsReadMutation.mutate(undefined as any)}
           disabled={markAllAsReadMutation.isPending}
-          className="bg-[#F0F1FF] px-3 py-2 rounded-xl"
+          className="px-3 py-2 rounded-xl"
+          style={{ backgroundColor: colors.iconBg }}
         >
           {markAllAsReadMutation.isPending ? (
-            <ActivityIndicator size="small" color="#5154F4" />
+            <ActivityIndicator size="small" color={colors.primary} />
           ) : (
-            <Text className="text-[#5154F4] font-bold text-sm">Mark All Read</Text>
+            <Text className="font-bold text-sm" style={{ color: colors.primary }}>Mark All Read</Text>
           )}
         </TouchableOpacity>
       )}
@@ -183,10 +188,10 @@ export default function NotificationsScreen() {
     return (
       <View className="items-center justify-center px-6 mt-20">
         <View className="w-20 h-20 bg-gray-100 rounded-full items-center justify-center mb-4">
-          <Ionicons name="notifications-off-outline" size={36} color="#9DA3B6" />
+          <Ionicons name="notifications-off-outline" size={36} color={colors.textSecondary} />
         </View>
-        <Text className="text-[#1F2C37] text-lg font-bold text-center">No notifications yet</Text>
-        <Text className="text-[#9DA3B6] text-sm text-center mt-1">We&apos;ll let you know when something arrives</Text>
+        <Text className="text-lg font-bold text-center" style={{ color: colors.text }}>No notifications yet</Text>
+        <Text className="text-sm text-center mt-1" style={{ color: colors.textSecondary }}>We&apos;ll let you know when something arrives</Text>
       </View>
     );
   };
@@ -195,14 +200,14 @@ export default function NotificationsScreen() {
     if (loadingMore) {
       return (
         <View className="py-6 items-center">
-          <ActivityIndicator size="small" color="#5154F4" />
+          <ActivityIndicator size="small" color={colors.primary} />
         </View>
       );
     }
     if (!hasMore && allItems.length > 0) {
       return (
         <View className="py-6 items-center">
-          <Text className="text-[#9DA3B6] text-xs">You&apos;re all caught up</Text>
+          <Text className="text-xs" style={{ color: colors.textSecondary }}>You&apos;re all caught up</Text>
         </View>
       );
     }
@@ -210,12 +215,12 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F8F9FE]" edges={["top"]}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
       {renderHeader()}
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#5154F4" />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : (
         <FlatList
@@ -227,7 +232,7 @@ export default function NotificationsScreen() {
           onEndReached={loadMore}
           onEndReachedThreshold={0.3}
           refreshControl={
-            <RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} tintColor="#5154F4" />
+            <RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} tintColor={colors.primary} />
           }
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 40 }}

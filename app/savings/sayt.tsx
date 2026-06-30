@@ -7,8 +7,10 @@ import { useApiMutation, useApiQuery } from '@/hooks/api/use-api';
 import { SavingsService } from '@/services/modules/savings.service';
 import { Toast } from '@/components/ui/toast';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function SaytScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isEnabled, setIsEnabled] = useState(false);
@@ -58,58 +60,62 @@ export default function SaytScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity 
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm" style={{ backgroundColor: colors.surface }}
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">Auto-Save (SAYT)</Text>
+        <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>Auto-Save (SAYT)</Text>
       </View>
 
       <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
         <View className="mt-8 mb-10 items-center">
-          <View className="w-24 h-24 bg-green-50 rounded-full items-center justify-center mb-6">
-            <MaterialCommunityIcons name="auto-fix" size={48} color="#22C55E" />
+          <View className="w-24 h-24 rounded-full items-center justify-center mb-6" style={{ backgroundColor: colors.successLight }}>
+            <MaterialCommunityIcons name="auto-fix" size={48} color={colors.success} />
           </View>
-          <Text className="text-[#1F2C37] text-3xl font-extrabold mb-3 text-center">Save As You Spend</Text>
-          <Text className="text-[#9DA3B6] text-base leading-6 text-center px-4">
+          <Text className="text-3xl font-extrabold mb-3 text-center" style={{ color: colors.text }}>Save As You Spend</Text>
+          <Text className="text-base leading-6 text-center px-4" style={{ color: colors.textSecondary }}>
             Automatically save a percentage of every transaction you make on Montra.
           </Text>
         </View>
 
-        <View className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-50 mb-8">
+        <View className="p-8 rounded-[40px] shadow-sm mb-8" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: 1 }}>
           <View className="flex-row justify-between items-center mb-10">
             <View>
-              <Text className="text-[#1F2C37] font-bold text-lg mb-1">Enable SAYT</Text>
-              <Text className="text-[#9DA3B6] text-xs">Toggle to activate automatic savings</Text>
+              <Text className="font-bold text-lg mb-1" style={{ color: colors.text }}>Enable SAYT</Text>
+              <Text className="text-xs" style={{ color: colors.textSecondary }}>Toggle to activate automatic savings</Text>
             </View>
             <Switch 
               value={isEnabled} 
               onValueChange={setIsEnabled}
-              trackColor={{ false: '#E5E7EB', true: '#5154F4' }}
+              trackColor={{ false: colors.switchTrackOff, true: colors.primary }}
               thumbColor="white"
             />
           </View>
 
           {isEnabled && (
             <View>
-              <Text className="text-[#1F2C37] font-bold mb-6">Saving Percentage</Text>
+              <Text className="font-bold mb-6" style={{ color: colors.text }}>Saving Percentage</Text>
               <View className="flex-row flex-wrap gap-3">
                 {[1, 2, 5, 10, 15].map((p) => (
                   <TouchableOpacity 
                     key={p}
                     onPress={() => setPercentage(p)}
-                    className={`px-6 py-4 rounded-2xl border ${percentage === p ? 'bg-[#5154F4] border-[#5154F4]' : 'bg-gray-50 border-gray-100'}`}
+                    className="px-6 py-4 rounded-2xl border"
+                    style={{
+                      backgroundColor: percentage === p ? colors.primary : colors.surfaceSecondary,
+                      borderColor: percentage === p ? colors.primary : colors.cardBorder,
+                    }}
                   >
-                    <Text className={`font-bold ${percentage === p ? 'text-white' : 'text-[#6C7278]'}`}>{p}%</Text>
+                    <Text className="font-bold" style={{ color: percentage === p ? 'white' : colors.textTertiary }}>{p}%</Text>
                   </TouchableOpacity>
                 ))}
               </View>
-              <Text className="text-[#9DA3B6] text-[11px] mt-6 leading-5">
+              <Text className="text-[11px] mt-6 leading-5" style={{ color: colors.textSecondary }}>
                 Note: This percentage will be deducted from your available balance and added to your general savings vault on every outgoing transaction.
               </Text>
             </View>
@@ -119,7 +125,7 @@ export default function SaytScreen() {
         <TouchableOpacity 
           onPress={handleSave}
           disabled={saytMutation.isPending}
-          className="bg-[#5154F4] py-5 rounded-[28px] shadow-lg shadow-indigo-100 mb-10"
+          className="py-5 rounded-[28px] mb-10" style={{ backgroundColor: colors.primary }}
         >
           <Text className="text-white text-center text-lg font-bold">
             {saytMutation.isPending ? 'Configuring...' : 'Save Configuration'}

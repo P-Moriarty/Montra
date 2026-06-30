@@ -13,8 +13,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { TransferService } from "@/services/modules/transfer.service";
+import { useTheme } from '@/context/ThemeContext';
 
 export default function RequestMoneyScreen() {
+  const { colors } = useTheme();
   const [activeTab, setActiveTab] = useState<"request" | "pending">("request");
   const [payID, setPayID] = useState("");
   const [accountName, setAccountName] = useState("");
@@ -99,43 +101,47 @@ export default function RequestMoneyScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={["top"]}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
       {/* Header */}
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm" style={{ backgroundColor: colors.surface }}
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">
+        <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>
           Request money
         </Text>
       </View>
 
       <View className="flex-1 px-6">
         {/* Tab Switcher */}
-        <View className="flex-row bg-white/50 p-1.5 rounded-[32px] mt-6 mb-8 border border-white/40">
+        <View className="flex-row p-1.5 rounded-[32px] mt-6 mb-8 border" style={{ backgroundColor: colors.surfaceSecondary, borderColor: colors.border }}>
           <TouchableOpacity
             onPress={() => setActiveTab("request")}
-            className={`flex-1 py-4 rounded-[28px] items-center justify-center ${activeTab === "request" ? "bg-[#333333]" : ""}`}
+            className={`flex-1 py-4 rounded-[28px] items-center justify-center`}
+            style={{ backgroundColor: activeTab === "request" ? colors.text : 'transparent' }}
           >
             <Text
-              className={`font-bold ${activeTab === "request" ? "text-white" : "text-[#6C7278]"}`}
+              className={`font-bold`}
+              style={{ color: activeTab === "request" ? colors.surface : colors.textTertiary }}
             >
               Request
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setActiveTab("pending")}
-            className={`flex-row flex-1 py-4 rounded-[28px] items-center justify-center ${activeTab === "pending" ? "bg-[#333333]" : ""}`}
+            className={`flex-row flex-1 py-4 rounded-[28px] items-center justify-center`}
+            style={{ backgroundColor: activeTab === "pending" ? colors.text : 'transparent' }}
           >
             <Text
-              className={`font-bold ${activeTab === "pending" ? "text-white" : "text-[#6C7278]"}`}
+              className={`font-bold`}
+              style={{ color: activeTab === "pending" ? colors.surface : colors.textTertiary }}
             >
               Pending
             </Text>
-            <View className="ml-2 bg-[#6C7278] w-5 h-5 rounded-full items-center justify-center">
+            <View className="ml-2 w-5 h-5 rounded-full items-center justify-center" style={{ backgroundColor: colors.textTertiary }}>
               <Text className="text-white text-[10px] font-bold">
                 {pendingRequests.length}
               </Text>
@@ -148,17 +154,17 @@ export default function RequestMoneyScreen() {
             {/* Request Form */}
             <View className="mb-6">
               <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-[#1F2C37] text-base font-semibold">
+                <Text className="text-base font-semibold" style={{ color: colors.text }}>
                   Payment ID
                 </Text>
                 {isResolving && (
-                  <ActivityIndicator size="small" color="#5154F4" />
+                  <ActivityIndicator size="small" color={colors.primary} />
                 )}
               </View>
               <TextInput
-                className="w-full h-16 bg-white border border-gray-100 rounded-2xl px-5 text-[#1F2C37] font-medium"
+                className="w-full h-16 border rounded-2xl px-5 font-medium" style={{ borderColor: colors.cardBorder, color: colors.text, backgroundColor: colors.surface }}
                 placeholder="Enter recipient payment ID"
-                placeholderTextColor="#9DA3B6"
+                placeholderTextColor={colors.textSecondary}
                 keyboardType="numeric"
                 value={payID}
                 onChangeText={(text) => {
@@ -169,26 +175,26 @@ export default function RequestMoneyScreen() {
             </View>
 
             <View className="mb-6">
-              <Text className="text-[#1F2C37] text-base font-semibold mb-3">
+              <Text className="text-base font-semibold mb-3" style={{ color: colors.text }}>
                 Account Name
               </Text>
               <TextInput
-                className="w-full h-16 bg-gray-50 border border-gray-100 rounded-2xl px-5 text-[#1F2C37] font-medium"
+                className="w-full h-16 border rounded-2xl px-5 font-medium" style={{ borderColor: colors.cardBorder, color: colors.text, backgroundColor: colors.chevronBg }}
                 placeholder="Resolved account name"
-                placeholderTextColor="#9DA3B6"
+                placeholderTextColor={colors.textSecondary}
                 value={accountName}
                 editable={false}
               />
             </View>
 
             <View className="mb-10">
-              <Text className="text-[#1F2C37] text-base font-semibold mb-3">
+              <Text className="text-base font-semibold mb-3" style={{ color: colors.text }}>
                 Narration
               </Text>
               <TextInput
-                className="w-full h-16 bg-white border border-gray-100 rounded-2xl px-5 text-[#1F2C37] font-medium"
+                className="w-full h-16 border rounded-2xl px-5 font-medium" style={{ borderColor: colors.cardBorder, color: colors.text, backgroundColor: colors.surface }}
                 placeholder="Optional"
-                placeholderTextColor="#9DA3B6"
+                placeholderTextColor={colors.textSecondary}
                 value={narration}
                 onChangeText={setNarration}
               />
@@ -196,7 +202,7 @@ export default function RequestMoneyScreen() {
 
             <TouchableOpacity
               onPress={handleContinue}
-              className="bg-[#5154F4] py-5 rounded-[28px] shadow-lg shadow-indigo-100"
+              className="py-5 rounded-[28px] shadow-lg shadow-indigo-100" style={{ backgroundColor: colors.primary }}
             >
               <Text className="text-white text-center text-lg font-bold">
                 Continue
@@ -208,11 +214,11 @@ export default function RequestMoneyScreen() {
             {/* Pending List */}
             {isLoading ? (
               <View className="py-10 items-center">
-                <Text className="text-[#9DA3B6]">Loading requests...</Text>
+                <Text style={{ color: colors.textSecondary }}>Loading requests...</Text>
               </View>
             ) : pendingRequests.length === 0 ? (
               <View className="py-10 items-center">
-                <Text className="text-[#9DA3B6]">No pending requests</Text>
+                <Text style={{ color: colors.textSecondary }}>No pending requests</Text>
               </View>
             ) : (
               pendingRequests.map((item) => {
@@ -244,23 +250,24 @@ export default function RequestMoneyScreen() {
                         },
                       })
                     }
-                    className="bg-white p-4 rounded-[32px] flex-row items-center mb-4 shadow-sm border border-gray-50"
+                    className="p-4 rounded-[32px] flex-row items-center mb-4 shadow-sm border" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}
                   >
-                    <View className="w-12 h-12 bg-gray-50 rounded-full items-center justify-center mr-4">
+                    <View className="w-12 h-12 rounded-full items-center justify-center mr-4" style={{ backgroundColor: colors.chevronBg }}>
                       <MaterialCommunityIcons
                         name="hands-pray"
                         size={24}
-                        color="#1F2C37"
+                        color={colors.text}
                       />
                     </View>
                     <View className="flex-1">
                       <Text
-                        className="text-[#1F2C37] font-bold text-sm mb-1"
+                        className="font-bold text-sm mb-1"
+                        style={{ color: colors.text }}
                         numberOfLines={1}
                       >
                         {displayLabel}
                       </Text>
-                      <Text className="text-[#9DA3B6] text-[10px]">
+                      <Text className="text-[10px]" style={{ color: colors.textSecondary }}>
                         {new Date(
                           (item.created_at || "")
                             .replace(" +0000 UTC", "Z")
@@ -269,7 +276,7 @@ export default function RequestMoneyScreen() {
                       </Text>
                     </View>
                     <View className="items-end">
-                      <Text className="text-[#1F2C37] font-bold text-sm">
+                      <Text className="font-bold text-sm" style={{ color: colors.text }}>
                         ₦{Number(item.amount).toLocaleString()}
                       </Text>
                       <View className="bg-amber-100 px-2 py-0.5 rounded-md mt-1">

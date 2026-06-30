@@ -6,8 +6,10 @@ import { useRouter } from 'expo-router';
 import { useApiQuery, useApiMutation } from '@/hooks/api/use-api';
 import { DeviceService } from '@/services/modules/device.service';
 import { Toast } from '@/components/ui/toast';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function DevicesScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' as 'success' | 'error' });
 
@@ -73,16 +75,17 @@ export default function DevicesScreen() {
   // };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity 
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm"
+          style={{ backgroundColor: colors.surface }}
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">Manage Devices</Text>
+        <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>Manage Devices</Text>
       </View>
 
       <Toast 
@@ -98,7 +101,7 @@ export default function DevicesScreen() {
         contentContainerStyle={{ paddingBottom: 40 }}
       >
         <View className="mt-4 mb-6">
-          <Text className="text-[#9DA3B6] text-base leading-6">
+          <Text className="text-base leading-6" style={{ color: colors.textSecondary }}>
             Review the devices that have logged into your account. Remove any unrecognized devices to secure your account.
           </Text>
         </View>
@@ -110,7 +113,7 @@ export default function DevicesScreen() {
         ) : (
           <View>
             <View className="flex-row justify-between items-center mb-4 ml-4">
-              <Text className="text-[#9DA3B6] text-xs font-bold uppercase tracking-widest">Active Devices</Text>
+              <Text className="text-xs font-bold uppercase tracking-widest" style={{ color: colors.textSecondary }}>Active Devices</Text>
               {/* <TouchableOpacity onPress={handleResendOtp} disabled={resendOtpMutation.isPending}>
                 <Text className="text-[#5E5CE6] text-xs font-bold uppercase tracking-widest mr-2">
                   {resendOtpMutation.isPending ? 'Sending...' : 'Verify This Device'}
@@ -118,30 +121,31 @@ export default function DevicesScreen() {
               </TouchableOpacity> */}
             </View>
 
-            <View className="bg-white/60 rounded-[40px] p-2 border border-white/40">
+            <View className="rounded-[40px] p-2 border" style={{ backgroundColor: colors.surfaceSecondary, borderColor: colors.border }}>
               {devices.length === 0 ? (
                 <View className="py-8 items-center">
-                  <Text className="text-[#9DA3B6] font-medium">No devices found.</Text>
+                  <Text className="font-medium" style={{ color: colors.textSecondary }}>No devices found.</Text>
                 </View>
               ) : (
                 devices.map((device: any, idx: number) => (
                   <View 
                     key={device.id || idx}
-                    className="flex-row items-center justify-between p-5 rounded-[32px] bg-white mb-2 shadow-sm border border-gray-50"
+                    className="flex-row items-center justify-between p-5 rounded-[32px] mb-2 shadow-sm border"
+                    style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}
                   >
                     <View className="flex-row items-center flex-1">
                       <View className="w-12 h-12 bg-[#5E5CE6]/10 rounded-2xl items-center justify-center mr-4">
                         <Ionicons name="hardware-chip-outline" size={24} color="#5E5CE6" />
                       </View>
                       <View className="flex-1">
-                        <Text className="text-[#1F2C37] font-bold text-[15px]" numberOfLines={1}>
+                        <Text className="font-bold text-[15px]" style={{ color: colors.text }} numberOfLines={1}>
                           {device.device_name || 'Unknown Device'}
                         </Text>
-                        <Text className="text-[#9DA3B6] text-[11px] font-medium mt-1">
+                        <Text className="text-[11px] font-medium mt-1" style={{ color: colors.textSecondary }}>
                           {device.location || ''}
                         </Text>
                         <View className="flex-row items-center mt-1">
-                          <Text className="text-[#9DA3B6] text-[11px] font-medium">
+                          <Text className="text-[11px] font-medium" style={{ color: colors.textSecondary }}>
                             {device.last_login_at
                               ? `Last login: ${new Date(device.last_login_at).toLocaleDateString()}`
                               : 'Recently'}
@@ -155,11 +159,12 @@ export default function DevicesScreen() {
                       </View>
                     </View>
                     <TouchableOpacity 
-                      className="w-10 h-10 bg-red-50 rounded-full items-center justify-center ml-2"
+                      className="w-10 h-10 rounded-full items-center justify-center ml-2"
+                      style={{ backgroundColor: colors.errorLight }}
                       onPress={() => handleRemoveDevice(device.id)}
                       disabled={removeMutation.isPending}
                     >
-                      <Feather name="trash-2" size={18} color="#EF4444" />
+                      <Feather name="trash-2" size={18} color={colors.error} />
                     </TouchableOpacity>
                   </View>
                 ))

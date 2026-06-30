@@ -12,8 +12,10 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Image, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function EditProfileScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -164,14 +166,14 @@ export default function EditProfileScreen() {
 
   if (isInitialLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-[#E5E5F5] items-center justify-center">
+      <SafeAreaView className="flex-1 items-center justify-center" style={{ backgroundColor: colors.background }}>
         <ActivityIndicator size="large" color="#5E5CE6" />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={['top']}>
       <Toast
         visible={toast.visible}
         message={toast.message}
@@ -182,11 +184,12 @@ export default function EditProfileScreen() {
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm"
+          style={{ backgroundColor: colors.surface }}
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">Edit Profile</Text>
+        <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>Edit Profile</Text>
       </View>
 
       <KeyboardAvoidingView
@@ -201,24 +204,26 @@ export default function EditProfileScreen() {
         >
           {/* Industrial-Grade Avatar Hub */}
           <View className="items-center my-8">
-            <TouchableOpacity
-              onPress={pickAndUploadImage}
-              disabled={uploadMutation.isPending}
-              className="w-32 h-32 rounded-full bg-white items-center justify-center shadow-md relative"
-            >
-              <View className="w-[124px] h-[124px] rounded-full overflow-hidden bg-gray-100 items-center justify-center">
-                {imageUrl ? (
-                  <Image
-                    source={{ uri: imageUrl }}
-                    style={{ width: '100%', height: '100%' }}
-                  />
-                ) : (
-                  <Ionicons name="person" size={48} color="#9DA3B6" />
-                )}
-              </View>
+          <TouchableOpacity
+            onPress={pickAndUploadImage}
+            disabled={uploadMutation.isPending}
+            className="w-32 h-32 rounded-full items-center justify-center shadow-md relative"
+            style={{ backgroundColor: colors.surface }}
+          >
+            <View className="w-[124px] h-[124px] rounded-full overflow-hidden bg-gray-100 items-center justify-center">
+              {imageUrl ? (
+                <Image
+                  source={{ uri: imageUrl }}
+                  style={{ width: '100%', height: '100%' }}
+                />
+              ) : (
+                <Ionicons name="person" size={48} color={colors.textSecondary} />
+              )}
+            </View>
 
-              {/* Edit Badge */}
-              <View className="absolute bottom-1 right-1 w-10 h-10 bg-[#5154F4] rounded-full items-center justify-center border-4 border-white">
+            {/* Edit Badge */}
+            <View className="absolute bottom-1 right-1 w-10 h-10 rounded-full items-center justify-center border-4 border-white"
+              style={{ backgroundColor: colors.primary }}>
                 <Feather name="camera" size={16} color="white" />
               </View>
 
@@ -234,7 +239,7 @@ export default function EditProfileScreen() {
           <View className="space-y-6">
             {/* Full Name */}
             <View>
-              <Text className="text-[#6C7278] text-sm font-bold uppercase mb-2 ml-1">Full Name</Text>
+              <Text className="text-sm font-bold uppercase mb-2 ml-1" style={{ color: colors.textTertiary }}>Full Name</Text>
               <AuthInput
                 icon="user"
                 placeholder="Enter your full name"
@@ -270,16 +275,17 @@ export default function EditProfileScreen() {
 
             {/* Gender Selection */}
             <View className="mt-4">
-              <Text className="text-[#6C7278] text-sm font-bold uppercase mb-2 ml-1">Gender</Text>
+              <Text className="text-sm font-bold uppercase mb-2 ml-1" style={{ color: colors.textTertiary }}>Gender</Text>
               <TouchableOpacity
                 onPress={() => setShowGenderModal(true)}
-                className="bg-white h-16 rounded-[20px] flex-row items-center px-5 border border-gray-100 shadow-sm"
+                className="h-16 rounded-[20px] flex-row items-center px-5 border shadow-sm"
+                style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}
               >
-                <Ionicons name="transgender-outline" size={20} color="#1F2C37" />
-                <Text className="flex-1 text-[#1F2C37] text-base ml-4">
+                <Ionicons name="transgender-outline" size={20} color={colors.text} />
+                <Text className="flex-1 text-base ml-4" style={{ color: colors.text }}>
                   {genders.find(g => g.value === gender)?.label || 'Select Gender'}
                 </Text>
-                <Feather name="chevron-down" size={20} color="#9DA3B6" />
+                <Feather name="chevron-down" size={20} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
@@ -306,8 +312,8 @@ export default function EditProfileScreen() {
         animationType="fade"
       >
         <View className="flex-1 bg-black/40 justify-end">
-          <View className="bg-white rounded-t-[40px] px-8 py-10">
-            <Text className="text-[#1F2C37] text-xl font-bold mb-6">Select Gender</Text>
+          <View className="rounded-t-[40px] px-8 py-10" style={{ backgroundColor: colors.surface }}>
+            <Text className="text-xl font-bold mb-6" style={{ color: colors.text }}>Select Gender</Text>
             {genders.map((g) => (
               <TouchableOpacity
                 key={g.value}
@@ -315,9 +321,10 @@ export default function EditProfileScreen() {
                   setGender(g.value);
                   setShowGenderModal(false);
                 }}
-                className={`py-4 flex-row justify-between items-center ${gender === g.value ? 'bg-[#F0F1FF] -mx-4 px-4 rounded-2xl' : ''}`}
+                className={`py-4 flex-row justify-between items-center ${gender === g.value ? '-mx-4 px-4 rounded-2xl' : ''}`}
+                style={gender === g.value ? { backgroundColor: colors.iconBg } : {}}
               >
-                <Text className={`text-lg ${gender === g.value ? 'text-[#5E5CE6] font-bold' : 'text-[#1F2C37]'}`}>
+                <Text className={`text-lg ${gender === g.value ? 'font-bold' : ''}`} style={{ color: gender === g.value ? '#5E5CE6' : colors.text }}>
                   {g.label}
                 </Text>
                 {gender === g.value && <Ionicons name="checkmark-circle" size={24} color="#5E5CE6" />}
@@ -327,7 +334,7 @@ export default function EditProfileScreen() {
               onPress={() => setShowGenderModal(false)}
               className="mt-10 items-center"
             >
-              <Text className="text-[#6C7278] font-bold">Cancel</Text>
+              <Text className="font-bold" style={{ color: colors.textTertiary }}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>

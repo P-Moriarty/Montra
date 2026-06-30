@@ -11,6 +11,11 @@ export interface VerifyPinResetPayload {
   verification_code: string
 }
 
+export interface ForgotPinPayload {
+  email: string;
+  password: string;
+}
+
 export interface ChangePinPayload {
   current_password: string,
   new_pin: string,
@@ -46,15 +51,15 @@ export const AccountService = {
    * Resend PIN reset OTP
    */
   resendPinOtp: async () => {
-    const response = await apiClient.post(ENDPOINTS.ACCOUNT.RESEND_PIN_OTP);
+    const response = await apiClient.post(ENDPOINTS.ACCOUNT.RESEND_PIN_OTP, {});
     return response.data;
   },
 
   /**
    * Trigger forgot PIN flow (sends OTP)
    */
-  forgotPin: async () => {
-    const response = await apiClient.post(ENDPOINTS.ACCOUNT.FORGOT_PIN);
+  forgotPin: async (payload: ForgotPinPayload) => {
+    const response = await apiClient.post(ENDPOINTS.ACCOUNT.FORGOT_PIN, payload);
     return response.data;
   },
 

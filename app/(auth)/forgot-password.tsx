@@ -7,8 +7,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApiMutation } from '@/hooks/api/use-api';
 import { AuthService } from '@/services/modules/auth.service';
 import { Toast } from '@/components/ui/toast';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function ForgotPasswordScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' as 'success' | 'error' });
@@ -35,7 +37,7 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
@@ -43,9 +45,10 @@ export default function ForgotPasswordScreen() {
         <View className="px-6 py-4">
           <TouchableOpacity 
             onPress={() => router.back()}
-            className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+            className="w-10 h-10 rounded-full items-center justify-center shadow-sm"
+            style={{ backgroundColor: colors.surface }}
           >
-            <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+            <Ionicons name="arrow-back" size={20} color={colors.text} />
           </TouchableOpacity>
         </View>
 
@@ -62,10 +65,10 @@ export default function ForgotPasswordScreen() {
         >
           {/* Header */}
           <View className="mt-8 mb-12 items-center">
-            <Text className="text-[#1F2C37] text-3xl font-bold mb-3">
+            <Text className="text-3xl font-bold mb-3" style={{ color: colors.text }}>
               Forgot Password?
             </Text>
-            <Text className="text-[#9DA3B6] text-base text-center leading-6">
+            <Text className="text-base text-center leading-6" style={{ color: colors.textSecondary }}>
               Don’t worry! It happens. Please enter the {"\n"}email address associated with your account.
             </Text>
           </View>
@@ -84,7 +87,8 @@ export default function ForgotPasswordScreen() {
 
           {/* Send Button */}
           <TouchableOpacity 
-            className="bg-[#5E5CE6] h-16 rounded-[20px] items-center justify-center shadow-lg shadow-[#5E5CE6]/40"
+            className="h-16 rounded-[20px] items-center justify-center shadow-lg"
+            style={{ backgroundColor: colors.primaryAuth, shadowColor: colors.primaryAuth }}
             onPress={handleResetPassword}
             activeOpacity={0.8}
             disabled={forgotPasswordMutation.isPending}
@@ -98,9 +102,9 @@ export default function ForgotPasswordScreen() {
 
           {/* Back to Login */}
           <View className="flex-row justify-center mt-12">
-            <Text className="text-[#1F2C37] text-base">Wait, I remember my password? </Text>
+            <Text className="text-base" style={{ color: colors.text }}>Wait, I remember my password? </Text>
             <TouchableOpacity onPress={() => router.back()}>
-              <Text className="text-[#5E5CE6] text-base font-bold">Login</Text>
+              <Text className="text-base font-bold" style={{ color: colors.primaryAuth }}>Login</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

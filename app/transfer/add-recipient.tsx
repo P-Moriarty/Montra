@@ -15,8 +15,10 @@ import { router } from "expo-router";
 import { WithdrawalService, Bank } from "@/services/modules/withdrawal.service";
 import { BeneficiaryService } from "@/services/modules/beneficiary.service";
 import { Toast } from "@/components/ui/toast";
+import { useTheme } from '@/context/ThemeContext';
 
 export default function AddRecipientScreen() {
+  const { colors } = useTheme();
   const [accountnumber, setAccountnumber] = useState("");
   const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
   const [banks, setBanks] = useState<Bank[]>([]);
@@ -146,7 +148,7 @@ export default function AddRecipientScreen() {
 
   return (
     <>
-      <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={["top"]}>
+      <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
         <Toast
           visible={toast.visible}
           message={toast.message}
@@ -159,9 +161,9 @@ export default function AddRecipientScreen() {
             onPress={() => router.back()}
             className="w-10 h-10 rounded-full bg-[#F8F9FB] items-center justify-center shadow-sm"
           >
-            <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+            <Ionicons name="arrow-back" size={20} color={colors.text} />
           </TouchableOpacity>
-          <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">
+          <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>
             Bank transfer
           </Text>
         </View>
@@ -172,13 +174,13 @@ export default function AddRecipientScreen() {
           contentContainerStyle={{ paddingBottom: 40 }}
         >
           <View className="mt-8 mb-6">
-            <Text className="text-[#1F2C37] text-base font-semibold mb-3">
+            <Text className="text-base font-semibold mb-3" style={{ color: colors.text }}>
               Account number
             </Text>
             <TextInput
-              className="w-full h-16 bg-white border border-gray-200 rounded-2xl px-5 text-[#1F2C37] font-medium"
+              className="w-full h-16 border rounded-2xl px-5 font-medium" style={{ borderColor: colors.cardBorder, color: colors.text, backgroundColor: colors.surface }}
               placeholder="Enter 10-digit account number"
-              placeholderTextColor="#9DA3B6"
+              placeholderTextColor={colors.textSecondary}
               keyboardType="numeric"
               value={accountnumber}
               onChangeText={(text) =>
@@ -188,26 +190,23 @@ export default function AddRecipientScreen() {
           </View>
 
           <View className="mb-6">
-            <Text className="text-[#1F2C37] text-base font-semibold mb-3">
+            <Text className="text-base font-semibold mb-3" style={{ color: colors.text }}>
               Bank Name
             </Text>
             <TouchableOpacity
               onPress={() => setShowBankModal(true)}
-              className="w-full h-16 bg-white border border-gray-200 rounded-2xl px-5 flex-row items-center justify-between"
+              className="w-full h-16 border rounded-2xl px-5 flex-row items-center justify-between" style={{ borderColor: colors.cardBorder, backgroundColor: colors.surface }}
             >
               <Text
-                className={
-                  selectedBank
-                    ? "text-[#1F2C37] font-medium"
-                    : "text-[#9DA3B6] font-medium"
-                }
+                className={"font-medium"}
+                style={{ color: selectedBank ? colors.text : colors.textSecondary }}
               >
                 {selectedBank ? selectedBank.name : "Select Bank name"}
               </Text>
               {isLoadingBanks ? (
-                <ActivityIndicator size="small" color="#5154F4" />
+                <ActivityIndicator size="small" color={colors.primary} />
               ) : (
-                <Ionicons name="chevron-down" size={20} color="#9DA3B6" />
+                <Ionicons name="chevron-down" size={20} color={colors.textSecondary} />
               )}
             </TouchableOpacity>
           </View>
@@ -227,43 +226,43 @@ export default function AddRecipientScreen() {
 
           <View className="mb-6">
             <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-[#1F2C37] text-base font-semibold">
+              <Text className="text-base font-semibold" style={{ color: colors.text }}>
                 Account Name
               </Text>
               {isResolving && (
-                <ActivityIndicator size="small" color="#5154F4" />
+                <ActivityIndicator size="small" color={colors.primary} />
               )}
             </View>
             <TextInput
-              className="w-full h-16 bg-gray-50 border border-gray-200 rounded-2xl px-5 text-[#1F2C37] font-medium"
+              className="w-full h-16 border rounded-2xl px-5 font-medium" style={{ borderColor: colors.cardBorder, color: colors.text, backgroundColor: colors.chevronBg }}
               placeholder="Resolved account name"
-              placeholderTextColor="#9DA3B6"
+              placeholderTextColor={colors.textSecondary}
               value={accountName}
               editable={false}
             />
           </View>
 
           <View className="mb-8">
-            <Text className="text-[#1F2C37] text-base font-semibold mb-3">
+            <Text className="text-base font-semibold mb-3" style={{ color: colors.text }}>
               Narration
             </Text>
             <TextInput
-              className="w-full h-16 bg-white border border-gray-200 rounded-2xl px-5 text-[#1F2C37] font-medium"
+              className="w-full h-16 border rounded-2xl px-5 font-medium" style={{ borderColor: colors.cardBorder, color: colors.text, backgroundColor: colors.surface }}
               placeholder="Optional"
-              placeholderTextColor="#9DA3B6"
+              placeholderTextColor={colors.textSecondary}
               value={narration}
               onChangeText={setNarration}
             />
           </View>
 
           <View className="flex-row items-center justify-between mb-12">
-            <Text className="text-[#1F2C37] text-base font-medium">
+            <Text className="text-base font-medium" style={{ color: colors.text }}>
               Save as beneficiary
             </Text>
             <Switch
-              trackColor={{ false: "#E2E8F0", true: "#5154F4" }}
+              trackColor={{ false: colors.switchTrackOff, true: colors.primary }}
               thumbColor="#fff"
-              ios_backgroundColor="#E2E8F0"
+              ios_backgroundColor={colors.switchTrackOff}
               onValueChange={() => setSaveAsBeneficiary(!saveAsBeneficiary)}
               value={saveAsBeneficiary}
             />
@@ -272,7 +271,7 @@ export default function AddRecipientScreen() {
           <TouchableOpacity
             onPress={handleContinue}
             disabled={isSaving}
-            className="bg-[#5154F4] py-5 rounded-[28px] shadow-lg shadow-indigo-100 items-center justify-center"
+            className="py-5 rounded-[28px] shadow-lg shadow-indigo-100 items-center justify-center" style={{ backgroundColor: colors.primary }}
           >
             {isSaving ? (
               <ActivityIndicator color="white" />
@@ -286,10 +285,10 @@ export default function AddRecipientScreen() {
       </SafeAreaView>
 
       <Modal visible={showBankModal} animationType="slide" transparent>
-        <View className="flex-1 justify-end bg-black/40">
-          <View className="bg-white rounded-t-[48px] px-6 pt-10 pb-10 h-[80%]">
+        <View className="flex-1 justify-end" style={{ backgroundColor: colors.overlay }}>
+          <View className="rounded-t-[48px] px-6 pt-10 pb-10 h-[80%]" style={{ backgroundColor: colors.surface }}>
             <View className="flex-row justify-between items-center mb-6">
-              <Text className="text-[#1F2C37] text-2xl font-bold">
+              <Text className="text-2xl font-bold" style={{ color: colors.text }}>
                 Select Bank
               </Text>
               <TouchableOpacity
@@ -301,17 +300,17 @@ export default function AddRecipientScreen() {
                 <Ionicons
                   name="close-circle-outline"
                   size={28}
-                  color="#9DA3B6"
+                  color={colors.textSecondary}
                 />
               </TouchableOpacity>
             </View>
 
-            <View className="flex-row items-center bg-[#F8F9FB] h-14 rounded-2xl px-4 border border-gray-100 mb-6">
-              <Ionicons name="search" size={20} color="#9DA3B6" />
+            <View className="flex-row items-center bg-[#F8F9FB] h-14 rounded-2xl px-4 border mb-6" style={{ borderColor: colors.cardBorder }}>
+              <Ionicons name="search" size={20} color={colors.textSecondary} />
               <TextInput
-                className="flex-1 ml-3 text-[#1F2C37] font-medium"
+                className="flex-1 ml-3 font-medium" style={{ color: colors.text }}
                 placeholder="Search bank name"
-                placeholderTextColor="#9DA3B6"
+                placeholderTextColor={colors.textSecondary}
                 value={bankSearch}
                 onChangeText={setBankSearch}
               />
@@ -327,10 +326,10 @@ export default function AddRecipientScreen() {
                       setShowBankModal(false);
                       setBankSearch("");
                     }}
-                    className="py-5 border-b border-gray-50 flex-row items-center justify-between"
+                    className="py-5 border-b flex-row items-center justify-between" style={{ borderColor: colors.cardBorder }}
                   >
                     <View className="flex-1">
-                      <Text className="text-[#1F2C37] text-lg font-medium">
+                      <Text className="text-lg font-medium" style={{ color: colors.text }}>
                         {item.name}
                       </Text>
                     </View>
@@ -338,18 +337,18 @@ export default function AddRecipientScreen() {
                       <Ionicons
                         name="checkmark-circle"
                         size={24}
-                        color="#5154F4"
+                        color={colors.primary}
                       />
                     )}
                   </TouchableOpacity>
                 ))
               ) : (
                 <View className="py-20 items-center">
-                  <Text className="text-[#9DA3B6] text-base">
+                  <Text className="text-base" style={{ color: colors.textSecondary }}>
                     No banks available
                   </Text>
                   <TouchableOpacity onPress={fetchBanks} className="mt-4">
-                    <Text className="text-[#5154F4] font-bold">Retry</Text>
+                    <Text className="font-bold" style={{ color: colors.primary }}>Retry</Text>
                   </TouchableOpacity>
                 </View>
               )}

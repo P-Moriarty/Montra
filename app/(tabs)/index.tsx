@@ -2,6 +2,7 @@ import { Config } from "@/constants/Config";
 import { getCurrencySymbol, CURRENCY_MAP } from "@/constants/currencies";
 import { useAuth } from "@/context/AuthContext";
 import { useWallet } from "@/context/WalletContext";
+import { useTheme } from '@/context/ThemeContext';
 import { useApiQuery } from "@/hooks/api/use-api";
 import { NotificationService } from "@/services/modules/notification.service";
 import { ProfileService } from "@/services/modules/profile.service";
@@ -27,6 +28,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
+  const { colors } = useTheme();
   const [showBalance, setShowBalance] = useState(true);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const { selectedCurrencyCode, setSelectedCurrencyCode } = useWallet();
@@ -179,99 +181,99 @@ export default function HomeScreen() {
       case "deposit":
         return {
           icon: "arrow-downward",
-          color: "#10B981",
-          bgColor: "bg-green-50",
+          color: colors.green,
+          bgStyle: { backgroundColor: colors.successLight },
           family: "MaterialIcons",
         };
       case "outward":
         return {
           icon: "arrow-upward",
-          color: "#EF4444",
-          bgColor: "bg-red-50",
+          color: colors.error,
+          bgStyle: { backgroundColor: colors.errorLight },
           family: "MaterialIcons",
         };
       case "swap":
         return {
           icon: "repeat",
-          color: "#5154F4",
-          bgColor: "bg-indigo-50",
+          color: colors.primary,
+          bgStyle: { backgroundColor: colors.iconBg },
           family: "Feather",
         };
       case "transfer":
         return {
           icon: "send",
-          color: "#3B82F6",
-          bgColor: "bg-blue-50",
+          color: colors.info,
+          bgStyle: { backgroundColor: colors.infoLight },
           family: "Feather",
         };
       case "onramp":
         return {
           icon: "plus-circle",
-          color: "#10B981",
-          bgColor: "bg-green-50",
+          color: colors.green,
+          bgStyle: { backgroundColor: colors.successLight },
           family: "Feather",
         };
       case "offramp":
         return {
           icon: "minus-circle",
-          color: "#EF4444",
-          bgColor: "bg-red-50",
+          color: colors.error,
+          bgStyle: { backgroundColor: colors.errorLight },
           family: "Feather",
         };
       case "save":
         return {
           icon: "savings",
-          color: "#8B5CF6",
-          bgColor: "bg-purple-50",
+          color: colors.purple,
+          bgStyle: { backgroundColor: colors.iconBg },
           family: "MaterialIcons",
         };
       case "reward":
         return {
           icon: "card-giftcard",
-          color: "#F59E0B",
-          bgColor: "bg-amber-50",
+          color: colors.warning,
+          bgStyle: { backgroundColor: colors.warningLight },
           family: "MaterialIcons",
         };
       case "airtime":
         return {
           icon: "smartphone",
-          color: "#3B82F6",
-          bgColor: "bg-blue-50",
+          color: colors.info,
+          bgStyle: { backgroundColor: colors.infoLight },
           family: "Feather",
         };
       case "data":
         return {
           icon: "wifi",
-          color: "#3B82F6",
-          bgColor: "bg-blue-50",
+          color: colors.info,
+          bgStyle: { backgroundColor: colors.infoLight },
           family: "Feather",
         };
       case "cable":
         return {
           icon: "tv",
-          color: "#3B82F6",
-          bgColor: "bg-blue-50",
+          color: colors.info,
+          bgStyle: { backgroundColor: colors.infoLight },
           family: "Feather",
         };
       case "electricity":
         return {
           icon: "zap",
-          color: "#F59E0B",
-          bgColor: "bg-amber-50",
+          color: colors.warning,
+          bgStyle: { backgroundColor: colors.warningLight },
           family: "Feather",
         };
       case "payment_request":
         return {
           icon: "request-page",
-          color: "#5154F4",
-          bgColor: "bg-indigo-50",
+          color: colors.primary,
+          bgStyle: { backgroundColor: colors.iconBg },
           family: "MaterialIcons",
         };
       default:
         return {
           icon: "payment",
-          color: "#6C7278",
-          bgColor: "bg-gray-50",
+          color: colors.textTertiary,
+          bgStyle: { backgroundColor: colors.chevronBg },
           family: "MaterialIcons",
         };
     }
@@ -352,7 +354,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={["top"]}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
       <ScrollView
         className="flex-1 px-5"
         showsVerticalScrollIndicator={false}
@@ -371,7 +373,7 @@ export default function HomeScreen() {
                 contentFit="cover"
               />
             </TouchableOpacity>
-            <Text className="text-[#1F2C37] text-lg font-bold">
+            <Text className="text-lg font-bold" style={{ color: colors.text }}>
               {isProfileLoading
                 ? "Loading..."
                 : `Hello, ${user?.full_name?.split(" ")[0] || "User"}`}
@@ -381,45 +383,45 @@ export default function HomeScreen() {
             <TouchableOpacity
               onPress={() => refetchWallets()}
               disabled={isWalletRefetching}
-              className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm mr-2"
+              className="w-10 h-10 rounded-full items-center justify-center shadow-sm mr-2" style={{ backgroundColor: colors.surface }}
             >
               {isWalletRefetching ? (
-                <ActivityIndicator size="small" color="#5154F4" />
+                <ActivityIndicator size="small" color={colors.primary} />
               ) : (
-                <Ionicons name="refresh" size={20} color="#5154F4" />
+                <Ionicons name="refresh" size={20} color={colors.primary} />
               )}
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push("/account/notifications" as any)}
-              className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm relative"
+              className="w-10 h-10 rounded-full items-center justify-center shadow-sm relative" style={{ backgroundColor: colors.surface }}
             >
               <Ionicons
                 name="notifications-outline"
                 size={20}
-                color="#1F2C37"
+                color={colors.text}
               />
               {hasUnreadNotifications && (
-                <View className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white" />
+                <View className="absolute top-2 right-2 w-2 h-2 rounded-full border border-white" style={{ backgroundColor: colors.error }} />
               )}
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Multi-Currency Balance Switcher */}
-        <View className="mt-10 items-center">
-          <Text className="text-[#6C7278] text-sm mb-4 font-semibold uppercase tracking-widest">
+        <View className="mt-10 items-center" style={{ backgroundColor: colors.background }}>
+          <Text className="text-sm mb-4 font-semibold uppercase tracking-widest" style={{ color: colors.textTertiary }}>
             Available balance
           </Text>
 
           {isWalletLoading ? (
-            <ActivityIndicator color="#5154F4" className="mb-6" />
+            <ActivityIndicator color={colors.primary} className="mb-6" />
           ) : walletError ? (
-            <Text className="text-red-500 text-sm mb-6">
-              Unable to load wallet balance
-            </Text>
+              <Text className="text-sm mb-6" style={{ color: colors.error }}>
+                Unable to load wallet balance
+              </Text>
           ) : (
             <View className="flex-row items-center mb-6">
-              <Text className="text-[#1F2C37] text-4xl font-extrabold mr-3">
+              <Text className="text-4xl font-extrabold mr-3" style={{ color: colors.text }}>
                 {showBalance
                   ? `${currentWallet.symbol}${Number(
                       (currentWallet.balance ?? 0) / 100,
@@ -433,7 +435,7 @@ export default function HomeScreen() {
                 <Ionicons
                   name={showBalance ? "eye-outline" : "eye-off-outline"}
                   size={24}
-                  color="#6C7278"
+                  color={colors.textTertiary}
                 />
               </TouchableOpacity>
             </View>
@@ -443,7 +445,7 @@ export default function HomeScreen() {
           <View className="relative">
             <TouchableOpacity
               onPress={() => setShowCurrencyPicker(!showCurrencyPicker)}
-              className="flex-row items-center bg-white px-5 py-3 rounded-full shadow-sm border border-gray-100"
+              className="flex-row items-center px-5 py-3 rounded-full shadow-sm border border-gray-100" style={{ backgroundColor: colors.surface }}
             >
               <Image
                 source={{
@@ -451,18 +453,18 @@ export default function HomeScreen() {
                 }}
                 className="w-6 h-4 rounded-sm mr-2"
               />
-              <Text className="text-[#1F2C37] font-bold mr-2">
+              <Text className="font-bold mr-2" style={{ color: colors.text }}>
                 {currentWallet.code}
               </Text>
               <Feather
                 name={showCurrencyPicker ? "chevron-up" : "chevron-down"}
                 size={16}
-                color="#1F2C37"
+                color={colors.text}
               />
             </TouchableOpacity>
 
             {showCurrencyPicker && availableCurrencies.length > 0 && (
-              <View className="absolute top-14 left-0 right-0 bg-white rounded-3xl p-2 shadow-xl z-50 border border-gray-100 min-w-[120px]">
+              <View className="absolute top-14 left-0 right-0 rounded-3xl p-2 shadow-xl z-50 border border-gray-100 min-w-[120px]" style={{ backgroundColor: colors.surface }}>
                 {availableCurrencies.map((currency) => (
                   <TouchableOpacity
                     key={currency.code}
@@ -470,7 +472,8 @@ export default function HomeScreen() {
                       setSelectedCurrencyCode(currency.code);
                       setShowCurrencyPicker(false);
                     }}
-                    className={`flex-row items-center p-3 rounded-2xl ${selectedCurrency.code === currency.code ? "bg-[#F0F1FF]" : ""}`}
+                    className="flex-row items-center p-3 rounded-2xl"
+                    style={selectedCurrency.code === currency.code ? { backgroundColor: colors.iconBg } : undefined}
                   >
                     <Image
                       source={{
@@ -479,7 +482,8 @@ export default function HomeScreen() {
                       className="w-5 h-3.5 rounded-sm mr-2"
                     />
                     <Text
-                      className={`font-bold ${selectedCurrency.code === currency.code ? "text-[#5154F4]" : "text-[#1F2C37]"}`}
+                      className="font-bold"
+                      style={{ color: selectedCurrency.code === currency.code ? colors.primary : colors.text }}
                     >
                       {currency.code}
                     </Text>
@@ -491,45 +495,45 @@ export default function HomeScreen() {
         </View>
 
         {/* Action Buttons */}
-        <View className="flex-row justify-between mt-12 bg-white p-6 rounded-[32px] shadow-sm">
+        <View className="flex-row justify-between mt-12 p-6 rounded-[32px] shadow-sm" style={{ backgroundColor: colors.surface }}>
           <TouchableOpacity
             className="items-center"
             onPress={() => router.push("/transfer")}
           >
-            <View className="w-14 h-14 bg-[#5154F4] rounded-2xl items-center justify-center mb-2">
+            <View className="w-14 h-14 rounded-2xl items-center justify-center mb-2" style={{ backgroundColor: colors.primary }}>
               <Feather name="send" size={24} color="white" />
             </View>
-            <Text className="text-[#6C7278] font-bold">Transfer</Text>
+            <Text className="font-bold" style={{ color: colors.textTertiary }}>Transfer</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             className="items-center"
             onPress={() => router.push("/transfer/deposit-ngn")}
           >
-            <View className="w-14 h-14 bg-[#5154F4]/10 rounded-2xl items-center justify-center mb-2">
-              <Ionicons name="download-outline" size={24} color="#5154F4" />
+            <View className="w-14 h-14 rounded-2xl items-center justify-center mb-2" style={{ backgroundColor: colors.primary + '1A' }}>
+              <Ionicons name="download-outline" size={24} color={colors.primary} />
             </View>
-            <Text className="text-[#6C7278] font-bold">Deposit</Text>
+            <Text className="font-bold" style={{ color: colors.textTertiary }}>Deposit</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             className="items-center"
             onPress={() => router.push("/request")}
           >
-            <View className="w-14 h-14 bg-blue-50 rounded-2xl items-center justify-center mb-2">
+            <View className="w-14 h-14 rounded-2xl items-center justify-center mb-2" style={{ backgroundColor: colors.infoLight }}>
               <FontAwesome6
                 name="hand-holding-dollar"
                 size={24}
-                color="#5154F4"
+                color={colors.primary}
               />
             </View>
-            <Text className="text-[#6C7278] font-bold">Request</Text>
+            <Text className="font-bold" style={{ color: colors.textTertiary }}>Request</Text>
           </TouchableOpacity>
         </View>
 
           {/* Exchange Rate Carousel */}
           <View className="mt-8">
-            <Text className="text-[#1F2C37] text-lg font-bold mb-4">
+            <Text className="text-lg font-bold mb-4" style={{ color: colors.text }}>
               Exchange Rates
             </Text>
             <ScrollView
@@ -546,8 +550,8 @@ export default function HomeScreen() {
               {tickerData.map((item, index) => (
                 <View
                   key={`${item.from}-${item.to}-${index}`}
-                  style={{ width: 200 }}
-                  className="bg-white p-5 rounded-[32px] flex-row items-center justify-between mr-4 shadow-sm border border-gray-50"
+                  className="p-5 rounded-[32px] flex-row items-center justify-between mr-4 shadow-sm"
+                  style={{ width: 200, backgroundColor: colors.surface, borderColor: colors.cardBorder }}
                 >
                   <View className="flex-row items-center mr-2">
                     <View className="flex-row items-center mr-3">
@@ -565,17 +569,17 @@ export default function HomeScreen() {
                       />
                     </View>
                     <View>
-                      <Text className="text-[#1F2C37] font-bold text-sm">
+                      <Text className="font-bold text-sm" style={{ color: colors.text }}>
                         {item.from}/{item.to}
                       </Text>
-                      <Text className="text-[#9DA3B6] text-[10px]">
+                      <Text className="text-[10px]" style={{ color: colors.textSecondary }}>
                         Standard Rate
                       </Text>
                     </View>
                   </View>
 
                   <View className="items-end">
-                    <Text className="text-[#5154F4] font-extrabold text-base">
+                    <Text className="font-extrabold text-base" style={{ color: colors.primary }}>
                       {item.to === "NGN"
                         ? "₦"
                         : item.to === "USD"
@@ -586,8 +590,8 @@ export default function HomeScreen() {
                       {item.rate}
                     </Text>
                     <View className="flex-row items-center mt-1">
-                      <Feather name="trending-up" size={10} color="#10B981" />
-                      <Text className="text-[#10B981] text-[10px] font-bold ml-1">
+                      <Feather name="trending-up" size={10} color={colors.green} />
+                      <Text className="text-[10px] font-bold ml-1" style={{ color: colors.green }}>
                         +0.24%
                       </Text>
                     </View>
@@ -599,7 +603,7 @@ export default function HomeScreen() {
 
         {/* Quick Services */}
         <View className="mt-8">
-          <Text className="text-[#1F2C37] text-lg font-bold mb-4">
+          <Text className="text-lg font-bold mb-4" style={{ color: colors.text }}>
             Quick Services
           </Text>
           <View className="flex-row justify-between">
@@ -623,30 +627,30 @@ export default function HomeScreen() {
                   if (service.label === "Referral") router.push("/rewards/refer");
                 }}
               >
-                <View className="w-16 h-16 bg-[#F0F1FF] rounded-full items-center justify-center shadow-sm mb-2">
+                <View className="w-16 h-16 rounded-full items-center justify-center shadow-sm mb-2" style={{ backgroundColor: colors.iconBg }}>
                   {service.lib === "MaterialCommunityIcons" && (
                     <MaterialCommunityIcons
                       name={service.icon as any}
                       size={26}
-                      color="#5154F4"
+                      color={colors.primary}
                     />
                   )}
                   {service.lib === "Feather" && (
                     <Feather
                       name={service.icon as any}
                       size={24}
-                      color="#5154F4"
+                      color={colors.primary}
                     />
                   )}
                   {service.lib === "Ionicons" && (
                     <Ionicons
                       name={service.icon as any}
                       size={26}
-                      color="#5154F4"
+                      color={colors.primary}
                     />
                   )}
                 </View>
-                <Text className="text-[#6C7278] text-sm font-medium">
+                <Text className="text-sm font-medium" style={{ color: colors.textTertiary }}>
                   {service.label}
                 </Text>
               </TouchableOpacity>
@@ -657,26 +661,26 @@ export default function HomeScreen() {
         {/* Recent Transactions */}
         <View className="mt-8">
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-[#1F2C37] text-lg font-bold">
+            <Text className="text-lg font-bold" style={{ color: colors.text }}>
               Recent transaction
             </Text>
             <TouchableOpacity
               className="flex-row items-center"
               onPress={() => router.push("/transaction/transaction-history")}
             >
-              <Text className="text-[#5154F4] font-bold mr-1">
+              <Text className="font-bold mr-1" style={{ color: colors.primary }}>
                 View more
               </Text>
-              <Feather name="chevron-right" size={16} color="#5154F4" />
+              <Feather name="chevron-right" size={16} color={colors.primary} />
             </TouchableOpacity>
           </View>
 
           {isTransactionsLoading ? (
-            <ActivityIndicator color="#5154F4" className="my-8" />
+            <ActivityIndicator color={colors.primary} className="my-8" />
           ) : transactions.length === 0 ? (
-            <View className="bg-white p-8 rounded-3xl items-center justify-center border border-gray-100">
-              <Feather name="list" size={32} color="#9DA3B6" />
-              <Text className="text-[#9DA3B6] mt-2 font-bold">
+            <View className="p-8 rounded-3xl items-center justify-center border border-gray-100" style={{ backgroundColor: colors.surface }}>
+              <Feather name="list" size={32} color={colors.textSecondary} />
+              <Text className="mt-2 font-bold" style={{ color: colors.textSecondary }}>
                 No transactions yet
               </Text>
             </View>
@@ -706,10 +710,11 @@ export default function HomeScreen() {
                 <TouchableOpacity
                   key={`${item.id || index}-${index}`}
                   onPress={() => router.push(`/transaction/${item.id}` as any)}
-                  className="bg-white p-4 rounded-3xl flex-row items-center mb-3 shadow-sm border border-gray-50"
+                  className="p-4 rounded-3xl flex-row items-center mb-3 shadow-sm" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}
                 >
                   <View
-                    className={`w-12 h-12 ${config.bgColor} rounded-full items-center justify-center mr-4`}
+                    className="w-12 h-12 rounded-full items-center justify-center mr-4"
+                    style={config.bgStyle}
                   >
                     {config.family === "MaterialIcons" ? (
                       <MaterialIcons
@@ -727,7 +732,8 @@ export default function HomeScreen() {
                   </View>
                   <View className="flex-1">
                     <Text
-                      className="text-[#1F2C37] font-bold text-base mb-1"
+                      className="font-bold text-base mb-1"
+                      style={{ color: colors.text }}
                       numberOfLines={1}
                     >
                       {item.category}
@@ -739,7 +745,7 @@ export default function HomeScreen() {
                         }}
                         className="w-4 h-3 rounded-sm mr-2"
                       />
-                      <Text className="text-[#9DA3B6] text-xs">
+                      <Text className="text-xs" style={{ color: colors.textSecondary }}>
                         {formattedDate}
                         {formattedTime}
                        </Text>
@@ -747,7 +753,8 @@ export default function HomeScreen() {
                   </View>
                   <View className="items-end">
                     <Text
-                      className={`font-bold text-base ${item.status?.toLowerCase() === "failed" ? "text-red-500" : isCredit ? "text-green-600" : "text-[#1F2C37]"}`}
+                      className="font-bold text-base"
+                      style={{ color: item.status?.toLowerCase() === "failed" ? colors.error : isCredit ? colors.green : colors.text }}
                     >
                       {isCredit ? "+" : "-"}{getCurrencySymbol(item.currency)}
                       {Number(Math.abs(item.amount) / 100).toLocaleString(
@@ -756,10 +763,12 @@ export default function HomeScreen() {
                       )}
                     </Text>
                     <View
-                      className={`${item.status?.toLowerCase() === "failed" ? "bg-red-50" : "bg-green-50"} px-2 py-0.5 rounded-md mt-1`}
+                      className="px-2 py-0.5 rounded-md mt-1"
+                      style={{ backgroundColor: item.status?.toLowerCase() === "failed" ? colors.errorLight : colors.successLight }}
                     >
                       <Text
-                        className={`${item.status?.toLowerCase() === "failed" ? "text-red-500" : "text-green-500"} text-[10px] font-bold capitalize`}
+                        className="text-[10px] font-bold capitalize"
+                        style={{ color: item.status?.toLowerCase() === "failed" ? colors.error : colors.success }}
                       >
                         {item.status}
                       </Text>
@@ -776,42 +785,43 @@ export default function HomeScreen() {
 }
 
 function HomeSkeleton() {
+  const { colors } = useTheme();
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={["top"]}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
       <View className="px-5">
         <View className="flex-row items-center justify-between mt-4">
           <View className="flex-row items-center">
-            <View className="w-12 h-12 rounded-full bg-white/60 mr-3 animate-pulse" />
-            <View className="w-32 h-6 bg-white/60 rounded-xl animate-pulse" />
+            <View className="w-12 h-12 rounded-full mr-3 animate-pulse" style={{ backgroundColor: colors.surfaceSecondary }} />
+            <View className="w-32 h-6 rounded-xl animate-pulse" style={{ backgroundColor: colors.surfaceSecondary }} />
           </View>
           <View className="flex-row">
-            <View className="w-10 h-10 rounded-full bg-white/60 mr-2 animate-pulse" />
-            <View className="w-10 h-10 rounded-full bg-white/60 animate-pulse" />
+            <View className="w-10 h-10 rounded-full mr-2 animate-pulse" style={{ backgroundColor: colors.surfaceSecondary }} />
+            <View className="w-10 h-10 rounded-full animate-pulse" style={{ backgroundColor: colors.surfaceSecondary }} />
           </View>
         </View>
 
         <View className="mt-10 items-center">
-          <View className="w-40 h-4 bg-white/60 rounded-md mb-4 animate-pulse" />
-          <View className="w-64 h-12 bg-white/60 rounded-2xl mb-6 animate-pulse" />
-          <View className="w-24 h-10 bg-white/60 rounded-full animate-pulse" />
+          <View className="w-40 h-4 rounded-md mb-4 animate-pulse" style={{ backgroundColor: colors.surfaceSecondary }} />
+          <View className="w-64 h-12 rounded-2xl mb-6 animate-pulse" style={{ backgroundColor: colors.surfaceSecondary }} />
+          <View className="w-24 h-10 rounded-full animate-pulse" style={{ backgroundColor: colors.surfaceSecondary }} />
         </View>
 
-        <View className="flex-row justify-between bg-white/40 p-6 rounded-[32px] mt-10 border border-white/40">
+        <View className="flex-row justify-between p-6 rounded-[32px] mt-10" style={{ backgroundColor: colors.surfaceSecondary, borderColor: colors.border }}>
           {[1, 2, 3].map((_, i) => (
             <View key={i} className="items-center">
-              <View className="w-14 h-14 bg-white/60 rounded-2xl mb-2 animate-pulse" />
-              <View className="w-12 h-3 bg-white/60 rounded animate-pulse" />
+              <View className="w-14 h-14 rounded-2xl mb-2 animate-pulse" style={{ backgroundColor: colors.surfaceSecondary }} />
+              <View className="w-12 h-3 rounded animate-pulse" style={{ backgroundColor: colors.surfaceSecondary }} />
             </View>
           ))}
         </View>
 
         <View className="mt-10">
-          <View className="w-32 h-6 bg-white/60 rounded-lg mb-4 animate-pulse" />
+          <View className="w-32 h-6 rounded-lg mb-4 animate-pulse" style={{ backgroundColor: colors.surfaceSecondary }} />
           <View className="flex-row justify-between">
             {[1, 2, 3, 4].map((_, i) => (
               <View key={i} className="items-center">
-                <View className="w-16 h-16 bg-white/60 rounded-full mb-2 animate-pulse" />
-                <View className="w-12 h-3 bg-white/60 rounded animate-pulse" />
+                <View className="w-16 h-16 rounded-full mb-2 animate-pulse" style={{ backgroundColor: colors.surfaceSecondary }} />
+                <View className="w-12 h-3 rounded animate-pulse" style={{ backgroundColor: colors.surfaceSecondary }} />
               </View>
             ))}
           </View>

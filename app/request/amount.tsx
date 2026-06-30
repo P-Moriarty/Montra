@@ -4,8 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { CustomKeypad } from '@/components/custom-keypad';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function RequestAmountScreen() {
+  const { colors } = useTheme();
   const params = useLocalSearchParams();
   const [amount, setAmount] = useState('0.00');
 
@@ -30,21 +32,21 @@ export default function RequestAmountScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity 
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm" style={{ backgroundColor: colors.surface }}
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">Enter Amount</Text>
+        <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>Enter Amount</Text>
       </View>
 
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         {/* Beneficiary Card */}
-        <View className="bg-white p-5 rounded-[32px] flex-row items-center mt-6 shadow-sm border border-gray-50">
+        <View className="p-5 rounded-[32px] flex-row items-center mt-6 shadow-sm border" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}>
           <View className="w-14 h-14 bg-gray-200 rounded-full items-center justify-center mr-4 overflow-hidden">
              <Image 
                source={{ uri: 'https://i.pravatar.cc/150?u=chinonso' }} 
@@ -52,19 +54,19 @@ export default function RequestAmountScreen() {
              />
           </View>
           <View className="flex-1">
-            <Text className="text-[#1F2C37] font-bold text-base mb-1">{params.name || 'Emezue Chinonso'}</Text>
-            <Text className="text-[#9DA3B6] text-xs">{params.identifier || '707293 - Pay ID'}</Text>
+            <Text className="font-bold text-base mb-1" style={{ color: colors.text }}>{params.name || 'Emezue Chinonso'}</Text>
+            <Text className="text-xs" style={{ color: colors.textSecondary }}>{params.identifier || '707293 - Pay ID'}</Text>
           </View>
         </View>
 
         {/* Amount Display */}
-        <View className="bg-white p-8 rounded-[40px] mt-4 items-center shadow-sm border border-gray-50">
-          <Text className="text-[#9DA3B6] text-sm font-medium mb-4">Enter Amount</Text>
-          <Text className="text-[#1F2C37] text-5xl font-extrabold mb-4">{amount}</Text>
+        <View className="p-8 rounded-[40px] mt-4 items-center shadow-sm border" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder }}>
+          <Text className="text-sm font-medium mb-4" style={{ color: colors.textSecondary }}>Enter Amount</Text>
+          <Text className="text-5xl font-extrabold mb-4" style={{ color: colors.text }}>{amount}</Text>
           {params.narration ? (
-            <Text className="text-[#9DA3B6] text-sm">Narration : {params.narration}</Text>
+            <Text className="text-sm" style={{ color: colors.textSecondary }}>Narration : {params.narration}</Text>
           ) : (
-            <Text className="text-[#9DA3B6] text-sm">Available balance : ₦20,000.00</Text>
+            <Text className="text-sm" style={{ color: colors.textSecondary }}>Available balance : ₦20,000.00</Text>
           )}
         </View>
 
@@ -74,9 +76,13 @@ export default function RequestAmountScreen() {
             <TouchableOpacity 
               key={val}
               onPress={() => setAmount(val)}
-              className={`flex-1 mx-1 py-4 rounded-2xl items-center border ${amount === val ? 'bg-white border-[#5154F4]' : 'bg-white border-transparent'}`}
+              className={`flex-1 mx-1 py-4 rounded-2xl items-center border`}
+              style={{
+                backgroundColor: amount === val ? colors.surface : colors.surface,
+                borderColor: amount === val ? colors.primary : 'transparent'
+              }}
             >
-              <Text className={`${amount === val ? 'text-[#5154F4]' : 'text-[#1F2C37]'} font-bold`}>{val}</Text>
+              <Text className={`font-bold`} style={{ color: amount === val ? colors.primary : colors.text }}>{val}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -84,14 +90,14 @@ export default function RequestAmountScreen() {
         {/* Request Button */}
         <TouchableOpacity 
           onPress={() => router.push(`/request/authorize?amount=${amount}&name=${params.name}&narration=${params.narration}&identifier=${params.identifier}`)}
-          className="bg-[#5154F4] mt-8 py-5 rounded-[28px] shadow-lg shadow-indigo-100 mb-6"
+          className="mt-8 py-5 rounded-[28px] shadow-lg shadow-indigo-100 mb-6" style={{ backgroundColor: colors.primary }}
         >
           <Text className="text-white text-center text-lg font-bold">Request</Text>
         </TouchableOpacity>
       </ScrollView>
 
       {/* Custom Keypad */}
-      <View className="bg-[#D1D5DB]/30 pt-4 rounded-t-[40px]">
+      <View className="pt-4 rounded-t-[40px]" style={{ backgroundColor: `${colors.switchTrackOff}30` }}>
         <CustomKeypad 
           onPress={(key) => handleKeyPress(key)} 
           onDelete={() => handleKeyPress('delete')} 

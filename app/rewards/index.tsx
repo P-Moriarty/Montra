@@ -8,8 +8,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { RewardService } from '@/services/modules/reward.service';
 import { getCurrencySymbol } from '@/constants/currencies';
 import { Toast } from '@/components/ui/toast';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function RewardsIndexScreen() {
+  const { colors } = useTheme();
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' as 'success' | 'error' });
   const queryClient = useQueryClient();
 
@@ -54,7 +56,7 @@ export default function RewardsIndexScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F8F9FE]" edges={['top']}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={['top']}>
       <Toast
         visible={toast.visible}
         message={toast.message}
@@ -64,44 +66,44 @@ export default function RewardsIndexScreen() {
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm" style={{ backgroundColor: colors.surface }}
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">Rewards Center</Text>
+        <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>Rewards Center</Text>
       </View>
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#5154F4" />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : (
         <ScrollView
           className="flex-1 px-5"
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#5154F4" />}
+          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
           contentContainerStyle={{ paddingBottom: 40 }}
         >
           {/* Cashback Section */}
-          <Text className="text-[#1F2C37] text-lg font-bold mt-6 mb-4">Cashback</Text>
+          <Text className="text-lg font-bold mt-6 mb-4" style={{ color: colors.text }}>Cashback</Text>
 
           {cashbackBalance && (
-            <View className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-50 mb-4">
+            <View className="p-6 rounded-[32px] shadow-sm mb-4" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: 1 }}>
               <View className="flex-row items-center mb-4">
-                <View className="w-10 h-10 bg-green-50 rounded-full items-center justify-center mr-3">
-                  <Feather name="arrow-down" size={18} color="#10B981" />
+                <View className="w-10 h-10 rounded-full items-center justify-center mr-3" style={{ backgroundColor: colors.successLight }}>
+                  <Feather name="arrow-down" size={18} color={colors.success} />
                 </View>
-                <Text className="text-[#1F2C37] font-bold text-base">Available Balance</Text>
+                <Text className="font-bold text-base" style={{ color: colors.text }}>Available Balance</Text>
               </View>
-              <Text className="text-[#1F2C37] text-3xl font-black mb-4">
+              <Text className="text-3xl font-black mb-4" style={{ color: colors.text }}>
                 {getCurrencySymbol(cashbackBalance.currency)}
                 {Number(cashbackBalance.available_balance / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </Text>
-              <View className="h-[1px] bg-gray-50 mb-4" />
+              <View className="h-[1px] mb-4" style={{ backgroundColor: colors.cardBorder }} />
               <View className="flex-row justify-between items-center">
                 <View>
-                  <Text className="text-[#6C7278] text-sm">Total Earned</Text>
-                  <Text className="text-[#1F2C37] font-bold">
+                  <Text className="text-sm" style={{ color: colors.textTertiary }}>Total Earned</Text>
+                  <Text className="font-bold" style={{ color: colors.text }}>
                     {getCurrencySymbol(cashbackBalance.currency)}
                     {Number(cashbackBalance.total_earned / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </Text>
@@ -109,12 +111,13 @@ export default function RewardsIndexScreen() {
                 <TouchableOpacity
                   onPress={() => redeemMutation.mutate(undefined as any)}
                   disabled={cashbackBalance.available_balance < 10000 || redeemMutation.isPending}
-                  className={`px-6 py-3 rounded-2xl ${cashbackBalance.available_balance < 10000 ? 'bg-gray-200' : 'bg-[#5154F4]'}`}
+                  className="px-6 py-3 rounded-2xl"
+                  style={{ backgroundColor: cashbackBalance.available_balance < 10000 ? colors.disabledBg : colors.primary }}
                 >
                   {redeemMutation.isPending ? (
                     <ActivityIndicator size="small" color="white" />
                   ) : (
-                    <Text className={`font-bold text-sm ${cashbackBalance.available_balance < 10000 ? 'text-gray-400' : 'text-white'}`}>
+                    <Text className={`font-bold text-sm ${cashbackBalance.available_balance < 10000 ? '' : 'text-white'}`} style={cashbackBalance.available_balance < 10000 ? { color: colors.textTertiary } : {}}>
                       Redeem
                     </Text>
                   )}
@@ -124,22 +127,22 @@ export default function RewardsIndexScreen() {
           )}
 
           {cashbackList.length > 0 && (
-            <View className="bg-white rounded-[32px] shadow-sm border border-gray-50 mb-8 overflow-hidden">
-              <View className="px-6 py-4 border-b border-gray-50">
-                <Text className="text-[#1F2C37] font-bold">History</Text>
+            <View className="rounded-[32px] shadow-sm mb-8 overflow-hidden" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: 1 }}>
+              <View className="px-6 py-4" style={{ borderBottomWidth: 1, borderBottomColor: colors.cardBorder }}>
+                <Text className="font-bold" style={{ color: colors.text }}>History</Text>
               </View>
               {cashbackList.map((item: any, idx: number) => (
                 <View
                   key={idx}
-                  className="flex-row items-center justify-between px-6 py-4 border-b border-gray-50 last:border-b-0"
+                  className="flex-row items-center justify-between px-6 py-4" style={{ borderBottomWidth: idx < cashbackList.length - 1 ? 1 : 0, borderBottomColor: colors.cardBorder }}
                 >
                   <View className="flex-row items-center flex-1 mr-4">
-                    <View className="w-8 h-8 bg-green-50 rounded-full items-center justify-center mr-3">
-                      <Feather name="arrow-down" size={14} color="#10B981" />
+                    <View className="w-8 h-8 rounded-full items-center justify-center mr-3" style={{ backgroundColor: colors.successLight }}>
+                      <Feather name="arrow-down" size={14} color={colors.success} />
                     </View>
                     <View>
-                      <Text className="text-[#1F2C37] text-sm font-bold">{item.description}</Text>
-                      <Text className="text-[#9DA3B6] text-[10px] mt-0.5">{formatDate(item.created_at)}</Text>
+                      <Text className="text-sm font-bold" style={{ color: colors.text }}>{item.description}</Text>
+                      <Text className="text-[10px] mt-0.5" style={{ color: colors.textSecondary }}>{formatDate(item.created_at)}</Text>
                     </View>
                   </View>
                   <Text className="text-green-600 font-bold text-sm">
@@ -152,39 +155,39 @@ export default function RewardsIndexScreen() {
           )}
 
           {/* Referral Section */}
-          <Text className="text-[#1F2C37] text-lg font-bold mb-4">Referral</Text>
+          <Text className="text-lg font-bold mb-4" style={{ color: colors.text }}>Referral</Text>
 
           <TouchableOpacity
             onPress={() => router.push('/rewards/refer')}
-            className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-50 mb-4 flex-row items-center"
+            className="p-6 rounded-[32px] shadow-sm mb-4 flex-row items-center" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: 1 }}
           >
             <View className="w-12 h-12 bg-indigo-50 rounded-2xl items-center justify-center mr-4">
-              <Ionicons name="people-outline" size={24} color="#5154F4" />
+              <Ionicons name="people-outline" size={24} color={colors.primary} />
             </View>
             <View className="flex-1">
-              <Text className="text-[#1F2C37] font-bold text-base">Refer & Earn</Text>
-              <Text className="text-[#9DA3B6] text-xs mt-0.5">Invite friends, earn rewards</Text>
+              <Text className="font-bold text-base" style={{ color: colors.text }}>Refer & Earn</Text>
+              <Text className="text-xs mt-0.5" style={{ color: colors.textSecondary }}>Invite friends, earn rewards</Text>
             </View>
-            <Feather name="chevron-right" size={20} color="#9DA3B6" />
+            <Feather name="chevron-right" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
 
           {referralList.length > 0 && (
-            <View className="bg-white rounded-[32px] shadow-sm border border-gray-50 mb-8 overflow-hidden">
-              <View className="px-6 py-4 border-b border-gray-50">
-                <Text className="text-[#1F2C37] font-bold">History</Text>
+            <View className="rounded-[32px] shadow-sm mb-8 overflow-hidden" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: 1 }}>
+              <View className="px-6 py-4" style={{ borderBottomWidth: 1, borderBottomColor: colors.cardBorder }}>
+                <Text className="font-bold" style={{ color: colors.text }}>History</Text>
               </View>
               {referralList.map((item: any, idx: number) => (
                 <View
                   key={idx}
-                  className="flex-row items-center justify-between px-6 py-4 border-b border-gray-50 last:border-b-0"
+                  className="flex-row items-center justify-between px-6 py-4" style={{ borderBottomWidth: idx < referralList.length - 1 ? 1 : 0, borderBottomColor: colors.cardBorder }}
                 >
                   <View className="flex-row items-center flex-1 mr-4">
                     <View className="w-8 h-8 bg-indigo-50 rounded-full items-center justify-center mr-3">
-                      <Ionicons name="people-outline" size={14} color="#5154F4" />
+                      <Ionicons name="people-outline" size={14} color={colors.primary} />
                     </View>
                     <View>
-                      <Text className="text-[#1F2C37] text-sm font-bold">{item.description}</Text>
-                      <Text className="text-[#9DA3B6] text-[10px] mt-0.5">{formatDate(item.created_at)}</Text>
+                      <Text className="text-sm font-bold" style={{ color: colors.text }}>{item.description}</Text>
+                      <Text className="text-[10px] mt-0.5" style={{ color: colors.textSecondary }}>{formatDate(item.created_at)}</Text>
                     </View>
                   </View>
                   <Text className="text-green-600 font-bold text-sm">
@@ -197,12 +200,12 @@ export default function RewardsIndexScreen() {
           )}
 
           {referralList.length === 0 && (
-            <View className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-50 items-center mb-10">
-              <View className="w-14 h-14 bg-gray-50 rounded-full items-center justify-center mb-3">
-                <Ionicons name="gift-outline" size={24} color="#9DA3B6" />
+            <View className="rounded-[32px] p-8 shadow-sm items-center mb-10" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: 1 }}>
+              <View className="w-14 h-14 rounded-full items-center justify-center mb-3" style={{ backgroundColor: colors.chevronBg }}>
+                <Ionicons name="gift-outline" size={24} color={colors.textSecondary} />
               </View>
-              <Text className="text-[#9DA3B6] text-sm font-medium text-center">No referrals yet</Text>
-              <Text className="text-[#9DA3B6] text-xs text-center mt-1">Share your code to get started</Text>
+              <Text className="text-sm font-medium text-center" style={{ color: colors.textSecondary }}>No referrals yet</Text>
+              <Text className="text-xs text-center mt-1" style={{ color: colors.textSecondary }}>Share your code to get started</Text>
             </View>
           )}
         </ScrollView>

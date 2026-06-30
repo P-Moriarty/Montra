@@ -14,8 +14,10 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { TransactionService } from "@/services/modules/transaction.service";
 import { getCurrencySymbol } from "@/constants/currencies";
 import { useRouter } from "expo-router";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function TransactionHistoryScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [showFilter, setShowFilter] = useState(false);
@@ -91,21 +93,21 @@ export default function TransactionHistoryScreen() {
       case "deposit":
         return {
           icon: "arrow-downward",
-          color: "#10B981",
+          color: colors.success,
           bgColor: "bg-green-50",
           family: "MaterialIcons",
         };
       case "outward":
         return {
           icon: "arrow-upward",
-          color: "#EF4444",
+          color: colors.error,
           bgColor: "bg-red-50",
           family: "MaterialIcons",
         };
       case "swap":
         return {
           icon: "repeat",
-          color: "#5154F4",
+          color: colors.primary,
           bgColor: "bg-indigo-50",
           family: "Feather",
         };
@@ -119,28 +121,28 @@ export default function TransactionHistoryScreen() {
       case "onramp":
         return {
           icon: "plus-circle",
-          color: "#10B981",
+          color: colors.success,
           bgColor: "bg-green-50",
           family: "Feather",
         };
       case "offramp":
         return {
           icon: "minus-circle",
-          color: "#EF4444",
+          color: colors.error,
           bgColor: "bg-red-50",
           family: "Feather",
         };
       case "save":
         return {
           icon: "savings",
-          color: "#8B5CF6",
+          color: colors.purple,
           bgColor: "bg-purple-50",
           family: "MaterialIcons",
         };
       case "reward":
         return {
           icon: "card-giftcard",
-          color: "#F59E0B",
+          color: colors.warning,
           bgColor: "bg-amber-50",
           family: "MaterialIcons",
         };
@@ -168,21 +170,21 @@ export default function TransactionHistoryScreen() {
       case "electricity":
         return {
           icon: "zap",
-          color: "#F59E0B",
+          color: colors.warning,
           bgColor: "bg-amber-50",
           family: "Feather",
         };
       case "payment_request":
         return {
           icon: "request-page",
-          color: "#5154F4",
+          color: colors.primary,
           bgColor: "bg-indigo-50",
           family: "MaterialIcons",
         };
       default:
         return {
           icon: "payment",
-          color: "#6C7278",
+          color: colors.textTertiary,
           bgColor: "bg-gray-50",
           family: "MaterialIcons",
         };
@@ -258,10 +260,11 @@ export default function TransactionHistoryScreen() {
     return (
       <TouchableOpacity
         onPress={() => router.push(`/transaction/${item.id}` as any)}
-        className="bg-white p-4 rounded-[32px] flex-row items-center mb-3 border border-gray-50 shadow-sm"
+        className="p-4 rounded-[32px] flex-row items-center mb-3 shadow-sm" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: 1 }}
       >
         <View
-          className={`w-12 h-12 ${config.bgColor} rounded-full items-center justify-center mr-4`}
+          className={`w-12 h-12 rounded-full items-center justify-center mr-4`}
+          style={{ backgroundColor: config.bgColor.replace('bg-', '') === 'indigo-50' ? `${colors.primary}15` : config.bgColor.replace('bg-', '') === 'green-50' ? colors.successLight : config.bgColor.replace('bg-', '') === 'red-50' ? colors.errorLight : config.bgColor.replace('bg-', '') === 'amber-50' ? colors.warningLight : config.bgColor.replace('bg-', '') === 'purple-50' ? colors.purple + '20' : colors.surfaceSecondary }}
         >
           {config.family === "MaterialIcons" ? (
             <MaterialIcons
@@ -275,12 +278,13 @@ export default function TransactionHistoryScreen() {
         </View>
         <View className="flex-1">
           <Text
-            className="text-[#1F2C37] font-bold text-sm mb-1 capitalize"
+            className="font-bold text-sm mb-1 capitalize"
+            style={{ color: colors.text }}
             numberOfLines={1}
           >
             {item.category}
           </Text>
-          <Text className="text-[#9DA3B6] text-[10px]">
+          <Text className="text-[10px]" style={{ color: colors.textSecondary }}>
             {item.time ||
               (item.created_at
                 ? new Date(item.created_at).toLocaleTimeString([], {
@@ -292,7 +296,8 @@ export default function TransactionHistoryScreen() {
         </View>
         <View className="items-end">
           <Text
-            className={`font-bold text-sm ${item.status?.toLowerCase() === "failed" ? "text-red-500" : isCredit ? "text-green-600" : "text-[#1F2C37]"}`}
+            className="font-bold text-sm"
+            style={{ color: item.status?.toLowerCase() === "failed" ? colors.error : isCredit ? colors.success : colors.text }}
           >
             {isCredit ? "+" : "-"}{getCurrencySymbol(item.currency)}
             {Number(Math.abs(item.amount) / 100).toLocaleString(undefined, {
@@ -300,10 +305,16 @@ export default function TransactionHistoryScreen() {
             })}
           </Text>
           <View
-            className={`${item.status?.toLowerCase() === "failed" || item.status?.toLowerCase() === "reversed" ? "bg-red-50" : item.status?.toLowerCase() === "pending" ? "bg-amber-50" : "bg-green-50"} px-2 py-0.5 rounded-md mt-1 border ${item.status?.toLowerCase() === "failed" ? "border-red-100" : item.status?.toLowerCase() === "pending" ? "border-amber-100" : "border-green-100"}`}
+            className="px-2 py-0.5 rounded-md mt-1"
+            style={{
+              backgroundColor: item.status?.toLowerCase() === "failed" || item.status?.toLowerCase() === "reversed" ? colors.errorLight : item.status?.toLowerCase() === "pending" ? colors.warningLight : colors.successLight,
+              borderWidth: 1,
+              borderColor: item.status?.toLowerCase() === "failed" ? colors.error + '40' : item.status?.toLowerCase() === "pending" ? colors.warning + '40' : colors.success + '40',
+            }}
           >
             <Text
-              className={`${item.status?.toLowerCase() === "failed" || item.status?.toLowerCase() === "reversed" ? "text-red-500" : item.status?.toLowerCase() === "pending" ? "text-amber-500" : "text-green-500"} text-[10px] font-bold capitalize`}
+              className="text-[10px] font-bold capitalize"
+              style={{ color: item.status?.toLowerCase() === "failed" || item.status?.toLowerCase() === "reversed" ? colors.error : item.status?.toLowerCase() === "pending" ? colors.warning : colors.success }}
             >
               {item.status}
             </Text>
@@ -314,47 +325,48 @@ export default function TransactionHistoryScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={["top"]}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
       {/* Header */}
       <View className="flex-row items-center px-6 py-4">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm" style={{ backgroundColor: colors.surface }}
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[#1F2C37] text-xl font-bold pr-10">
+        <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>
           Transactions History
         </Text>
       </View>
 
       {/* Search & Filter Row */}
       <View className="flex-row items-center px-5 mb-4">
-        <View className="flex-1 flex-row items-center bg-white h-14 rounded-2xl px-4 border border-gray-100 shadow-sm">
-          <Feather name="search" size={20} color="#9DA3B6" />
+        <View className="flex-1 flex-row items-center h-14 rounded-2xl px-4 shadow-sm" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: 1 }}>
+          <Feather name="search" size={20} color={colors.textSecondary} />
           <TextInput
-            className="flex-1 ml-3 text-[#1F2C37] font-medium"
+            className="flex-1 ml-3 font-medium"
             placeholder="Search transaction"
-            placeholderTextColor="#9DA3B6"
+            placeholderTextColor={colors.textSecondary}
             value={search}
             onChangeText={setSearch}
+            style={{ color: colors.text }}
           />
         </View>
         <TouchableOpacity
           onPress={() => setShowFilter(true)}
-          className="w-14 h-14 bg-white rounded-2xl items-center justify-center ml-3 border border-gray-100 shadow-sm"
+          className="w-14 h-14 rounded-2xl items-center justify-center ml-3 shadow-sm" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: 1 }}
         >
           <Feather
             name="sliders"
             size={20}
             color={
               activeType !== "All" || activeStatus !== "All"
-                ? "#5154F4"
-                : "#1F2C37"
+                ? colors.primary
+                : colors.text
             }
           />
           {(activeType !== "All" || activeStatus !== "All") && (
-            <View className="absolute top-3 right-3 w-2 h-2 bg-[#5154F4] rounded-full" />
+            <View className="absolute top-3 right-3 w-2 h-2 rounded-full" style={{ backgroundColor: colors.primary }} />
           )}
         </TouchableOpacity>
       </View>
@@ -367,7 +379,7 @@ export default function TransactionHistoryScreen() {
         }
         renderItem={renderItem}
         renderSectionHeader={({ section: { title } }) => (
-          <Text className="text-[#6C7278] text-sm font-bold mb-4 uppercase tracking-wider mt-2">
+          <Text className="text-sm font-bold mb-4 uppercase tracking-wider mt-2" style={{ color: colors.textTertiary }}>
             {title}
           </Text>
         )}
@@ -381,14 +393,14 @@ export default function TransactionHistoryScreen() {
         onEndReachedThreshold={0.5}
         ListHeaderComponent={
           isLoading && !isFetchingNextPage ? (
-            <ActivityIndicator color="#5154F4" className="mt-10" />
+            <ActivityIndicator color={colors.primary} className="mt-10" />
           ) : null
         }
         ListEmptyComponent={
           !isLoading ? (
-            <View className="bg-white p-10 rounded-[32px] items-center justify-center mt-6 border border-gray-100 italic">
-              <Feather name="list" size={40} color="#9DA3B6" />
-              <Text className="text-[#9DA3B6] mt-4 font-bold text-center">
+            <View className="p-10 rounded-[32px] items-center justify-center mt-6 italic" style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: 1 }}>
+              <Feather name="list" size={40} color={colors.textSecondary} />
+              <Text className="mt-4 font-bold text-center" style={{ color: colors.textSecondary }}>
                 No transactions found matching your criteria
               </Text>
             </View>
@@ -396,23 +408,23 @@ export default function TransactionHistoryScreen() {
         }
         ListFooterComponent={
           isFetchingNextPage ? (
-            <ActivityIndicator color="#5154F4" className="py-4" />
+            <ActivityIndicator color={colors.primary} className="py-4" />
           ) : null
         }
       />
 
       {/* Filter Modal */}
       <Modal visible={showFilter} animationType="slide" transparent={true}>
-        <View className="flex-1 justify-end bg-black/40">
-          <View className="bg-white rounded-t-[48px] px-6 pt-10 pb-12">
+        <View className="flex-1 justify-end" style={{ backgroundColor: colors.overlay }}>
+          <View className="rounded-t-[48px] px-6 pt-10 pb-12" style={{ backgroundColor: colors.surface }}>
             <View className="flex-row justify-between items-center mb-8">
-              <Text className="text-[#1F2C37] text-2xl font-bold">Filters</Text>
+              <Text className="text-2xl font-bold" style={{ color: colors.text }}>Filters</Text>
               <TouchableOpacity onPress={() => setShowFilter(false)}>
-                <Ionicons name="close-circle" size={32} color="#E5E7EB" />
+                <Ionicons name="close-circle" size={32} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
-            <Text className="text-[#1F2C37] font-bold text-lg mb-4">
+            <Text className="font-bold text-lg mb-4" style={{ color: colors.text }}>
               Transaction Type
             </Text>
             <View className="flex-row flex-wrap gap-2 mb-8">
@@ -420,10 +432,15 @@ export default function TransactionHistoryScreen() {
                 <TouchableOpacity
                   key={f}
                   onPress={() => setActiveType(f)}
-                  className={`px-6 py-3 rounded-2xl border ${activeType === f ? "bg-[#5154F4] border-[#5154F4]" : "bg-white border-gray-100"}`}
+                  className="px-6 py-3 rounded-2xl border"
+                  style={{
+                    backgroundColor: activeType === f ? colors.primary : colors.surface,
+                    borderColor: activeType === f ? colors.primary : colors.cardBorder,
+                  }}
                 >
                   <Text
-                    className={`font-bold ${activeType === f ? "text-white" : "text-[#6C7278]"}`}
+                    className="font-bold"
+                    style={{ color: activeType === f ? "white" : colors.textTertiary }}
                   >
                     {f}
                   </Text>
@@ -431,7 +448,7 @@ export default function TransactionHistoryScreen() {
               ))}
             </View>
 
-            <Text className="text-[#1F2C37] font-bold text-lg mb-4">
+            <Text className="font-bold text-lg mb-4" style={{ color: colors.text }}>
               Transaction Status
             </Text>
             <View className="flex-row flex-wrap gap-2">
@@ -439,10 +456,15 @@ export default function TransactionHistoryScreen() {
                 <TouchableOpacity
                   key={s}
                   onPress={() => setActiveStatus(s)}
-                  className={`px-6 py-3 rounded-2xl border ${activeStatus === s ? "bg-[#5154F4] border-[#5154F4]" : "bg-white border-gray-100"}`}
+                  className="px-6 py-3 rounded-2xl border"
+                  style={{
+                    backgroundColor: activeStatus === s ? colors.primary : colors.surface,
+                    borderColor: activeStatus === s ? colors.primary : colors.cardBorder,
+                  }}
                 >
                   <Text
-                    className={`font-bold ${activeStatus === s ? "text-white" : "text-[#6C7278]"}`}
+                    className="font-bold"
+                    style={{ color: activeStatus === s ? "white" : colors.textTertiary }}
                   >
                     {s}
                   </Text>
@@ -452,7 +474,8 @@ export default function TransactionHistoryScreen() {
 
             <TouchableOpacity
               onPress={() => setShowFilter(false)}
-              className="bg-[#333] mt-10 py-5 rounded-[28px] shadow-lg shadow-gray-200"
+              className="mt-10 py-5 rounded-[28px]"
+              style={{ backgroundColor: colors.text }}
             >
               <Text className="text-white text-center text-lg font-bold">
                 Apply Filters

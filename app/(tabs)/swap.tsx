@@ -3,6 +3,7 @@ import { CustomKeypad } from '@/components/custom-keypad';
 import { Toast } from '@/components/ui/toast';
 import { useAuth } from '@/context/AuthContext';
 import { useWallet } from '@/context/WalletContext';
+import { useTheme } from '@/context/ThemeContext';
 import { useApiMutation, useApiQuery } from '@/hooks/api/use-api';
 import { WalletService } from '@/services/modules/wallet.service';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -19,6 +20,7 @@ const formatMoney = (balance: number | string, symbol: string = '') => {
 };
 
 export default function SwapScreen() {
+  const { colors } = useTheme();
   const queryClient = useQueryClient();
   const { selectedCurrencyCode, setSelectedCurrencyCode } = useWallet();
   const params = useLocalSearchParams<{ from?: string }>();
@@ -355,22 +357,22 @@ export default function SwapScreen() {
 
   if (isAuthLoading || isCurrenciesLoading || isWalletLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-[#E5E5F5] items-center justify-center">
-        <ActivityIndicator size="large" color="#5154F4" />
-        <Text className="mt-4 text-[#9DA3B6] font-medium">Preparing your swap...</Text>
+      <SafeAreaView className="flex-1 items-center justify-center" style={{ backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text className="mt-4 font-medium" style={{ color: colors.textSecondary }}>Preparing your swap...</Text>
       </SafeAreaView>
     );
   }
 
   if (ratesError || walletError) {
     return (
-      <SafeAreaView className="flex-1 bg-[#E5E5F5] items-center justify-center px-10">
-        <Feather name="wifi-off" size={48} color="#9DA3B6" />
-        <Text className="mt-4 text-center text-[#1F2C37] text-lg font-bold">Connection Error</Text>
-        <Text className="mt-2 text-center text-[#9DA3B6]">We couldn&apos;t reach the server. Please check your internet connection.</Text>
+      <SafeAreaView className="flex-1 items-center justify-center px-10" style={{ backgroundColor: colors.background }}>
+        <Feather name="wifi-off" size={48} color={colors.textSecondary} />
+        <Text className="mt-4 text-center text-lg font-bold" style={{ color: colors.text }}>Connection Error</Text>
+        <Text className="mt-2 text-center" style={{ color: colors.textSecondary }}>We couldn&apos;t reach the server. Please check your internet connection.</Text>
         <TouchableOpacity
           onPress={() => queryClient.invalidateQueries()}
-          className="mt-8 bg-[#5154F4] px-8 py-3 rounded-2xl"
+          className="mt-8 px-8 py-3 rounded-2xl" style={{ backgroundColor: colors.primary }}
         >
           <Text className="text-white font-bold">Retry</Text>
         </TouchableOpacity>
@@ -380,13 +382,13 @@ export default function SwapScreen() {
 
   if (currencies.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-[#E5E5F5] items-center justify-center px-10">
-        <Feather name="alert-circle" size={48} color="#9DA3B6" />
-        <Text className="mt-4 text-center text-[#1F2C37] text-lg font-bold">No tradable currencies found</Text>
-        <Text className="mt-2 text-center text-[#9DA3B6]">We couldn&apos;t find any wallets in your account that support swapping at this time.</Text>
+      <SafeAreaView className="flex-1 items-center justify-center px-10" style={{ backgroundColor: colors.background }}>
+        <Feather name="alert-circle" size={48} color={colors.textSecondary} />
+        <Text className="mt-4 text-center text-lg font-bold" style={{ color: colors.text }}>No tradable currencies found</Text>
+        <Text className="mt-2 text-center" style={{ color: colors.textSecondary }}>We couldn&apos;t find any wallets in your account that support swapping at this time.</Text>
         <TouchableOpacity
           onPress={() => queryClient.invalidateQueries({ queryKey: ['wallet'] })}
-          className="mt-8 bg-[#5154F4] px-8 py-3 rounded-2xl"
+          className="mt-8 px-8 py-3 rounded-2xl" style={{ backgroundColor: colors.primary }}
         >
           <Text className="text-white font-bold">Refresh Wallets</Text>
         </TouchableOpacity>
@@ -396,16 +398,16 @@ export default function SwapScreen() {
 
   if (!fromCurrency || !toCurrency) {
     return (
-      <SafeAreaView className="flex-1 bg-[#E5E5F5] items-center justify-center">
-        <ActivityIndicator size="large" color="#5154F4" />
-        <Text className="mt-4 text-[#9DA3B6] font-medium">Finalizing selection...</Text>
+      <SafeAreaView className="flex-1 items-center justify-center" style={{ backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text className="mt-4 font-medium" style={{ color: colors.textSecondary }}>Finalizing selection...</Text>
       </SafeAreaView>
     );
   }
 
 
   return (
-    <SafeAreaView className="flex-1 bg-[#E5E5F5]" edges={['top']}>
+    <SafeAreaView className="flex-1" edges={['top']} style={{ backgroundColor: colors.background }}>
       <Toast
         visible={toast.visible}
         message={toast.message}
@@ -417,20 +419,20 @@ export default function SwapScreen() {
       <View className="flex-row items-center justify-between px-6 py-4">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm" style={{ backgroundColor: colors.surface }}
         >
-          <Ionicons name="arrow-back" size={20} color="#1F2C37" />
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text className="text-[#1F2C37] text-xl font-bold">Swap</Text>
+        <Text className="text-xl font-bold" style={{ color: colors.text }}>Swap</Text>
         <TouchableOpacity
           onPress={() => refetchWallets()}
           disabled={isWalletRefetching}
-          className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
+          className="w-10 h-10 rounded-full items-center justify-center shadow-sm" style={{ backgroundColor: colors.surface }}
         >
           {isWalletRefetching ? (
-            <ActivityIndicator size="small" color="#5154F4" />
+            <ActivityIndicator size="small" color={colors.primary} />
           ) : (
-            <Ionicons name="refresh" size={20} color="#5154F4" />
+            <Ionicons name="refresh" size={20} color={colors.primary} />
           )}
         </TouchableOpacity>
       </View>
@@ -441,22 +443,22 @@ export default function SwapScreen() {
       >
         <View className="relative mt-8">
           {/* From Card */}
-          <View className="bg-white p-6 rounded-[32px] mb-2 shadow-sm border border-white">
+          <View className="p-6 rounded-[32px] mb-2 shadow-sm border border-white" style={{ backgroundColor: colors.surface }}>
             <View className="flex-row justify-between items-center">
               <TouchableOpacity
                 onPress={() => setShowSelector({ visible: true, type: 'from' })}
-                className="flex-row items-center bg-gray-50 px-3 py-2 rounded-2xl border border-gray-100"
+                className="flex-row items-center px-3 py-2 rounded-2xl border border-gray-100" style={{ backgroundColor: colors.chevronBg }}
               >
                 <Image
                   source={{ uri: `https://flagcdn.com/w80/${fromCurrency.flag}.png` }}
                   className="w-6 h-4 rounded-sm mr-2"
                 />
-                <Text className="text-[#1F2C37] font-bold mr-1">{fromCurrency.code}</Text>
-                <Feather name="chevron-down" size={16} color="#1F2C37" />
+                <Text className="font-bold mr-1" style={{ color: colors.text }}>{fromCurrency.code}</Text>
+                <Feather name="chevron-down" size={16} color={colors.text} />
               </TouchableOpacity>
 
               <TouchableOpacity onPress={() => setIsKeypadVisible(true)}>
-                <Text className={`text-3xl font-bold ${isKeypadVisible ? 'text-[#5154F4]' : 'text-[#1F2C37]'}`}>
+                <Text className="text-3xl font-bold" style={{ color: isKeypadVisible ? colors.primary : colors.text }}>
                   {fromCurrency.symbol}{parseFloat(fromAmount.replace(/,/g, '')).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Text>
               </TouchableOpacity>
@@ -466,12 +468,12 @@ export default function SwapScreen() {
                 onPress={handleMaxPress}
                 className="flex-row items-center"
               >
-                <Text className="text-[#9DA3B6] font-medium">
+                <Text className="font-medium" style={{ color: colors.textSecondary }}>
                   Balance : {formatMoney(availableBalance, fromCurrency?.symbol || '')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={handleMaxPress}>
-                <Text className="text-[#5154F4] font-bold">Max</Text>
+                <Text className="font-bold" style={{ color: colors.primary }}>Max</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -480,9 +482,11 @@ export default function SwapScreen() {
           <View className="absolute left-1/2 -ml-7 top-[33%] z-10">
             <TouchableOpacity
               onPress={handleFlipCurrencies}
-              className="bg-[#5154F4] w-14 h-14 rounded-full items-center justify-center border-4 border-[#E5E5F5] shadow-xl"
+              className="w-14 h-14 rounded-full items-center justify-center border-4 shadow-xl"
               style={{
-                shadowColor: '#5154F4',
+                backgroundColor: colors.primary,
+                borderColor: colors.background,
+                shadowColor: colors.primary,
                 shadowOffset: { width: 0, height: 8 },
                 shadowOpacity: 0.3,
                 shadowRadius: 12,
@@ -494,33 +498,33 @@ export default function SwapScreen() {
           </View>
 
           {/* To Card */}
-          <View className="bg-white/80 p-6 rounded-[32px] shadow-sm border border-white mt-1">
+          <View className="p-6 rounded-[32px] shadow-sm border border-white mt-1" style={{ backgroundColor: colors.surface, opacity: 0.8 }}>
             <View className="flex-row justify-between items-center">
               <TouchableOpacity
                 onPress={() => setShowSelector({ visible: true, type: 'to' })}
-                className="flex-row items-center bg-gray-50 px-3 py-2 rounded-2xl border border-gray-100"
+                className="flex-row items-center px-3 py-2 rounded-2xl border border-gray-100" style={{ backgroundColor: colors.chevronBg }}
               >
                 <Image
                   source={{ uri: `https://flagcdn.com/w80/${toCurrency.flag}.png` }}
                   className="w-6 h-4 rounded-sm mr-2"
                 />
-                <Text className="text-[#1F2C37] font-bold mr-1">{toCurrency.code}</Text>
-                <Feather name="chevron-down" size={16} color="#1F2C37" />
+                <Text className="font-bold mr-1" style={{ color: colors.text }}>{toCurrency.code}</Text>
+                <Feather name="chevron-down" size={16} color={colors.text} />
               </TouchableOpacity>
               <View className="items-end">
-                <Text className="text-[#1F2C37] text-3xl font-bold">
+                <Text className="text-3xl font-bold" style={{ color: colors.text }}>
                   {toCurrency.symbol}{toAmount}
                 </Text>
-                <Text className="text-[#9DA3B6] text-xs font-medium mt-1">
+                <Text className="text-xs font-medium mt-1" style={{ color: colors.textSecondary }}>
                   Equivalent Value
                 </Text>
               </View>
             </View>
             <View className="mt-6">
-              <Text className="text-[#9DA3B6] font-medium text-xs uppercase tracking-widest">Rate: 1 {fromCurrency.code} ≈ {currentRate} {toCurrency.code}</Text>
+              <Text className="font-medium text-xs uppercase tracking-widest" style={{ color: colors.textSecondary }}>Rate: 1 {fromCurrency.code} ≈ {currentRate} {toCurrency.code}</Text>
             </View>
             <View className="flex-row justify-between mt-6">
-              <Text className="text-[#9DA3B6] font-medium">
+              <Text className="font-medium" style={{ color: colors.textSecondary }}>
                 Balance : {toCurrency?.symbol || ''}{Math.round(Number(toWalletBalance?.toString().slice(0, -2)) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
               </Text>
             </View>
@@ -528,18 +532,18 @@ export default function SwapScreen() {
         </View>
 
         {/* Transaction Details */}
-        <View className="bg-white/40 p-6 rounded-[40px] mt-6 border border-white/20">
+        <View className="p-6 rounded-[40px] mt-6" style={{ backgroundColor: colors.surfaceSecondary, borderColor: colors.border }}>
           <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-[#6C7278] font-medium">Exchange Rate</Text>
-            <Text className="text-[#1F2C37] font-bold">1 {fromCurrency.code} = {currentRate} {toCurrency.code}</Text>
+            <Text className="font-medium" style={{ color: colors.textTertiary }}>Exchange Rate</Text>
+            <Text className="font-bold" style={{ color: colors.text }}>1 {fromCurrency.code} = {currentRate} {toCurrency.code}</Text>
           </View>
           <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-[#6C7278] font-medium">Fee</Text>
-            <Text className="text-green-600 font-bold">Free</Text>
+            <Text className="font-medium" style={{ color: colors.textTertiary }}>Fee</Text>
+            <Text className="font-bold" style={{ color: colors.success }}>Free</Text>
           </View>
           <View className="flex-row justify-between items-center">
-            <Text className="text-[#6C7278] font-medium">Arrives</Text>
-            <Text className="text-[#1F2C37] font-bold">Instantly</Text>
+            <Text className="font-medium" style={{ color: colors.textTertiary }}>Arrives</Text>
+            <Text className="font-bold" style={{ color: colors.text }}>Instantly</Text>
           </View>
         </View>
 
@@ -548,8 +552,11 @@ export default function SwapScreen() {
           <TouchableOpacity
             onPress={handleReviewSwap}
             disabled={swapMutation.isPending || isWalletRefetching || parseFloat(fromAmount.replace(/,/g, '')) <= 0}
-            className={`py-5 rounded-[28px] shadow-lg flex-row items-center justify-center ${parseFloat(fromAmount.replace(/,/g, '')) > 0 && !isWalletRefetching ? 'bg-[#5154F4] shadow-indigo-200' : 'bg-gray-300 shadow-none'
-              }`}
+            className="py-5 rounded-[28px] shadow-lg flex-row items-center justify-center"
+            style={{
+              backgroundColor: parseFloat(fromAmount.replace(/,/g, '')) > 0 && !isWalletRefetching ? colors.primary : colors.disabledBg,
+              shadowOpacity: parseFloat(fromAmount.replace(/,/g, '')) > 0 && !isWalletRefetching ? 0.3 : 0
+            }}
           >
             {isWalletRefetching ? (
               <ActivityIndicator color="white" className="mr-2" />
@@ -568,9 +575,9 @@ export default function SwapScreen() {
       <Modal visible={isKeypadVisible} animationType="slide" transparent={true}>
         <View className="flex-1 justify-end">
           <Pressable className="absolute inset-0 bg-black/10" onPress={() => setIsKeypadVisible(false)} />
-          <View className="bg-white rounded-t-[48px] shadow-2xl overflow-hidden">
+          <View className="rounded-t-[48px] shadow-2xl overflow-hidden" style={{ backgroundColor: colors.surface }}>
             <View className="items-center py-2">
-              <View className="w-12 h-1.5 bg-gray-100 rounded-full" />
+              <View className="w-12 h-1.5 rounded-full" style={{ backgroundColor: colors.chevronBg }} />
             </View>
             <CustomKeypad
               onPress={handleKeyPress}
@@ -583,19 +590,19 @@ export default function SwapScreen() {
       {/* Currency Selector Modal */}
       <Modal visible={showSelector.visible} animationType="slide" transparent={true}>
         <View className="flex-1 justify-end bg-black/40">
-          <View className="bg-white rounded-t-[48px] px-6 pt-10 pb-8 h-[70%]">
+          <View className="rounded-t-[48px] px-6 pt-10 pb-8 h-[70%]" style={{ backgroundColor: colors.surface }}>
             <View className="flex-row justify-between items-center mb-6">
-              <Text className="text-[#1F2C37] text-2xl font-bold">Select Currency</Text>
+              <Text className="text-2xl font-bold" style={{ color: colors.text }}>Select Currency</Text>
               <TouchableOpacity onPress={() => setShowSelector({ visible: false, type: 'from' })}>
-                <Ionicons name="close-circle" size={32} color="#E5E7EB" />
+                <Ionicons name="close-circle" size={32} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
             {/* Search */}
-            <View className="flex-row items-center bg-gray-50 h-14 rounded-2xl px-4 mb-6 border border-gray-100">
-              <Feather name="search" size={20} color="#9DA3B6" />
+            <View className="flex-row items-center h-14 rounded-2xl px-4 mb-6 border border-gray-100" style={{ backgroundColor: colors.chevronBg }}>
+              <Feather name="search" size={20} color={colors.textSecondary} />
               <TextInput
-                className="flex-1 ml-3 font-medium text-[#1F2C37]"
+                className="flex-1 ml-3 font-medium" style={{ color: colors.text }}
                 placeholder="Search currency"
                 value={search}
                 onChangeText={setSearch}
@@ -616,7 +623,7 @@ export default function SwapScreen() {
                     setShowSelector({ visible: false, type: 'from' });
                     setSearch('');
                   }}
-                  className="flex-row items-center justify-between py-4 border-b border-gray-50"
+                  className="flex-row items-center justify-between py-4 border-b" style={{ borderColor: colors.cardBorder }}
                 >
                   <View className="flex-row items-center">
                     <Image
@@ -624,13 +631,13 @@ export default function SwapScreen() {
                       className="w-10 h-7 rounded-md mr-4"
                     />
                     <View>
-                      <Text className="text-[#1F2C37] font-bold text-lg">{c.code}</Text>
-                      <Text className="text-[#9DA3B6] text-sm">{c.name}</Text>
+                      <Text className="font-bold text-lg" style={{ color: colors.text }}>{c.code}</Text>
+                      <Text className="text-sm" style={{ color: colors.textSecondary }}>{c.name}</Text>
                     </View>
                   </View>
 
                   <View className="items-end">
-                    <Text className="text-[#5154F4] font-bold">
+                    <Text className="font-bold" style={{ color: colors.primary }}>
                       {c.code === 'NGN' ? 'Base' : `1 ${c.code} ≈ ${c.rate.toFixed(2)} NGN`}
                     </Text>
                     {(() => {
@@ -652,7 +659,7 @@ export default function SwapScreen() {
                     })()}
                   </View>
                   {(showSelector.type === 'from' ? fromCurrency?.code : toCurrency?.code) === c.code && (
-                    <Ionicons name="checkmark-circle" size={24} color="#5154F4" />
+                    <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
                   )}
                 </TouchableOpacity>
               ))}
@@ -665,25 +672,26 @@ export default function SwapScreen() {
       <Modal visible={isAuthModalVisible} animationType="fade" transparent={true}>
         <View className="flex-1 justify-end">
           <Pressable className="absolute inset-0 bg-black/40" onPress={() => !swapMutation.isPending && setIsAuthModalVisible(false)} />
-          <View className="bg-white rounded-t-[48px] shadow-2xl overflow-hidden pt-8">
+          <View className="rounded-t-[48px] shadow-2xl overflow-hidden pt-8" style={{ backgroundColor: colors.surface }}>
             <View className="items-center px-6 mb-6">
-              <Text className="text-2xl font-bold text-[#1F2C37] mb-2">Enter your PIN</Text>
-              <Text className="text-[#9DA3B6] text-center mb-6">Enter your 4-digit PIN to authorize this swap.</Text>
+              <Text className="text-2xl font-bold mb-2" style={{ color: colors.text }}>Enter your PIN</Text>
+              <Text className="text-center mb-6" style={{ color: colors.textSecondary }}>Enter your 4-digit PIN to authorize this swap.</Text>
 
               {/* PIN Dots */}
               <View className="flex-row justify-center space-x-4 mb-4 gap-4">
                 {[...Array(4)].map((_, i) => (
                   <View
                     key={i}
-                    className={`w-4 h-4 rounded-full ${i < authPin.length ? 'bg-[#5154F4]' : 'bg-gray-200'}`}
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: i < authPin.length ? colors.primary : colors.switchTrackOff }}
                   />
                 ))}
               </View>
 
               {swapMutation.isPending && (
                 <View className="flex-row items-center mt-4">
-                  <ActivityIndicator color="#5154F4" size="small" />
-                  <Text className="text-[#5154F4] font-medium ml-2">Processing swap...</Text>
+                  <ActivityIndicator color={colors.primary} size="small" />
+                  <Text className="font-medium ml-2" style={{ color: colors.primary }}>Processing swap...</Text>
                 </View>
               )}
             </View>
@@ -703,13 +711,13 @@ export default function SwapScreen() {
       <Modal visible={isCreateWalletVisible} animationType="fade" transparent={true}>
         <View className="flex-1 justify-end">
           <Pressable className="absolute inset-0 bg-black/40" onPress={() => !createWalletMutation.isPending && setIsCreateWalletVisible(false)} />
-          <View className="bg-white rounded-t-[48px] shadow-2xl overflow-hidden pt-8 pb-12">
+          <View className="rounded-t-[48px] shadow-2xl overflow-hidden pt-8 pb-12" style={{ backgroundColor: colors.surface }}>
             <View className="items-center px-8">
-              <View className="w-20 h-20 bg-[#5154F4]/10 rounded-full items-center justify-center mb-6">
-                <MaterialCommunityIcons name="wallet-plus" size={40} color="#5154F4" />
+              <View className="w-20 h-20 rounded-full items-center justify-center mb-6" style={{ backgroundColor: colors.primary + '1A' }}>
+                <MaterialCommunityIcons name="wallet-plus" size={40} color={colors.primary} />
               </View>
-              <Text className="text-2xl font-bold text-[#1F2C37] mb-2 text-center">Create {(isAuthModalVisible ? fromCurrency : toCurrency)?.code} Wallet</Text>
-              <Text className="text-[#9DA3B6] text-center mb-10 leading-6">
+              <Text className="text-2xl font-bold mb-2 text-center" style={{ color: colors.text }}>Create {(isAuthModalVisible ? fromCurrency : toCurrency)?.code} Wallet</Text>
+              <Text className="text-center mb-10 leading-6" style={{ color: colors.textSecondary }}>
                 You need to create a {(isAuthModalVisible ? fromCurrency : toCurrency)?.name || (isAuthModalVisible ? fromCurrency : toCurrency)?.code} wallet to proceed with this swap.
               </Text>
 
@@ -720,7 +728,7 @@ export default function SwapScreen() {
                   createWalletMutation.mutate({ country });
                 }}
                 disabled={createWalletMutation.isPending}
-                className="w-full bg-[#5154F4] py-5 rounded-[28px] shadow-lg shadow-indigo-200 flex-row items-center justify-center"
+                className="w-full py-5 rounded-[28px] shadow-lg flex-row items-center justify-center" style={{ backgroundColor: colors.primary }}
               >
                 {createWalletMutation.isPending ? (
                   <ActivityIndicator color="white" className="mr-2" />
@@ -735,7 +743,7 @@ export default function SwapScreen() {
                 disabled={createWalletMutation.isPending}
                 className="mt-6"
               >
-                <Text className="text-[#9DA3B6] font-bold">Cancel</Text>
+                <Text className="font-bold" style={{ color: colors.textSecondary }}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>
