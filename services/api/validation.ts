@@ -48,8 +48,8 @@ export const UpdateProfileSchema = z.object({
   full_name: z.string()
     .min(1, 'Full name is required')
     .min(3, 'Name must be at least 3 characters'),
-  date_of_birth: z.string()
-    .min(1, 'Date of birth is required'),
+  // date_of_birth: z.string()
+  //   .min(1, 'Date of birth is required'),
   gender: z.enum(['male', 'female', 'others'], {
     message: 'Please select a valid gender',
   }),

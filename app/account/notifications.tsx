@@ -152,7 +152,7 @@ export default function NotificationsScreen() {
         </View>
       </TouchableOpacity>
     );
-  }, [markAsReadMutation.isPending, handleMarkAsRead]);
+  }, [markAsReadMutation.isPending, colors.cardBorder, colors.text, colors.primary, colors.textTertiary, colors.green, colors.error, colors.textSecondary, handleMarkAsRead]);
 
   const renderHeader = () => (
     <View className="flex-row items-center justify-between px-6 py-4">

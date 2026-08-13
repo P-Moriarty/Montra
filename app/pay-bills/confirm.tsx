@@ -109,7 +109,7 @@ export default function BillConfirmScreen() {
           payload.network = providerId;
           payload.phone = identifier;
         } else if (type === 'data') {
-          payload.network = providerId;
+          payload.network = String(providerId).replace('-data', '');
           payload.phone = identifier;
           payload.code = planCode;
           payload.serviceID = providerId;
@@ -156,7 +156,7 @@ export default function BillConfirmScreen() {
           payload.network = providerId;
           payload.phone = identifier;
         } else if (type === 'data') {
-          payload.network = providerId;
+          payload.network = String(providerId).replace('-data', '');
           payload.phone = identifier;
           payload.code = planCode;
           payload.serviceID = providerId;
@@ -243,9 +243,17 @@ export default function BillConfirmScreen() {
         {/* Pay Button */}
         <TouchableOpacity 
           onPress={() => setShowPin(true)}
-          className="py-5 rounded-[28px] shadow-lg shadow-indigo-100" style={{ backgroundColor: colors.primary }}
+          disabled={isProcessing}
+          className="py-5 rounded-[28px] shadow-lg shadow-indigo-100" style={{ backgroundColor: isProcessing ? `${colors.primary}99` : colors.primary }}
         >
-          <Text className="text-white text-center text-lg font-bold">Confirm & Pay</Text>
+          {isProcessing ? (
+            <View className="flex-row items-center justify-center">
+              <ActivityIndicator color="white" size="small" />
+              <Text className="text-white text-center text-lg font-bold ml-3">Processing...</Text>
+            </View>
+          ) : (
+            <Text className="text-white text-center text-lg font-bold">Confirm & Pay</Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
 
