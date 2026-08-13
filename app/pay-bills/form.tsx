@@ -196,7 +196,7 @@ export default function BillFormScreen() {
             onPress={() => router.back()}
             className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm"
           >
-            <Ionicons name="arrow-back" size={20} color={colors.text} />
+            <Ionicons name="arrow-back" size={20} color={colors.primary} />
           </TouchableOpacity>
           <Text className="flex-1 text-center text-xl font-bold pr-10" style={{ color: colors.text }}>
             {name}

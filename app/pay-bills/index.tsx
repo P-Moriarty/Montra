@@ -9,9 +9,9 @@ export default function PayBillsIndexScreen() {
   const { colors } = useTheme();
   const categories = [
     { id: 'airtime', name: 'Airtime', icon: 'phone-portrait-outline', lib: 'Ionicons', color: colors.primary },
-    { id: 'data', name: 'Data Bundle', icon: 'wifi-outline', lib: 'Ionicons', color: colors.text },
-    { id: 'electricity', name: 'Electricity', icon: 'flash-outline', lib: 'Ionicons', color: colors.text },
-    { id: 'cable', name: 'Cable TV', icon: 'tv-outline', lib: 'Ionicons', color: colors.text },
+    { id: 'data', name: 'Data Bundle', icon: 'wifi-outline', lib: 'Ionicons', color: colors.primary },
+    { id: 'electricity', name: 'Electricity', icon: 'flash-outline', lib: 'Ionicons', color: colors.primary },
+    { id: 'cable', name: 'Cable TV', icon: 'tv-outline', lib: 'Ionicons', color: colors.primary },
     
   ];
 
